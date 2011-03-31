@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2009, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -71,6 +71,7 @@
 #  error "CURL_SIZEOF_CURL_SOCKLEN_T shall not be defined except in curlbuild.h"
    Error Compilation_aborted_CURL_SIZEOF_CURL_SOCKLEN_T_already_defined
 #endif
+
 #ifdef CURL_TYPEOF_CURL_OFF_T
 #  error "CURL_TYPEOF_CURL_OFF_T shall not be defined except in curlbuild.h"
    Error Compilation_aborted_CURL_TYPEOF_CURL_OFF_T_already_defined
@@ -110,6 +111,18 @@
 /*  EXTERNAL INTERFACE SETTINGS FOR CONFIGURE CAPABLE SYSTEMS ONLY  */
 /* ================================================================ */
 
+/* Configure process defines this to 1 when it finds out that system  */
+/* header file ws2tcpip.h must be included by the external interface. */
+#cmakedefine CURL_PULL_WS2TCPIP_H ${CURL_PULL_WS2TCPIP_H}
+#ifdef CURL_PULL_WS2TCPIP_H
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+#endif
+
 /* Configure process defines this to 1 when it finds out that system   */
 /* header file sys/types.h must be included by the external interface. */
 #cmakedefine CURL_PULL_SYS_TYPES_H ${CURL_PULL_SYS_TYPES_H}
@@ -131,11 +144,16 @@
 #  include <inttypes.h>
 #endif
 
-/* The size of `long', as computed by sizeof. */
-#cmakedefine CURL_SIZEOF_LONG ${CURL_SIZEOF_LONG}
-
-/* Integral data type used for curl_socklen_t. */
-#cmakedefine CURL_TYPEOF_CURL_SOCKLEN_T ${CURL_TYPEOF_CURL_SOCKLEN_T}
+/* Configure process defines this to 1 when it finds out that system    */
+/* header file sys/socket.h must be included by the external interface. */
+#cmakedefine CURL_PULL_SYS_SOCKET_H ${CURL_PULL_SYS_SOCKET_H}
+#ifdef CURL_PULL_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
+#cmakedefine HAVE_SYS_SOCKET_H ${HAVE_SYS_SOCKET_H}
+#ifdef HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>
+#endif
 
 /* on windows socklen_t is in here */
 #ifdef _WIN32
@@ -143,15 +161,17 @@
 #  include <ws2tcpip.h>
 #endif
 
-#ifdef HAVE_SYS_SOCKET_H
-#  include <sys/socket.h>
-#endif
+/* The size of `long', as computed by sizeof. */
+#cmakedefine CURL_SIZEOF_LONG ${CURL_SIZEOF_LONG}
 
-/* Data type definition of curl_socklen_t. */
-typedef CURL_TYPEOF_CURL_SOCKLEN_T curl_socklen_t;
+/* Integral data type used for curl_socklen_t. */
+#cmakedefine CURL_TYPEOF_CURL_SOCKLEN_T ${CURL_TYPEOF_CURL_SOCKLEN_T}
 
 /* The size of `curl_socklen_t', as computed by sizeof. */
 #cmakedefine CURL_SIZEOF_CURL_SOCKLEN_T ${CURL_SIZEOF_CURL_SOCKLEN_T}
+
+/* Data type definition of curl_socklen_t. */
+typedef CURL_TYPEOF_CURL_SOCKLEN_T curl_socklen_t;
 
 /* Signed integral data type used for curl_off_t. */
 #cmakedefine CURL_TYPEOF_CURL_OFF_T ${CURL_TYPEOF_CURL_OFF_T}
