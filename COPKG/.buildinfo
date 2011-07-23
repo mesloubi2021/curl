@@ -10,9 +10,9 @@
 x86{
     compiler: vc10-x86;
      
-//    uses: x86=@"..\zlib";
-//    uses: x86=@"..\openssl";
-//    uses: x86=@"..\libssh2";
+    uses: x86=@"..\zlib";
+    uses: x86=@"..\openssl";
+    uses: x86=@"..\libssh2";
 
     targets: { 
         "builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\bin\curl.exe",
@@ -47,9 +47,9 @@ x86{
 x64 {
     compiler: vc10-x64;
 
-//    uses: x64=@"..\zlib";
-//    uses: x64=@"..\openssl";
-//    uses: x64=@"..\libssh2";
+    uses: x64=@"..\zlib";
+    uses: x64=@"..\openssl";
+    uses: x64=@"..\libssh2";
      
     targets: { 
         "builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\bin\curl.exe",
