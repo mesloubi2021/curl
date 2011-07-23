@@ -1,0 +1,82 @@
+#product-info  {
+    product-name: "curl";
+    version: "7.21.7";
+    original-source-location: "http://curl.haxx.se/download/curl-7.21.7.tar.gz";
+    original-source-website: "http://curl.haxx.se/";
+    license: "Custom - see COPYING for detils";
+    packager: "Hamish C";
+}
+
+x86{
+    compiler: vc10-x86;
+     
+//    uses: x86=@"..\zlib";
+//    uses: x86=@"..\openssl";
+//    uses: x86=@"..\libssh2";
+
+    targets: { 
+        "builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\bin\curl.exe",
+        "builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\bin\libcurl.dll",
+        "builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\lib\libcurl.exp",
+        "builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\lib\libcurl.lib"
+    };
+     
+    build-command:@"
+       rem best you have your visual studio installed in the default location...
+       IF EXIST ""C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" call ""C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" x86
+       IF EXIST ""C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" call ""C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" x86
+       pushd include\curl
+           copy curlbuild.h.dist curlbuild.h
+       popd
+       pushd src
+           copy hugehelp.c.cvs hugehelp.c
+       popd
+       pushd winbuild
+           nmake -f makefile.vc mode=dll WITH_SSL=dll WITH_ZLIB=dll WITH_SSH2=dll MACHINE=X86
+       popd
+    ";
+     
+    clean-command:@"
+        IF EXIST builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi rmdir /Q /S builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi > NUL 2> NUL
+        IF EXIST builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-curl rmdir /Q /S builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-curl > NUL 2> NUL
+        IF EXIST builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-lib rmdir /Q /S builds\libcurl-X86-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-lib > NUL 2> NUL
+        del /Q /S src\hugehelp.c include\curl\curlbuild.h winbuild\LIBCURL_OBJS.inc winbuild\CURL_OBJS.inc winbuild\vc100.idb >NUL 2>NUL
+    ";
+};
+
+x64 {
+    compiler: vc10-x64;
+
+//    uses: x64=@"..\zlib";
+//    uses: x64=@"..\openssl";
+//    uses: x64=@"..\libssh2";
+     
+    targets: { 
+        "builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\bin\curl.exe",
+        "builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\bin\libcurl.dll",
+        "builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\lib\libcurl.exp",
+        "builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi\lib\libcurl.lib"     
+    };
+     
+    build-command:@"
+       rem best you have your visual studio installed in the default location...
+       IF EXIST ""C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" call ""C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" amd64
+       IF EXIST ""C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" call ""C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" x86_amd64
+       pushd include\curl
+           copy curlbuild.h.dist curlbuild.h
+       popd
+       pushd src
+           copy hugehelp.c.cvs hugehelp.c
+       popd
+       pushd winbuild
+           nmake -f makefile.vc mode=dll WITH_SSL=dll WITH_ZLIB=dll WITH_SSH2=dll MACHINE=X64
+       popd
+    ";
+     
+    clean-command:@"
+        IF EXIST builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi rmdir /Q /S builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi > NUL 2> NUL
+        IF EXIST builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-curl rmdir /Q /S builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-curl > NUL 2> NUL
+        IF EXIST builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-lib rmdir /Q /S builds\libcurl-X64-release-dll-ssl-dll-zlib--ssh2-dll-ipv6-sspi-obj-lib > NUL 2> NUL
+        del /Q /S src\hugehelp.c include\curl\curlbuild.h winbuild\LIBCURL_OBJS.inc winbuild\CURL_OBJS.inc winbuild\vc100.idb >NUL 2>NUL
+    ";
+};

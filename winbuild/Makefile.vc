@@ -102,7 +102,10 @@ USE_WINSSL = true
 USE_WINSSL = false
 !ENDIF
 
-CONFIG_NAME_LIB = libcurl
+!IFNDEF MACHINE
+MACHINE = X86
+!ENDIF
+CONFIG_NAME_LIB = libcurl-$(MACHINE)
 
 !IF "$(WITH_SSL)"=="dll"
 USE_SSL = true
