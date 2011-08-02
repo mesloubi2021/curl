@@ -23,6 +23,7 @@ include(Utilities)
 
 project( CURL C )
 
+include ( dist.cmake )
 
 file (READ ${CURL_SOURCE_DIR}/include/curl/curlver.h CURL_VERSION_H_CONTENTS)
 string (REGEX MATCH "LIBCURL_VERSION_MAJOR[ \t]+([0-9]+)"
@@ -852,3 +853,23 @@ endif()
 if(NOT CURL_CONFIG_HAS_BEEN_RUN_BEFORE)
   set(CURL_CONFIG_HAS_BEEN_RUN_BEFORE 1 CACHE INTERNAL "Flag to track whether this is the first time running CMake or if CMake has been configured before")
 endif()
+
+
+# install
+install_header (
+  include/curl/types.h
+  include/curl/multi.h
+  include/curl/curl.h
+  include/curl/easy.h
+  include/curl/curlver.h
+  include/curl/curlrules.h
+  include/curl/typecheck-gcc.h
+  include/curl/stdcheaders.h
+  include/curl/mprintf.h
+  ${CMAKE_CURRENT_BINARY_DIR}/include/curl/curlbuild.h
+  INTO curl
+)
+install_doc ( docs/ ) # improve: man page handling?
+# improve? configure_file ( curl-config.in curl-config ..... )
+# improve? configure_file ( libcurl.pc.in libcurl.pc ..... )
+# improve: tests were disabled (see tests/*/CMakeLists.txt)
