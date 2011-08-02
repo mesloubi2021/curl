@@ -22,8 +22,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
 include(Utilities)
 
 project( curl C )
-
 include ( dist.cmake )
+set(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(CURL_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 file (READ ${CURL_SOURCE_DIR}/include/curl/curlver.h CURL_VERSION_H_CONTENTS)
 string (REGEX MATCH "LIBCURL_VERSION_MAJOR[ \t]+([0-9]+)"
