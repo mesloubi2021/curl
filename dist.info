@@ -6,3 +6,6 @@ url="http://curl.haxx.se/"
 author="Daniel Stenberg"
 maintainer="David Manura, Peter Drahos"
 
+depends = {
+	"zlib >= 1.2",
+}
