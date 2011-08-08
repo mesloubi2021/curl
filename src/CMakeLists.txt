@@ -35,6 +35,7 @@ include_directories(
 setup_curl_dependencies(${EXE_NAME})
 target_link_libraries( ${EXE_NAME} libcurl )
 
+install_executable( ${EXE_NAME} )
 
 ################################################################################
 

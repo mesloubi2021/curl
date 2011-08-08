@@ -94,6 +94,8 @@ add_library(
   ${HHEADERS} ${CSOURCES}
   )
 
+  install_library( ${LIB_NAME} )
+  
 target_link_libraries(${LIB_NAME} ${CURL_LIBS})
 
 if(WIN32)

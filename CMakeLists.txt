@@ -65,7 +65,7 @@ if(WIN32)
 endif()
 
 option(BUILD_CURL_EXE "Set to ON to build cURL executable." ON)
-option(BUILD_CURL_TESTS "Set to ON to build cURL tests." ON)
+option(BUILD_CURL_TESTS "Set to ON to build cURL tests." OFF)
 option(CURL_STATICLIB "Set to ON to build libcurl with static linking." OFF)
 option(CURL_USE_ARES "Set to ON to enable c-ares support" OFF)
 # initialize CURL_LIBS
@@ -151,7 +151,9 @@ option(ENABLE_IPV6 "Define if you want to enable IPv6 support" OFF)
 mark_as_advanced(ENABLE_IPV6)
 
 if(WIN32)
-  list_spaces_append_once(CMAKE_C_STANDARD_LIBRARIES wsock32.lib ws2_32.lib)  # bufferoverflowu.lib
+#  list_spaces_append_once(CMAKE_C_STANDARD_LIBRARIES wsock32.lib ws2_32.lib)  # bufferoverflowu.lib
+  set(CURL_LIBS ${CURL_LIBS} wsock32 ws2_32)
+  
   if(CURL_DISABLE_LDAP)
     # Remove wldap32.lib from space-separated list
     string(REPLACE " " ";" _LIST ${CMAKE_C_STANDARD_LIBRARIES})
@@ -159,7 +161,8 @@ if(WIN32)
     to_list_spaces(_LIST CMAKE_C_STANDARD_LIBRARIES)
   else()
     # Append wldap32.lib
-    list_spaces_append_once(CMAKE_C_STANDARD_LIBRARIES wldap32.lib)
+#    list_spaces_append_once(CMAKE_C_STANDARD_LIBRARIES wldap32.lib)
+	 set(CURL_LIBS ${CURL_LIBS} wldap32)
   endif()
   set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}"   CACHE STRING "" FORCE)
 endif()
@@ -870,6 +873,7 @@ install_header (
   ${CMAKE_CURRENT_BINARY_DIR}/include/curl/curlbuild.h
   INTO curl
 )
+
 install_doc ( docs/ ) # improve: man page handling?
 # improve? configure_file ( curl-config.in curl-config ..... )
 # improve? configure_file ( libcurl.pc.in libcurl.pc ..... )
