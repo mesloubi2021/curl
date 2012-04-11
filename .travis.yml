@@ -9,7 +9,7 @@ language: erlang
 install:
   - export MODULE=`basename $PWD`
   - sudo apt-get install cmake >/dev/null 2>&1
-  - git -b luadist-git clone git://github.com/LuaDist/bootstrap.git _luadist >/dev/null 2>&1
+  - git clone -b luadist-git git://github.com/LuaDist/bootstrap.git _luadist >/dev/null 2>&1
   - cd _luadist
   - git submodule update --init >/dev/null 2>&1
   - ./bootstrap >/dev/null 2>&1
