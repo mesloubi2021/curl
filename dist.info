@@ -8,5 +8,5 @@ maintainer="David Manura, Peter Drahos"
 
 depends = {
 	"zlib >= 1.2",
---	"openssl >= 1.0.0",
+	"openssl >= 1.0.0",
 }
