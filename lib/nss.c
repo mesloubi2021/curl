@@ -921,9 +921,12 @@ static CURLcode nss_init_core(struct SessionHandle *data, const char *cert_dir)
 
   infof(data, "Initializing NSS with certpath: none\n");
 #ifdef HAVE_NSS_INITCONTEXT
-  nss_context = NSS_InitContext("", "", "", "", &initparams, NSS_INIT_READONLY
-          | NSS_INIT_NOCERTDB   | NSS_INIT_NOMODDB       | NSS_INIT_FORCEOPEN
-          | NSS_INIT_NOROOTINIT | NSS_INIT_OPTIMIZESPACE | NSS_INIT_PK11RELOAD);
+  uint32_t
+  PRUint32 flags = NSS_INIT_READONLY;
+  flags |= NSS_INIT_NOCERTDB   | NSS_INIT_NOMODDB       | NSS_INIT_FORCEOPEN;
+  flags |= NSS_INIT_NOROOTINIT | NSS_INIT_OPTIMIZESPACE | NSS_INIT_PK11RELOAD;
+
+  nss_context = NSS_InitContext("", "", "", "", &initparams, flags);
   if(nss_context != NULL)
     return CURLE_OK;
 #else /* HAVE_NSS_INITCONTEXT */
