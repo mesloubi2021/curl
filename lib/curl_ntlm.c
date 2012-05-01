@@ -31,7 +31,7 @@
  * http://www.innovation.ch/java/ntlm.html
  */
 
-#define DEBUG_ME 0
+#define DEBUG_ME 1
 
 #include "urldata.h"
 #include "sendf.h"
