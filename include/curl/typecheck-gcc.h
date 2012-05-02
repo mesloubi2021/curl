@@ -293,6 +293,7 @@ _CURL_WARNING(_curl_easy_getinfo_err_curl_slist,
    (option) == CURLOPT_INTERLEAVEDATA ||                                      \
    (option) == CURLOPT_CHUNK_DATA ||                                          \
    (option) == CURLOPT_FNMATCH_DATA ||                                        \
+   (option) == CURLOPT_HTTP_AUTH_DATA ||                                      \
    0)
 
 /* evaluates to true if option takes a POST data argument (void* or char*) */

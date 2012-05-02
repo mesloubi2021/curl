@@ -1100,6 +1100,7 @@ struct auth {
                  multipass negotiation */
   bool iestyle; /* TRUE if digest should be done IE-style or FALSE if it should
                    be RFC compliant */
+  unsigned int retries; /* Number of failed auth requests sent */
 };
 
 struct conncache {
@@ -1173,6 +1174,11 @@ struct UrlState {
   struct auth authproxy; /* auth details for proxy */
 
   bool authproblem; /* TRUE if there's some problem authenticating */
+  curl_auth_type authpaused; /* Type of auth (host or proxy) which was
+                                paused by the curl_auth_callback. Only one
+                                can be paused at once since once one callback
+                                returns CURLAUTH_RESULT_PAUSE, the next will
+                                not be called. */
 
   void *resolver; /* resolver state, if it is used in the URL state -
                      ares_channel f.e. */
@@ -1545,6 +1551,10 @@ struct UserDefined {
 
   long gssapi_delegation; /* GSSAPI credential delegation, see the
                              documentation of CURLOPT_GSSAPI_DELEGATION */
+
+  curl_auth_callback authfunction; /* callback to update username/password on
+                                      401 or 407 responses. */
+  void *authdata; /* user data for authfunction */
 
   bool tcp_keepalive;    /* use TCP keepalives */
   long tcp_keepidle;     /* seconds in idle before sending keepalive probe */

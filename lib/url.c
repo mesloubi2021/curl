@@ -749,6 +749,9 @@ CURLcode Curl_init_userdefined(struct UserDefined *set)
   set->chunk_bgn      = ZERO_NULL;
   set->chunk_end      = ZERO_NULL;
 
+  set->authfunction   = ZERO_NULL;
+  set->authdata       = ZERO_NULL;
+
   /* tcp keepalives are disabled by default, but provide reasonable values for
    * the interval and idle times.
    */
@@ -2564,6 +2567,13 @@ CURLcode Curl_setopt(struct SessionHandle *data, CURLoption option,
     result = Curl_set_dns_servers(data, va_arg(param, char *));
     break;
 
+  case CURLOPT_HTTP_AUTH_FUNCTION:
+    data->set.authfunction = va_arg(param, curl_auth_callback);
+    break;
+  case CURLOPT_HTTP_AUTH_DATA:
+    data->set.authdata = va_arg(param, void *);
+    break;
+
   case CURLOPT_TCP_KEEPALIVE:
     data->set.tcp_keepalive = (0 != va_arg(param, long))?TRUE:FALSE;
     break;
@@ -2670,12 +2680,14 @@ CURLcode Curl_disconnect(struct connectdata *conn, bool dead_connection)
 
     if(has_host_ntlm) {
       data->state.authhost.done = FALSE;
+      data->state.authhost.retries = 0;
       data->state.authhost.picked =
         data->state.authhost.want;
     }
 
     if(has_proxy_ntlm) {
       data->state.authproxy.done = FALSE;
+      data->state.authproxy.retries = 0;
       data->state.authproxy.picked =
         data->state.authproxy.want;
     }

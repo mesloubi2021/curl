@@ -514,6 +514,8 @@ typedef enum {
   CURLE_RTSP_SESSION_ERROR,      /* 86 - mismatch of RTSP Session Ids */
   CURLE_FTP_BAD_FILE_LIST,       /* 87 - unable to parse FTP file list */
   CURLE_CHUNK_FAILED,            /* 88 - chunk callback reported error */
+  CURLE_BAD_STATE,               /* 89 - operation could not be performed in
+                                    this state */
   CURL_LAST /* never use! */
 } CURLcode;
 
@@ -610,6 +612,67 @@ typedef enum {
                                          single type */
 #define CURLAUTH_ANY (~CURLAUTH_DIGEST_IE)  /* all fine types set */
 #define CURLAUTH_ANYSAFE (~(CURLAUTH_BASIC|CURLAUTH_DIGEST_IE))
+
+/* Type of a parameter that will hold one or more CURLAUTH_ values */
+typedef long curl_auth_scheme;
+
+typedef enum {
+  CURLAUTH_TYPE_NONE = 0, /* No authentication headers received */
+  CURLAUTH_TYPE_HOST = 1, /* WWW-Authenticate header received,
+                             Authorization header expected */
+  CURLAUTH_TYPE_PROXY = 2 /* Proxy-Authenticate header received,
+                             Proxy-Authorization header expected */
+} curl_auth_type;
+
+/* Result of a curl_auth_callback */
+typedef enum {
+  CURLAUTH_RESULT_CONTINUE = 0, /* Send authorization header immediately */
+  CURLAUTH_RESULT_CANCEL = 1,   /* Do not send authorization header */
+  CURLAUTH_RESULT_PAUSE = 2     /* Wait for curl_easy_resume_auth call */
+} curl_auth_result;
+
+/* This callback is called when a 401 response with WWW-Authenticate headers or
+   a 407 response with Proxy-Authenticate headers is received, and curl has
+   chosen an auth scheme to use but does not have a valid username and password
+   to form the reply with.
+
+   The last username and password tried will be in *username and *password,
+   which will be NULL if this is the first attempt. Callee must not try to
+   write to these strings. Instead, reassign them to the new username and
+   password (eg. *username = new_username) or assign NULL to reuse the
+   existing value.
+
+   If CURLAUTH_RESULT_CONTINUE is returned the new username and password will
+   be copied and used to send a new request with an authorization header. If
+   *username and *password are both NULL, neither have changed since the last
+   failed attempt, or at least one is NULL and has no existing value to
+   re-use, no new request is sent (as if CURLAUTH_RESULT_CANCEL was returned).
+
+   If CURLAUTH_RESULT_CANCEL is returned, the username and password are ignored
+   and no followup request is sent. The body of the 401 or 407 request is
+   passed to the write callback.
+
+   If CURLAUTH_RESULT_PAUSE is returned, the username and password are ignored
+   and the body of the 401 or 407 request is buffered, as if
+   curl_easy_pause(CURLPAUSE_ALL) were called. The request must be resumed by
+   calling curl_easy_resume_auth. */
+
+typedef curl_auth_result
+(*curl_auth_callback)(curl_auth_type type,     /* host or proxy auth */
+                      curl_auth_scheme scheme, /* chosen scheme */
+                      const char *realm,       /* realm parsed from
+                                                  authenticate header (NULL
+                                                  for some schemes) */
+                      unsigned retry_count,    /* number of failed attempts */
+                      const char **username,   /* in/out: contains last
+                                                  username tried or NULL,
+                                                  should be set to new
+                                                  username */
+                      const char **password,   /* in/out: contains last
+                                                  password tried or NULL,
+                                                  should be set to new
+                                                  password */
+                      void *userdata);
 
 #define CURLSSH_AUTH_ANY       ~0     /* all types supported by the server */
 #define CURLSSH_AUTH_NONE      0      /* none allowed, silly but complete */
@@ -1521,6 +1584,14 @@ typedef enum {
   /* set the SMTP auth originator */
   CINIT(MAIL_AUTH, OBJECTPOINT, 217),
 
+  /* Function that will be called on a 401 or 407 error when curl is not able
+     to form a response automatically. Must be set to a curl_auth_callback. */
+  /* FIXME: this is not checked in typecheck-gcc.h */
+  CINIT(HTTP_AUTH_FUNCTION, FUNCTIONPOINT, 218),
+
+  /* User data supplied to the HTTP_AUTH_FUNCTION. */
+  CINIT(HTTP_AUTH_DATA, OBJECTPOINT, 219),
+
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 
@@ -2176,6 +2247,8 @@ CURL_EXTERN const char *curl_share_strerror(CURLSHcode);
  * The curl_easy_pause function pauses or unpauses transfers. Select the new
  * state by setting the bitmask, use the convenience defines below.
  *
+ * This will return CURLE_BAD_STATE if it is called when a request was already
+ * paused by returning CURLAUTH_RESULT_PAUSE from a curl_auth_callback.
  */
 CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 
@@ -2187,6 +2260,27 @@ CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 
 #define CURLPAUSE_ALL       (CURLPAUSE_RECV|CURLPAUSE_SEND)
 #define CURLPAUSE_CONT      (CURLPAUSE_RECV_CONT|CURLPAUSE_SEND_CONT)
+
+/*
+ * NAME curl_easy_resume_auth()
+ *
+ * DESCRIPTION
+ *
+ * The curl_easy_resume_auth function resumes a request that was paused by
+ * returning CURLAUTH_RESULT_PAUSE from a curl_auth_callback. If username and
+ * password are set, a new request with an authorization header using that
+ * username and password will be sent (as if CURLAUTH_RESULT_CONTINUE had been
+ * returned from the callback.) If they are NULL, no new request will be sent
+ * and the body of the paused request will be delivered to the write callback
+ * (as if CURLAUTH_RESULT_CANCEL had been returned.)
+ *
+ * This will return CURLE_BAD_STATE if it is called when a request was not
+ * paused by CURLAUTH_RESULT_PAUSE (including if it is called when a request
+ * was paused by curl_easy_pause instead.)
+ */
+CURL_EXTERN CURLcode curl_easy_resume_auth(CURL *handle,
+                                           const char *username,
+                                           const char *password);
 
 #ifdef  __cplusplus
 }
