@@ -1435,7 +1435,9 @@ CURLcode Curl_pretransfer(struct SessionHandle *data)
 
   data->state.authproblem = FALSE;
   data->state.authhost.want = data->set.httpauth;
+  data->state.authhost.retries = 0;
   data->state.authproxy.want = data->set.proxyauth;
+  data->state.authproxy.retries = 0;
   Curl_safefree(data->info.wouldredirect);
   data->info.wouldredirect = NULL;
 

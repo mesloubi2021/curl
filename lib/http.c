@@ -6,6 +6,7 @@
  *                             \___|\___/|_| \_\_____|
  *
  * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2012 Research In Motion Limited. All rights reserved.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -94,6 +95,8 @@ static int http_getsock_do(struct connectdata *conn,
                            curl_socket_t *socks,
                            int numsocks);
 static int http_should_fail(struct connectdata *conn);
+static bool http_auth_callback_ready(struct connectdata *conn,
+                                     curl_auth_type type);
 
 #ifdef USE_SSL
 static CURLcode https_connecting(struct connectdata *conn, bool *done);
@@ -423,13 +426,168 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
   return CURLE_OK;
 }
 
+static bool strings_are_different(const char *oldstr, const char *newstr)
+{
+  bool was_empty = !oldstr || oldstr[0] == '\0';
+  bool is_empty = !newstr || newstr[0] == '\0';
+  if(was_empty && is_empty)
+    return FALSE;
+  if(oldstr == newstr)
+    return FALSE;
+  if(!was_empty && !is_empty && strcmp(oldstr, newstr) == 0)
+    return FALSE;
+  return TRUE;
+}
+
+/* Call the curl_auth_callback for the given auth type.
+ *
+ * Return CURLE_OK if authentication should continue, an error code if it
+ * should not.
+ */
+static CURLcode Curl_http_auth_callback(struct connectdata *conn,
+                                        curl_auth_type type,
+                                        bool auth_succeeded)
+{
+  struct SessionHandle *data = conn->data;
+
+  int username_key = type == CURLAUTH_TYPE_HTTP ? STRING_USERNAME
+                                                : STRING_PROXYUSERNAME;
+  int password_key = type == CURLAUTH_TYPE_HTTP ? STRING_PASSWORD
+                                                : STRING_PROXYPASSWORD;
+  struct auth *authstate = type == CURLAUTH_TYPE_HTTP ? &data->state.authhost
+                                                      : &data->state.authproxy;
+  bool not_empty =
+    type == CURLAUTH_TYPE_HTTP ? conn->bits.user_passwd
+                               : conn->bits.proxy_user_passwd;
+
+  curlautherr result = CURLAUTHE_OK;
+
+  struct curl_auth_info info;
+  info.type = type;
+  info.scheme = authstate->picked;
+  info.url = data->change.url;
+  if(CURLAUTH_DIGEST == authstate->picked)
+    info.realm = type == CURLAUTH_TYPE_HTTP ? data->state.digest.realm
+                                            : data->state.proxydigest.realm;
+  else
+    /* FIXME: need to parse the realm for other auth schemes too. */
+    info.realm = NULL;
+  /* FIXME: auth_succeeded will always be false. Implement the true case (need
+     to figure out where this function would be called from) */
+  info.succeeded = auth_succeeded;
+  info.retry_count = authstate->retries;
+
+  /* If not_empty is set, make sure username and password are not NULL */
+  info.username = NULL;
+  info.password = NULL;
+  if(not_empty) {
+    info.username =
+      data->set.str[username_key] ? strdup(data->set.str[username_key])
+                                  : strdup("");
+    if(!info.username)
+      return CURLE_OUT_OF_MEMORY;
+    info.password =
+      data->set.str[password_key] ? strdup(data->set.str[password_key])
+                                  : strdup("");
+    if(!info.password)
+      return CURLE_OUT_OF_MEMORY;
+  }
+
+  /* Call the callback. */
+  result = (*data->set.authfunction)(data, &info, data->set.authdata);
+
+  /* If the auth failed, refuse to continue if the username and password have
+     not changed */
+  if(!auth_succeeded &&
+     !strings_are_different(info.username, data->set.str[username_key]) &&
+     !strings_are_different(info.password, data->set.str[password_key]))
+    result = CURLAUTHE_CANCEL;
+
+  Curl_safefree(info.username);
+  Curl_safefree(info.password);
+
+  switch(result) {
+  case CURLAUTHE_OK:
+    return CURLE_OK;
+  case CURLAUTHE_OUT_OF_MEMORY:
+    return CURLE_OUT_OF_MEMORY;
+  case CURLAUTHE_CANCEL:
+  case CURLAUTHE_UNKNOWN:
+  default:
+    return CURLE_ABORTED_BY_CALLBACK;
+  }
+}
+
+/* Update newurl to start a new auth request, and clear state from the old one
+ */
+static CURLcode Curl_http_auth_new_req(struct connectdata *conn,
+                                       bool restart)
+{
+  struct SessionHandle *data = conn->data;
+
+  /* If no username is set, do nothing */
+  if(!conn->bits.user_passwd && !conn->bits.proxy_user_passwd)
+    return CURLE_OK;
+
+  /* If we are starting a new auth response with new credentials, clear the
+     current state. (Especially authproblem which marked that the old
+     credentials failed.) */
+  if(restart) {
+    conn->ntlm.state = NTLMSTATE_NONE;
+    data->state.authproblem = FALSE;
+  }
+
+  /* In case this is GSS auth, the newurl field is already allocated so
+     we must make sure to free it before allocating a new one. As figured
+     out in bug #2284386 */
+  Curl_safefree(data->req.newurl);
+  data->req.newurl = strdup(data->change.url); /* clone URL */
+  if(!data->req.newurl)
+    return CURLE_OUT_OF_MEMORY;
+
+  if((data->set.httpreq != HTTPREQ_GET) &&
+     (data->set.httpreq != HTTPREQ_HEAD) &&
+     !conn->bits.rewindaftersend)
+    return http_perhapsrewind(conn);
+
+  return CURLE_OK;
+}
+
+/**
+ * http_auth_callback_ready() determines whether an auth callback exists and
+ * the connection is in the right state to call it.
+ *
+ * @param conn all information about the current connection
+ * @param type type of callback to check
+ *
+ * @retval 0 auth callback cannot be called
+ *
+ * @retval 1 auth callback can be called
+ */
+static bool http_auth_callback_ready(struct connectdata *conn,
+                                     curl_auth_type type)
+{
+  struct SessionHandle *data = conn->data;
+
+  /* We can call a curl_auth_callback if one exists and we are not already in
+     the middle of a multistep auth (such as NTLM). */
+  switch(type) {
+  case CURLAUTH_TYPE_HTTP:
+    return data->set.authfunction && !data->state.authhost.multi;
+  case CURLAUTH_TYPE_PROXY:
+    return data->set.authfunction && !data->state.authproxy.multi;
+  default:
+    DEBUGASSERT(0);
+    return 0;
+  }
+}
+
 /*
  * Curl_http_auth_act() gets called when all HTTP headers have been received
  * and it checks what authentication methods that are available and decides
  * which one (if any) to use. It will set 'newurl' if an auth method was
  * picked.
  */
-
 CURLcode Curl_http_auth_act(struct connectdata *conn)
 {
   struct SessionHandle *data = conn->data;
@@ -437,44 +595,128 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   bool pickproxy = FALSE;
   CURLcode code = CURLE_OK;
 
+  bool host_callback_ready = http_auth_callback_ready(conn,
+                                                      CURLAUTH_TYPE_HTTP);
+  bool proxy_callback_ready = http_auth_callback_ready(conn,
+                                                       CURLAUTH_TYPE_PROXY);
+
+#ifndef NDEBUG
+  bool host_callback_called = FALSE;
+  bool proxy_callback_called = FALSE;
+#endif
+
+  bool restart = FALSE;
+
   if(100 <= data->req.httpcode && 199 >= data->req.httpcode)
     /* this is a transient response code, ignore */
     return CURLE_OK;
 
-  if(data->state.authproblem)
-    return data->set.http_fail_on_error?CURLE_HTTP_RETURNED_ERROR:CURLE_OK;
+  if(data->state.authproblem) {
+    /* Give the client a chance to correct the problem by calling the auth
+       callback. */
+    if(data->req.httpcode == 401 && host_callback_ready) {
+      /* Make sure the auth type is still valid. Also clear authhost.avail so
+         that the reply isn't detected as a duplicate header. */
+      pickhost = pickoneauth(&data->state.authhost);
+      if(pickhost) {
+        data->state.authhost.retries += 1;
+        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HTTP, 0) ==
+                   CURLE_OK;
+#ifndef NDEBUG
+        host_callback_called = TRUE;
+#endif
+      }
+    }
+    else if(data->req.httpcode == 407 && proxy_callback_ready) {
+      /* Make sure the auth type is still valid. Also clear authproxy.avail so
+         that the reply isn't detected as a duplicate header. */
+      pickproxy = pickoneauth(&data->state.authproxy);
+      if(pickproxy) {
+        data->state.authproxy.retries += 1;
+        pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY, 0) ==
+                    CURLE_OK;
+#ifndef NDEBUG
+        proxy_callback_called = TRUE;
+#endif
+      }
+    }
 
-  if(conn->bits.user_passwd &&
-     ((data->req.httpcode == 401) ||
-      (conn->bits.authneg && data->req.httpcode < 300))) {
-    pickhost = pickoneauth(&data->state.authhost);
-    if(!pickhost)
-      data->state.authproblem = TRUE;
+    /* If the callbacks were not called, or returned FALSE for both host and
+       proxy, abort now (due to the authproblem). Otherwise, the username
+       and/or password were updated, so continue to send a new auth request. */
+    if(!pickhost && !pickproxy)
+      return data->set.http_fail_on_error?CURLE_HTTP_RETURNED_ERROR:CURLE_OK;
+    else
+      restart = TRUE;
   }
-  if(conn->bits.proxy_user_passwd &&
-     ((data->req.httpcode == 407) ||
-      (conn->bits.authneg && data->req.httpcode < 300))) {
-    pickproxy = pickoneauth(&data->state.authproxy);
-    if(!pickproxy)
-      data->state.authproblem = TRUE;
+  else {
+    /* Pick an auth scheme now only if a username/password is set or an auth
+       callback will be called. */
+    if((conn->bits.user_passwd || host_callback_ready) &&
+        (data->req.httpcode == 401 ||
+        (conn->bits.authneg && data->req.httpcode < 300))) {
+      pickhost = pickoneauth(&data->state.authhost);
+
+      /* If we got a new scheme, this will be the first request sent */
+      if(pickhost && !data->state.authhost.multi)
+        data->state.authhost.retries = 0;
+
+      /* If no scheme was picked and there was username/password, there's a
+         problem with auth. Otherwise if no scheme was picked, we'll just
+         return without calling the auth callback. */
+      if(!pickhost && conn->bits.user_passwd)
+        data->state.authproblem = TRUE;
+    }
+    if((conn->bits.proxy_user_passwd || proxy_callback_ready) &&
+        (data->req.httpcode == 407 ||
+        (conn->bits.authneg && data->req.httpcode < 300))) {
+      pickproxy = pickoneauth(&data->state.authproxy);
+
+      /* If we got a new scheme, this will be the first request sent */
+      if(pickhost && !data->state.authhost.multi)
+        data->state.authproxy.retries = 0;
+
+      /* If no scheme was picked and there was username/password, there's a
+         problem with auth. Otherwise if no scheme was picked, we'll just
+         return without calling the auth callback. */
+      if(!pickproxy && conn->bits.proxy_user_passwd)
+        data->state.authproblem = TRUE;
+    }
+
+    /* If we have a scheme and no username/password, call the auth callback so
+       that the client can set one. */
+    if(pickhost && !conn->bits.user_passwd) {
+      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HTTP, 0) ==
+                 CURLE_OK;
+#ifndef NDEBUG
+      host_callback_called = TRUE;
+#endif
+    }
+    if(pickproxy && !conn->bits.proxy_user_passwd) {
+      pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY, 0) ==
+                  CURLE_OK;
+#ifndef NDEBUG
+      proxy_callback_called = TRUE;
+#endif
+    }
   }
 
   if(pickhost || pickproxy) {
-    /* In case this is GSS auth, the newurl field is already allocated so
-       we must make sure to free it before allocating a new one. As figured
-       out in bug #2284386 */
-    Curl_safefree(data->req.newurl);
-    data->req.newurl = strdup(data->change.url); /* clone URL */
-    if(!data->req.newurl)
-      return CURLE_OUT_OF_MEMORY;
+    /* A host and/or proxy auth scheme was chosen. Send a new request (using
+       new credentials if any were returned from the auth callback.) */
+#ifndef NDEBUG
+    /* The host and proxy callbacks should only be called if they were in a
+       valid "ready" state. */
+    DEBUGASSERT(host_callback_ready || !host_callback_called);
+    DEBUGASSERT(proxy_callback_ready || !proxy_callback_called);
 
-    if((data->set.httpreq != HTTPREQ_GET) &&
-       (data->set.httpreq != HTTPREQ_HEAD) &&
-       !conn->bits.rewindaftersend) {
-      code = http_perhapsrewind(conn);
-      if(code)
-        return code;
-    }
+    /* restart should only be set if a callback was called */
+    DEBUGASSERT(host_callback_called || proxy_callback_called ||
+                !restart);
+#endif
+    code = Curl_http_auth_new_req(conn, restart);
+    if(code)
+      return code;
   }
 
   else if((data->req.httpcode < 300) &&
@@ -838,8 +1080,8 @@ CURLcode Curl_http_input_auth(struct connectdata *conn,
             if(authp->picked == CURLAUTH_BASIC) {
               /* We asked for Basic authentication but got a 40X back
                  anyway, which basically means our name+password isn't
-                 valid. */
-              authp->avail = CURLAUTH_NONE;
+                 valid. If an auth callback is set it will have a chance to
+                 choose new credentials. */
               infof(data, "Authentication problem. Ignoring this.\n");
               data->state.authproblem = TRUE;
             }
@@ -929,9 +1171,11 @@ static int http_should_fail(struct connectdata *conn)
   ** Either we're not authenticating, or we're supposed to
   ** be authenticating something else.  This is an error.
   */
-  if((httpcode == 401) && !conn->bits.user_passwd)
+  if((httpcode == 401) && !(conn->bits.user_passwd ||
+              http_auth_callback_ready(conn, CURLAUTH_TYPE_HTTP)))
     return TRUE;
-  if((httpcode == 407) && !conn->bits.proxy_user_passwd)
+  if((httpcode == 407) && !(conn->bits.proxy_user_passwd ||
+              http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY)))
     return TRUE;
 
   return data->state.authproblem;
@@ -3100,22 +3344,26 @@ CURLcode Curl_http_readwrite_headers(struct SessionHandle *data,
          * depending on how authentication is working.  Other codes
          * are definitely errors, so give up here.
          */
-        if(data->set.http_fail_on_error && (k->httpcode >= 400) &&
-           ((k->httpcode != 401) || !conn->bits.user_passwd) &&
-           ((k->httpcode != 407) || !conn->bits.proxy_user_passwd) ) {
-
-          if(data->state.resume_from &&
-             (data->set.httpreq==HTTPREQ_GET) &&
-             (k->httpcode == 416)) {
-            /* "Requested Range Not Satisfiable", just proceed and
-               pretend this is no error */
-          }
-          else {
-            /* serious error, go home! */
-            failf (data, "The requested URL returned error: %d",
-                   k->httpcode);
-            return CURLE_HTTP_RETURNED_ERROR;
-          }
+        if(data->set.http_fail_on_error && (k->httpcode >= 400)) {
+          bool host_auth_ok = conn->bits.user_passwd ||
+            http_auth_callback_ready(conn, CURLAUTH_TYPE_HTTP);
+          bool proxy_auth_ok = conn->bits.proxy_user_passwd ||
+            http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY);
+          if(((k->httpcode != 401) || !host_auth_ok) &&
+             ((k->httpcode != 407) || !proxy_auth_ok)) {
+              if(data->state.resume_from &&
+                 (data->set.httpreq==HTTPREQ_GET) &&
+                 (k->httpcode == 416)) {
+                /* "Requested Range Not Satisfiable", just proceed and
+                   pretend this is no error */
+              }
+              else {
+                /* serious error, go home! */
+                failf (data, "The requested URL returned error: %d",
+                       k->httpcode);
+                return CURLE_HTTP_RETURNED_ERROR;
+              }
+           }
         }
 
         if(conn->httpversion == 10) {

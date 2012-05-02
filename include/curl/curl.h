@@ -8,6 +8,7 @@
  *                             \___|\___/|_| \_\_____|
  *
  * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2012 Research In Motion Limited. All rights reserved.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -610,6 +611,67 @@ typedef enum {
                                          single type */
 #define CURLAUTH_ANY (~CURLAUTH_DIGEST_IE)  /* all fine types set */
 #define CURLAUTH_ANYSAFE (~(CURLAUTH_BASIC|CURLAUTH_DIGEST_IE))
+
+/* Type of a parameter that will hold one or more CURLAUTH_ values */
+typedef long curl_auth_scheme;
+
+typedef enum {
+  CURLAUTH_TYPE_NONE = 0, /* No authentication headers received */
+  CURLAUTH_TYPE_HTTP = 1, /* WWW-Authenticate header received,
+                             Authorization header expected */
+  CURLAUTH_TYPE_PROXY = 2 /* Proxy-Authenticate header received,
+                             Proxy-Authorization header expected */
+  /* Additional auth types, such as FTP and SMTP, will go here */
+} curl_auth_type;
+
+/* Result of a curl_auth_callback */
+typedef enum {
+  CURLAUTHE_OK,            /* send an auth reply */
+  CURLAUTHE_CANCEL,        /* do not send an auth reply */
+  CURLAUTHE_UNKNOWN,       /* an unspecified error occurred in the callback */
+  CURLAUTHE_OUT_OF_MEMORY, /* the callback ran out of memory */
+  CURLAUTHE_LAST           /* not for use, only a marker for last-in-list */
+} curlautherr;
+
+struct curl_auth_info {
+  curl_auth_type type;     /* host or proxy auth */
+  curl_auth_scheme scheme; /* chosen scheme */
+  char *url;               /* url that requires auth */
+  char *realm;             /* realm parsed from authenticate header (NULL for
+                              some schemes) */
+  int succeeded;           /* 1 if auth was successful, 0 if it failed */
+  unsigned retry_count;    /* number of failed attempts */
+  char *username;          /* contains last username tried or NULL */
+  char *password;          /* contains last password tried or NULL */
+};
+
+/* This callback is called when a 401 response with WWW-Authenticate headers or
+   a 407 response with Proxy-Authenticate headers is received, and curl has
+   chosen an auth scheme to use but does not have a valid username and password
+   to form the reply with.
+
+   The last username and password tried will be in info->username and
+   info->password, which will be NULL if this is the first attempt.
+   Normally the callee will call curl_cb_set_credentials to set a new username
+   and password and then return CURLAUTHE_OK to try again.
+
+   If CURLAUTHE_OK is returned, a new request with an authorization header
+   will be sent.
+
+   If CURLAUTHE_CANCEL is returned, no followup request is sent. The body of
+   the 401 or 407 request is passed to the write callback.
+
+   Any other return value is treated as CURLAUTHE_CANCEL, and may also trigger
+   additional error handling.
+
+   NOTE: to prevent infinite loops, if the callback returns CURLE_OK without
+   changing the username and password, auth will be aborted as if
+   CURLAUTHE_CANCEL was returned.
+   */
+typedef curlautherr
+(*curl_auth_callback)(CURL *handle,
+                      struct curl_auth_info *info,
+                      void *userdata);
 
 #define CURLSSH_AUTH_ANY       ~0     /* all types supported by the server */
 #define CURLSSH_AUTH_NONE      0      /* none allowed, silly but complete */
@@ -1521,6 +1583,13 @@ typedef enum {
   /* set the SMTP auth originator */
   CINIT(MAIL_AUTH, OBJECTPOINT, 217),
 
+  /* Function that will be called on a 401 or 407 error when curl is not able
+     to form a response automatically. Must be set to a curl_auth_callback. */
+  CINIT(HTTP_AUTH_FUNCTION, FUNCTIONPOINT, 218),
+
+  /* User data supplied to the HTTP_AUTH_FUNCTION. */
+  CINIT(HTTP_AUTH_DATA, OBJECTPOINT, 219),
+
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 
@@ -2187,6 +2256,44 @@ CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 
 #define CURLPAUSE_ALL       (CURLPAUSE_RECV|CURLPAUSE_SEND)
 #define CURLPAUSE_CONT      (CURLPAUSE_RECV_CONT|CURLPAUSE_SEND_CONT)
+
+/*
+ * NAME curl_cb_set_credentials()
+ *
+ * DESCRIPTION
+ *
+ * curl_cb_set_credentials allows an application to update the username and
+ * password (normally set with curl_easy_setopt) at any time, including from
+ * within a callback. It is not safe to call from another thread, though.
+ *
+ * type can be CURLAUTH_TYPE_HTTP or CURLAUTH_TYPE_PROXY. Any other value will
+ * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
+ *
+ * NOTE: if the credentials are set to NULL or to empty strings, empty
+ * credentials are sent to the server. To stop sending credentials to the
+ * server, use curl_cb_clear_credentials.
+
+ */
+CURL_EXTERN CURLcode curl_cb_set_credentials(CURL *handle,
+                                             curl_auth_type type,
+                                             const char *username,
+                                             const char *password);
+
+/*
+ * NAME curl_cb_clear_credentials()
+ *
+ * DESCRIPTION
+ *
+ * curl_cb_clear_credentials allows an application to remove the username and
+ * password (set with curl_easy_setopt or curl_cb_set_credentials) at any time,
+ * including from within a callback. It is not safe to call from another
+ * thread, though.
+ *
+ * type can be CURLAUTH_TYPE_HTTP or CURLAUTH_TYPE_PROXY. Any other value will
+ * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
+ */
+CURL_EXTERN CURLcode curl_cb_clear_credentials(CURL *handle,
+                                               curl_auth_type type);
 
 #ifdef  __cplusplus
 }

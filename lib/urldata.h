@@ -1100,6 +1100,7 @@ struct auth {
                  multipass negotiation */
   bool iestyle; /* TRUE if digest should be done IE-style or FALSE if it should
                    be RFC compliant */
+  unsigned int retries; /* Number of failed auth requests sent */
 };
 
 struct conncache {
@@ -1545,6 +1546,10 @@ struct UserDefined {
 
   long gssapi_delegation; /* GSSAPI credential delegation, see the
                              documentation of CURLOPT_GSSAPI_DELEGATION */
+
+  curl_auth_callback authfunction; /* callback to update username/password on
+                                      401 or 407 responses. */
+  void *authdata; /* user data for authfunction */
 
   bool tcp_keepalive;    /* use TCP keepalives */
   long tcp_keepidle;     /* seconds in idle before sending keepalive probe */
