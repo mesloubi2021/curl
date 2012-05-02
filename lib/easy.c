@@ -70,6 +70,7 @@
 #include "curl_rand.h"
 #include "non-ascii.h"
 #include "warnless.h"
+#include "http.h"
 
 #define _MPRINTF_REPLACE /* use our functions only */
 #include <curl/mprintf.h>
@@ -735,9 +736,14 @@ CURLcode curl_easy_pause(CURL *curl, int action)
   struct SessionHandle *data = (struct SessionHandle *)curl;
   struct SingleRequest *k = &data->req;
   CURLcode result = CURLE_OK;
+  int newstate;
+
+  /* curl_easy_pause is incompatible with authpause */
+  if(data->state.authpaused != CURLAUTH_TYPE_NONE)
+    return CURLE_BAD_STATE;
 
   /* first switch off both pause bits */
-  int newstate = k->keepon &~ (KEEP_RECV_PAUSE| KEEP_SEND_PAUSE);
+  newstate = k->keepon &~ (KEEP_RECV_PAUSE| KEEP_SEND_PAUSE);
 
   /* set the new desired pause bits */
   newstate |= ((action & CURLPAUSE_RECV)?KEEP_RECV_PAUSE:0) |
@@ -777,8 +783,10 @@ CURLcode curl_easy_pause(CURL *curl, int action)
     do {
       chunklen = (tempsize > CURL_MAX_WRITE_SIZE)?CURL_MAX_WRITE_SIZE:tempsize;
 
-      result = Curl_client_write(data->state.current_conn,
-                                 temptype, tempwrite, chunklen);
+      /* actually write this chunk of data, unless it should be ignored */
+      if(!(temptype & CLIENTWRITE_BODY) || !k->ignorebody)
+        result = Curl_client_write(data->state.current_conn,
+                                   temptype, tempwrite, chunklen);
       if(result)
         /* failures abort the loop at once */
         break;
@@ -822,6 +830,33 @@ CURLcode curl_easy_pause(CURL *curl, int action)
   return result;
 }
 
+CURLcode curl_easy_resume_auth(CURL* curl, const char *username,
+  const char *password)
+{
+  struct SessionHandle *data = (struct SessionHandle *)curl;
+  CURLcode result = CURLE_OK;
+
+  if(data->state.authpaused == CURLAUTH_TYPE_NONE)
+    return CURLE_BAD_STATE;
+
+  result = Curl_http_auth_resume(data->state.current_conn,
+    data->state.authpaused, username, password);
+  if(result != CURLE_OK)
+    return result;
+
+  /* Curl_http_auth_resume will set req.newurl if a new request is to be sent.
+     In this case, the body of the paused request must be ignored. (Same as if
+     no pause had taken place and req.newurl had been set directly by
+     Curl_http_auth_act. */
+  if(data->req.newurl)
+    data->req.ignorebody = TRUE;
+
+  /* Turn off authpaused so that curl_easy_pause will not return
+     CURLE_BAD_STATE */
+  data->state.authpaused = CURLAUTH_TYPE_NONE;
+
+  return curl_easy_pause(curl, CURLPAUSE_CONT);
+}
 
 static CURLcode easy_connection(struct SessionHandle *data,
                                 curl_socket_t *sfd,
