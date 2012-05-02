@@ -78,6 +78,8 @@ void Curl_http_auth_stage(struct SessionHandle *data, int stage);
 CURLcode Curl_http_input_auth(struct connectdata *conn,
                               int httpcode, const char *header);
 CURLcode Curl_http_auth_act(struct connectdata *conn);
+CURLcode Curl_http_auth_resume(struct connectdata *conn, curl_auth_type type,
+                               const char *username, const char *password);
 CURLcode Curl_http_perhapsrewind(struct connectdata *conn);
 
 /* If only the PICKNONE bit is set, there has been a round-trip and we
