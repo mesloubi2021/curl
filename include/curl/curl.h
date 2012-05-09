@@ -632,6 +632,17 @@ typedef enum {
   CURLAUTHE_LAST
 } curlautherr;
 
+struct curl_auth_info {
+  curl_auth_type type;     /* host or proxy auth */
+  curl_auth_scheme scheme; /* chosen scheme */
+  const char *url;         /* url that requires auth */
+  const char *realm;       /* realm parsed from authenticate header (NULL for
+                              some schemes) */
+  unsigned retry_count;    /* number of failed attempts */
+  const char *username;    /* contains last username tried or NULL */
+  const char *password;    /* contains last password tried or NULL */
+};
+
 /* This callback is called when a 401 response with WWW-Authenticate headers or
    a 407 response with Proxy-Authenticate headers is received, and curl has
    chosen an auth scheme to use but does not have a valid username and password
@@ -656,20 +667,7 @@ typedef enum {
 
 typedef curlautherr
 (*curl_auth_callback)(CURL* handle,
-                      curl_auth_type type,     /* host or proxy auth */
-                      curl_auth_scheme scheme, /* chosen scheme */
-                      const char *realm,       /* realm parsed from
-                                                  authenticate header (NULL
-                                                  for some schemes) */
-                      unsigned retry_count,    /* number of failed attempts */
-                      const char *username,    /* in/out: contains last
-                                                  username tried or NULL,
-                                                  should be set to new
-                                                  username */
-                      const char *password,    /* in/out: contains last
-                                                  password tried or NULL,
-                                                  should be set to new
-                                                  password */
+                      struct curl_auth_info *info,
                       void *userdata);
 
 #define CURLSSH_AUTH_ANY       ~0     /* all types supported by the server */
