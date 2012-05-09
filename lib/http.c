@@ -510,11 +510,6 @@ static bool Curl_http_auth_callback(struct connectdata *conn,
   if(result == CURLAUTH_RESULT_CANCEL)
     return FALSE;
 
-  if(result == CURLAUTH_RESULT_PAUSE) {
-    data->state.authpaused = type;
-    return FALSE;
-  }
-
   /* If at least one of the username/password have changed, auth can continue.
      (Counting NULL as being unchanged.) */
   username_changed = strings_are_different(data->set.str[username_key],
@@ -584,20 +579,6 @@ static CURLcode Curl_http_auth_new_req(struct connectdata *conn,
   return CURLE_OK;
 }
 
-/* If CURLAUTH_RESULT_PAUSE was returned, update the hostready and proxyready
- * variables so that no further auth callbacks will be called until auth is
- * resumed.
- */
-static void check_auth_paused(struct connectdata *conn,
-                              bool *hostready, bool *proxyready)
-{
-  struct SessionHandle *data = conn->data;
-  if(data->state.authpaused != CURLAUTH_TYPE_NONE) {
-    *hostready = FALSE;
-    *proxyready = FALSE;
-  }
-}
-
 /*
  * Curl_http_auth_act() gets called when all HTTP headers have been received
  * and it checks what authentication methods that are available and decides
@@ -620,10 +601,8 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   /* We can call a curl_auth_callback if one exists, auth is not paused and we
      are not already in the middle of a multistep auth (such as NTLM). */
   bool host_callback_ready = data->set.authfunction &&
-                             data->state.authpaused == CURLAUTH_TYPE_NONE &&
                              !data->state.authhost.multi;
   bool proxy_callback_ready = data->set.authfunction &&
-                              data->state.authpaused == CURLAUTH_TYPE_NONE &&
                               !data->state.authproxy.multi;
 
 #ifndef NDEBUG
@@ -658,10 +637,6 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
       proxy_callback_called = TRUE;
 #endif
     }
-
-    /* If the callback returned CURLAUTH_RESULT_PAUSE, don't send a new host or
-       proxy auth request */
-    check_auth_paused(conn, &pickhost, &pickproxy);
 
     /* If the callbacks were not called, or returned FALSE for both host and
        proxy, abort now (due to the authproblem). Otherwise, the username
@@ -723,9 +698,6 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
       proxy_callback_called = TRUE;
 #endif
     }
-    /* If the callback returned CURLAUTH_RESULT_PAUSE, don't send a new host or
-       proxy auth request */
-    check_auth_paused(conn, &pickhost, &pickproxy);
   }
 
   if(pickhost || pickproxy) {
@@ -756,8 +728,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
 
   else if((data->req.httpcode < 300) &&
           (!data->state.authhost.done) &&
-          conn->bits.authneg &&
-          data->state.authpaused == CURLAUTH_TYPE_NONE) {
+          conn->bits.authneg) {
     /* no (known) authentication available,
        authentication is not "done" yet and
        no authentication seems to be required and
@@ -777,37 +748,6 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   }
 
   return code;
-}
-
-/* Handle the result of a curl_auth_callback that was delayed because it
- * returned CURLAUTH_RESULT_PAUSE.
- */
-CURLcode Curl_http_auth_resume(struct connectdata *conn, curl_auth_type type,
-                               const char *username, const char *password)
-{
-  struct SessionHandle *data = conn->data;
-  const char *old_username = type == CURLAUTH_TYPE_HOST ?
-    data->set.str[STRING_USERNAME] : data->set.str[STRING_PROXYUSERNAME];
-  const char *old_password = type == CURLAUTH_TYPE_HOST ?
-    data->set.str[STRING_PASSWORD] : data->set.str[STRING_PROXYPASSWORD];
-
-  /* If at least one of the username/password have changed, auth can continue.
-     (Counting NULL as being unchanged.) */
-  bool username_changed = strings_are_different(old_username, username);
-  bool password_changed = strings_are_different(old_password, password);
-
-  if(!username_changed && !password_changed)
-    /* nothing to do */
-    return CURLE_OK;
-
-  /* username and password may be NULL, but at this point they won't both be.
-   * Use them for either the host or proxy credentials, depending on which
-   * type of auth was paused, and send NULL for the other set of credentials.
-   */
-  if(type == CURLAUTH_TYPE_HOST)
-    return Curl_http_auth_new_req(conn, username, password, NULL, NULL);
-  else
-    return Curl_http_auth_new_req(conn, NULL, NULL, username, password);
 }
 
 /*
