@@ -450,7 +450,6 @@ CURLcode Curl_client_write(struct connectdata *conn,
       len = convert_lineends(data, ptr, len);
 #endif /* CURL_DO_LINEEND_CONV */
     }
-
     /* If the previous block of data ended with CR and this block of data is
        just a NL, then the length might be zero */
     if(len) {

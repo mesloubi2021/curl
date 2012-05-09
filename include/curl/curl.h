@@ -625,9 +625,12 @@ typedef enum {
 
 /* Result of a curl_auth_callback */
 typedef enum {
-  CURLAUTH_RESULT_CONTINUE = 0, /* Send authorization header immediately */
-  CURLAUTH_RESULT_CANCEL = 1,   /* Do not send authorization header */
-} curl_auth_result;
+  CURLAUTHE_OK,
+  CURLAUTHE_CANCEL,
+  CURLAUTHE_UNKNOWN,
+  CURLAUTHE_OUT_OF_MEMORY,
+  CURLAUTHE_LAST
+} curlautherr;
 
 /* This callback is called when a 401 response with WWW-Authenticate headers or
    a 407 response with Proxy-Authenticate headers is received, and curl has
@@ -651,18 +654,19 @@ typedef enum {
    passed to the write callback.
    */
 
-typedef curl_auth_result
-(*curl_auth_callback)(curl_auth_type type,     /* host or proxy auth */
+typedef curlautherr
+(*curl_auth_callback)(CURL* handle,
+                      curl_auth_type type,     /* host or proxy auth */
                       curl_auth_scheme scheme, /* chosen scheme */
                       const char *realm,       /* realm parsed from
                                                   authenticate header (NULL
                                                   for some schemes) */
                       unsigned retry_count,    /* number of failed attempts */
-                      const char **username,   /* in/out: contains last
+                      const char *username,    /* in/out: contains last
                                                   username tried or NULL,
                                                   should be set to new
                                                   username */
-                      const char **password,   /* in/out: contains last
+                      const char *password,    /* in/out: contains last
                                                   password tried or NULL,
                                                   should be set to new
                                                   password */
@@ -2240,6 +2244,7 @@ CURL_EXTERN const char *curl_share_strerror(CURLSHcode);
  *
  * The curl_easy_pause function pauses or unpauses transfers. Select the new
  * state by setting the bitmask, use the convenience defines below.
+ *
  */
 CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 
@@ -2251,6 +2256,20 @@ CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 
 #define CURLPAUSE_ALL       (CURLPAUSE_RECV|CURLPAUSE_SEND)
 #define CURLPAUSE_CONT      (CURLPAUSE_RECV_CONT|CURLPAUSE_SEND_CONT)
+
+/*
+ *
+ */
+CURL_EXTERN CURLcode curl_cb_set_credentials(CURL *handle,
+                                             curl_auth_type type,
+                                             const char *username,
+                                             const char *password);
+
+/*
+ *
+ */
+CURL_EXTERN CURLcode curl_cb_clear_credentials(CURL *handle,
+                                               curl_auth_type type);
 
 #ifdef  __cplusplus
 }

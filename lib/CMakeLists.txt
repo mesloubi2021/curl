@@ -50,6 +50,7 @@ endif()
 
 if(HAVE_FEATURES_H)
   set_source_files_properties(
+    cb.c
     cookie.c
     easy.c
     formdata.c
