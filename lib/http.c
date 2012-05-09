@@ -444,29 +444,27 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
     type == CURLAUTH_TYPE_HOST ? conn->bits.user_passwd
                                : conn->bits.proxy_user_passwd;
 
-  const char *username = not_empty ? data->set.str[username_key] : NULL;
-  const char *password = not_empty ? data->set.str[password_key] : NULL;
-
   curlautherr result = CURLAUTHE_OK;
-  const char *realm = NULL;
+
+  struct curl_auth_info info;
+  info.type = type;
+  info.scheme = authstate->picked;
+  info.url = data->change.url;
+  if(CURLAUTH_DIGEST == authstate->picked)
+    info.realm = type == CURLAUTH_TYPE_HOST ? data->state.digest.realm
+                                            : data->state.proxydigest.realm;
+  else
+    /* FIXME: need to parse the realm for other auth schemes too. */
+    info.realm = NULL;
+  info.retry_count = authstate->retries;
+  info.username = not_empty ? data->set.str[username_key] : NULL;
+  info.password = not_empty ? data->set.str[password_key] : NULL;
 
   /* If not_empty is set, username and password must both be set */
-  DEBUGASSERT((username && password) || !not_empty);
-
-  /* FIXME: need to parse the realm for other auth schemes too. */
-  if(CURLAUTH_DIGEST == authstate->picked)
-    realm = type == CURLAUTH_TYPE_HOST ? data->state.digest.realm
-                                       : data->state.proxydigest.realm;
+  DEBUGASSERT((info.username && info.password) || !not_empty);
 
   /* Call the callback. */
-  result = (*data->set.authfunction)(data,
-                                     type,
-                                     authstate->picked,
-                                     realm,
-                                     authstate->retries,
-                                     username,
-                                     password,
-                                     data->set.authdata);
+  result = (*data->set.authfunction)(data, &info, data->set.authdata);
 
   switch(result) {
   case CURLAUTHE_OK:
