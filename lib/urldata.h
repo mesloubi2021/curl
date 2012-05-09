@@ -1174,11 +1174,6 @@ struct UrlState {
   struct auth authproxy; /* auth details for proxy */
 
   bool authproblem; /* TRUE if there's some problem authenticating */
-  curl_auth_type authpaused; /* Type of auth (host or proxy) which was
-                                paused by the curl_auth_callback. Only one
-                                can be paused at once since once one callback
-                                returns CURLAUTH_RESULT_PAUSE, the next will
-                                not be called. */
 
   void *resolver; /* resolver state, if it is used in the URL state -
                      ares_channel f.e. */

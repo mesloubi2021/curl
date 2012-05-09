@@ -451,11 +451,6 @@ CURLcode Curl_client_write(struct connectdata *conn,
 #endif /* CURL_DO_LINEEND_CONV */
     }
 
-    /* If an auth callback returned CURLAUTH_RESULT_PAUSE, actually pause now,
-       before anything gets written. */
-    if(data->state.authpaused != CURLAUTH_TYPE_NONE)
-      return pausewrite(data, type, ptr, len);
-
     /* If the previous block of data ended with CR and this block of data is
        just a NL, then the length might be zero */
     if(len) {
@@ -476,12 +471,6 @@ CURLcode Curl_client_write(struct connectdata *conn,
 
   if((type & CLIENTWRITE_HEADER) &&
      (data->set.fwrite_header || data->set.writeheader) ) {
-
-    /* If an auth callback returned CURLAUTH_RESULT_PAUSE, actually pause now,
-       before anything gets written. */
-    if(data->state.authpaused != CURLAUTH_TYPE_NONE)
-      return pausewrite(data, CLIENTWRITE_HEADER, ptr, len);
-
     /*
      * Write headers to the same callback or to the especially setup
      * header callback function (added after version 7.7.1).

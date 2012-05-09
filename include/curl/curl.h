@@ -515,8 +515,6 @@ typedef enum {
   CURLE_RTSP_SESSION_ERROR,      /* 86 - mismatch of RTSP Session Ids */
   CURLE_FTP_BAD_FILE_LIST,       /* 87 - unable to parse FTP file list */
   CURLE_CHUNK_FAILED,            /* 88 - chunk callback reported error */
-  CURLE_BAD_STATE,               /* 89 - operation could not be performed in
-                                    this state */
   CURL_LAST /* never use! */
 } CURLcode;
 
@@ -629,7 +627,6 @@ typedef enum {
 typedef enum {
   CURLAUTH_RESULT_CONTINUE = 0, /* Send authorization header immediately */
   CURLAUTH_RESULT_CANCEL = 1,   /* Do not send authorization header */
-  CURLAUTH_RESULT_PAUSE = 2     /* Wait for curl_easy_resume_auth call */
 } curl_auth_result;
 
 /* This callback is called when a 401 response with WWW-Authenticate headers or
@@ -652,11 +649,7 @@ typedef enum {
    If CURLAUTH_RESULT_CANCEL is returned, the username and password are ignored
    and no followup request is sent. The body of the 401 or 407 request is
    passed to the write callback.
-
-   If CURLAUTH_RESULT_PAUSE is returned, the username and password are ignored
-   and the body of the 401 or 407 request is buffered, as if
-   curl_easy_pause(CURLPAUSE_ALL) were called. The request must be resumed by
-   calling curl_easy_resume_auth. */
+   */
 
 typedef curl_auth_result
 (*curl_auth_callback)(curl_auth_type type,     /* host or proxy auth */
@@ -2247,9 +2240,6 @@ CURL_EXTERN const char *curl_share_strerror(CURLSHcode);
  *
  * The curl_easy_pause function pauses or unpauses transfers. Select the new
  * state by setting the bitmask, use the convenience defines below.
- *
- * This will return CURLE_BAD_STATE if it is called when a request was already
- * paused by returning CURLAUTH_RESULT_PAUSE from a curl_auth_callback.
  */
 CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 
@@ -2261,27 +2251,6 @@ CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 
 #define CURLPAUSE_ALL       (CURLPAUSE_RECV|CURLPAUSE_SEND)
 #define CURLPAUSE_CONT      (CURLPAUSE_RECV_CONT|CURLPAUSE_SEND_CONT)
-
-/*
- * NAME curl_easy_resume_auth()
- *
- * DESCRIPTION
- *
- * The curl_easy_resume_auth function resumes a request that was paused by
- * returning CURLAUTH_RESULT_PAUSE from a curl_auth_callback. If username and
- * password are set, a new request with an authorization header using that
- * username and password will be sent (as if CURLAUTH_RESULT_CONTINUE had been
- * returned from the callback.) If they are NULL, no new request will be sent
- * and the body of the paused request will be delivered to the write callback
- * (as if CURLAUTH_RESULT_CANCEL had been returned.)
- *
- * This will return CURLE_BAD_STATE if it is called when a request was not
- * paused by CURLAUTH_RESULT_PAUSE (including if it is called when a request
- * was paused by curl_easy_pause instead.)
- */
-CURL_EXTERN CURLcode curl_easy_resume_auth(CURL *handle,
-                                           const char *username,
-                                           const char *password);
 
 #ifdef  __cplusplus
 }
