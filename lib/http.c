@@ -424,6 +424,19 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
   return CURLE_OK;
 }
 
+static bool strings_are_different(const char *oldstr, const char *newstr)
+{
+  bool was_empty = !oldstr || oldstr[0] == '\0';
+  bool is_empty = !newstr || newstr[0] == '\0';
+  if(was_empty && is_empty)
+    return FALSE;
+  if(oldstr == newstr)
+    return FALSE;
+  if(!was_empty && !is_empty && strcmp(oldstr, newstr) == 0)
+    return FALSE;
+  return TRUE;
+}
+
 /* Call the curl_auth_callback for the given auth type.
  *
  * Return CURLE_OK if authentication should continue, an error code if it
@@ -457,17 +470,33 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
     /* FIXME: need to parse the realm for other auth schemes too. */
     info.realm = NULL;
   info.retry_count = authstate->retries;
-  info.username = not_empty ? data->set.str[username_key] : NULL;
-  info.password = not_empty ? data->set.str[password_key] : NULL;
 
   /* If not_empty is set, make sure username and password are not NULL */
-  if(not_empty && !info.username)
-    info.username = "";
-  if(not_empty && !info.password)
-    info.password = "";
+  info.username = NULL;
+  info.password = NULL;
+  if(not_empty) {
+    info.username =
+      data->set.str[username_key] ? strdup(data->set.str[username_key])
+                                  : strdup("");
+    if(!info.username)
+      return CURLE_OUT_OF_MEMORY;
+    info.password =
+      data->set.str[password_key] ? strdup(data->set.str[password_key])
+                                  : strdup("");
+    if(!info.password)
+      return CURLE_OUT_OF_MEMORY;
+  }
 
   /* Call the callback. */
   result = (*data->set.authfunction)(data, &info, data->set.authdata);
+
+  /* Refuse to continue if the username and password have not changed */
+  if(!strings_are_different(info.username, data->set.str[username_key]) &&
+     !strings_are_different(info.password, data->set.str[password_key]))
+    result = CURLAUTHE_CANCEL;
+
+  Curl_safefree(info.username);
+  Curl_safefree(info.password);
 
   switch(result) {
   case CURLAUTHE_OK:
