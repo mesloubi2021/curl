@@ -424,10 +424,10 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
   return CURLE_OK;
 }
 
-/* Call the curl_auth_callback for the given auth type, returning the new
- * username in new_username and the new password in new_password.
+/* Call the curl_auth_callback for the given auth type.
  *
- * Return TRUE if authentication should continue, FALSE if it should not.
+ * Return CURLE_OK if authentication should continue, an error code if it
+ * should not.
  */
 static CURLcode Curl_http_auth_callback(struct connectdata *conn,
                                         curl_auth_type type)
@@ -481,12 +481,14 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   }
 }
 
+/* Update newurl to start a new auth request, and clear state from the old one
+ */
 static CURLcode Curl_http_auth_new_req(struct connectdata *conn,
                                        bool restart)
 {
   struct SessionHandle *data = conn->data;
 
-  /* If no username or password is set, do nothing */
+  /* If no username is set, do nothing */
   if(!conn->bits.user_passwd && !conn->bits.proxy_user_passwd)
     return CURLE_OK;
 
@@ -607,7 +609,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
         (conn->bits.authneg && data->req.httpcode < 300))) {
       pickproxy = pickoneauth(&data->state.authproxy);
 
-      /* If we got a scheme, this will be the first request sent */
+      /* If we got a new scheme, this will be the first request sent */
       if(pickhost && !data->state.authhost.multi)
         data->state.authproxy.retries = 0;
 
