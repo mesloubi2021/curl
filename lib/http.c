@@ -528,8 +528,8 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   bool pickproxy = FALSE;
   CURLcode code = CURLE_OK;
 
-  /* We can call a curl_auth_callback if one exists, auth is not paused and we
-     are not already in the middle of a multistep auth (such as NTLM). */
+  /* We can call a curl_auth_callback if one exists and we are not already in
+     the middle of a multistep auth (such as NTLM). */
   bool host_callback_ready = data->set.authfunction &&
                              !data->state.authhost.multi;
   bool proxy_callback_ready = data->set.authfunction &&
@@ -550,20 +550,30 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
     /* Give the client a chance to correct the problem by calling the auth
        callback. */
     if(data->req.httpcode == 401 && host_callback_ready) {
-      data->state.authhost.retries += 1;
-      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST) == CURLE_OK;
+      /* Make sure the auth type is still valid. Also clear authhost.avail so
+         that the reply isn't detected as a duplicate header. */
+      pickhost = pickoneauth(&data->state.authhost);
+      if(pickhost) {
+        data->state.authhost.retries += 1;
+        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST) ==
+                   CURLE_OK;
 #ifndef NDEBUG
-      host_callback_called = TRUE;
+        host_callback_called = TRUE;
 #endif
-      restart = TRUE;
+      }
     }
     else if(data->req.httpcode == 407 && proxy_callback_ready) {
-      data->state.authproxy.retries += 1;
-      pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY)==CURLE_OK;
+      /* Make sure the auth type is still valid. Also clear authproxy.avail so
+         that the reply isn't detected as a duplicate header. */
+      pickproxy = pickoneauth(&data->state.authproxy);
+      if(pickproxy) {
+        data->state.authproxy.retries += 1;
+        pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY) ==
+                    CURLE_OK;
 #ifndef NDEBUG
-      proxy_callback_called = TRUE;
+        proxy_callback_called = TRUE;
 #endif
-      restart = TRUE;
+      }
     }
 
     /* If the callbacks were not called, or returned FALSE for both host and
@@ -571,6 +581,8 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
        and/or password were updated, so continue to send a new auth request. */
     if(!pickhost && !pickproxy)
       return data->set.http_fail_on_error?CURLE_HTTP_RETURNED_ERROR:CURLE_OK;
+    else
+      restart = TRUE;
   }
   else {
     /* Pick an auth scheme now only if a username/password is set or an auth
@@ -1001,8 +1013,8 @@ CURLcode Curl_http_input_auth(struct connectdata *conn,
             if(authp->picked == CURLAUTH_BASIC) {
               /* We asked for Basic authentication but got a 40X back
                  anyway, which basically means our name+password isn't
-                 valid. */
-              authp->avail = CURLAUTH_NONE;
+                 valid. If an auth callback is set it will have a chance to
+                 choose new credentials. */
               infof(data, "Authentication problem. Ignoring this.\n");
               data->state.authproblem = TRUE;
             }
