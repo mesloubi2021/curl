@@ -625,11 +625,11 @@ typedef enum {
 
 /* Result of a curl_auth_callback */
 typedef enum {
-  CURLAUTHE_OK,
-  CURLAUTHE_CANCEL,
-  CURLAUTHE_UNKNOWN,
-  CURLAUTHE_OUT_OF_MEMORY,
-  CURLAUTHE_LAST
+  CURLAUTHE_OK,            /* send an auth reply */
+  CURLAUTHE_CANCEL,        /* do not send an auth reply */
+  CURLAUTHE_UNKNOWN,       /* an unspecified error occurred in the callback */
+  CURLAUTHE_OUT_OF_MEMORY, /* the callback ran out of memory */
+  CURLAUTHE_LAST           /* not for use, only a marker for last-in-list */
 } curlautherr;
 
 struct curl_auth_info {
@@ -648,23 +648,25 @@ struct curl_auth_info {
    chosen an auth scheme to use but does not have a valid username and password
    to form the reply with.
 
-   The last username and password tried will be in *username and *password,
-   which will be NULL if this is the first attempt. Callee must not try to
-   write to these strings. Instead, reassign them to the new username and
-   password (eg. *username = new_username) or assign NULL to reuse the
-   existing value.
+   The last username and password tried will be in info->username and
+   info->password, which will be NULL if this is the first attempt.
+   Normally the callee will call curl_cb_set_credentials to set a new username
+   and password and then return CURLAUTHE_OK to try again.
 
-   If CURLAUTH_RESULT_CONTINUE is returned the new username and password will
-   be copied and used to send a new request with an authorization header. If
-   *username and *password are both NULL, neither have changed since the last
-   failed attempt, or at least one is NULL and has no existing value to
-   re-use, no new request is sent (as if CURLAUTH_RESULT_CANCEL was returned).
+   NOTE: there is no protection against reusing the same credentials. If the
+   callee returns CURLE_OK without changing the username and password, curl
+   will continue to send the same invalid credentials to the server, possibly
+   forever.
 
-   If CURLAUTH_RESULT_CANCEL is returned, the username and password are ignored
-   and no followup request is sent. The body of the 401 or 407 request is
-   passed to the write callback.
+   If CURLAUTHE_OK is returned, a new request with an authorization header
+   will be sent.
+
+   If CURLAUTHE_CANCEL is returned, no followup request is sent. The body of
+   the 401 or 407 request is passed to the write callback.
+
+   Any other return value is treated as CURLAUTHE_CANCEL, and may also trigger
+   additional error handling.
    */
-
 typedef curlautherr
 (*curl_auth_callback)(CURL *handle,
                       struct curl_auth_info *info,
@@ -2255,7 +2257,21 @@ CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
 #define CURLPAUSE_CONT      (CURLPAUSE_RECV_CONT|CURLPAUSE_SEND_CONT)
 
 /*
+ * NAME curl_cb_set_credentials()
  *
+ * DESCRIPTION
+ *
+ * curl_cb_set_credentials allows an application to update the username and
+ * password (normally set with curl_easy_setopt) at any time, including from
+ * within a callback. It is not safe to call from another thread, though.
+ *
+ * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
+ *
+ * NOTE: if the credentials are set to NULL or to empty strings, empty
+ * credentials are sent to the server. To stop sending credentials to the
+ * server, use curl_cb_clear_credentials.
+
  */
 CURL_EXTERN CURLcode curl_cb_set_credentials(CURL *handle,
                                              curl_auth_type type,
@@ -2263,7 +2279,17 @@ CURL_EXTERN CURLcode curl_cb_set_credentials(CURL *handle,
                                              const char *password);
 
 /*
+ * NAME curl_cb_clear_credentials()
  *
+ * DESCRIPTION
+ *
+ * curl_cb_clear_credentials allows an application to remove the username and
+ * password (set with curl_easy_setopt or curl_cb_set_credentials) at any time,
+ * including from within a callback. It is not safe to call from another
+ * thread, though.
+ *
+ * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
  */
 CURL_EXTERN CURLcode curl_cb_clear_credentials(CURL *handle,
                                                curl_auth_type type);

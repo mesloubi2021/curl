@@ -45,6 +45,16 @@ static CURLcode update_set_string(struct SessionHandle *data, int key,
 }
 
 /*
+ * curl_cb_set_credentials allows an application to update the username and
+ * password (normally set with curl_easy_setopt) at any time, including from
+ * within a callback. It is not safe to call from another thread, though.
+ *
+ * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
+ *
+ * NOTE: if the credentials are set to NULL or to empty strings, empty
+ * credentials are sent to the server. To stop sending credentials to the
+ * server, use curl_cb_clear_credentials.
  */
 CURLcode curl_cb_set_credentials(CURL *curl, curl_auth_type type,
                                  const char *username, const char *password)
@@ -71,6 +81,13 @@ CURLcode curl_cb_set_credentials(CURL *curl, curl_auth_type type,
 }
 
 /*
+ * curl_cb_clear_credentials allows an application to remove the username and
+ * password (set with curl_easy_setopt or curl_cb_set_credentials) at any time,
+ * including from within a callback. It is not safe to call from another
+ * thread, though.
+ *
+ * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
  */
 CURLcode curl_cb_clear_credentials(CURL *curl, curl_auth_type type)
 {
