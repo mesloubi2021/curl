@@ -653,11 +653,6 @@ struct curl_auth_info {
    Normally the callee will call curl_cb_set_credentials to set a new username
    and password and then return CURLAUTHE_OK to try again.
 
-   NOTE: there is no protection against reusing the same credentials. If the
-   callee returns CURLE_OK without changing the username and password, curl
-   will continue to send the same invalid credentials to the server, possibly
-   forever.
-
    If CURLAUTHE_OK is returned, a new request with an authorization header
    will be sent.
 
@@ -666,6 +661,10 @@ struct curl_auth_info {
 
    Any other return value is treated as CURLAUTHE_CANCEL, and may also trigger
    additional error handling.
+
+   NOTE: to prevent infinite loops, if the callback returns CURLE_OK without
+   changing the username and password, auth will be aborted as if
+   CURLAUTHE_CANCEL was returned.
    */
 typedef curlautherr
 (*curl_auth_callback)(CURL *handle,
