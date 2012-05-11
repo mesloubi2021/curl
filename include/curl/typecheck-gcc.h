@@ -8,6 +8,7 @@
  *                             \___|\___/|_| \_\_____|
  *
  * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2012 Research In Motion Limited. All rights reserved.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -81,6 +82,9 @@ __extension__ ({                                                              \
     if((_curl_opt) == CURLOPT_SEEKFUNCTION)                                   \
       if(!_curl_is_seek_cb(value))                                            \
         _curl_easy_setopt_err_seek_cb();                                      \
+    if((_curl_opt) == CURLOPT_HTTP_AUTH_FUNCTION)                             \
+      if(!_curl_is_auth_cb(value))                                            \
+        _curl_easy_setopt_err_auth_cb();                                      \
     if(_curl_is_cb_data_option(_curl_opt))                                    \
       if(!_curl_is_cb_data(value))                                            \
         _curl_easy_setopt_err_cb_data();                                      \
@@ -174,6 +178,8 @@ _CURL_WARNING(_curl_easy_setopt_err_conv_cb,
   "curl_easy_setopt expects a curl_conv_callback argument for this option")
 _CURL_WARNING(_curl_easy_setopt_err_seek_cb,
   "curl_easy_setopt expects a curl_seek_callback argument for this option")
+_CURL_WARNING(_curl_easy_setopt_err_auth_cb,
+  "curl_easy_setopt expects a curl_auth_callback argument for this option")
 _CURL_WARNING(_curl_easy_setopt_err_cb_data,
               "curl_easy_setopt expects a "
               "private data pointer as argument for this option")
@@ -599,6 +605,22 @@ typedef CURLcode (*_curl_conv_callback4)(const void *, size_t length);
    _curl_callback_compatible((expr), _curl_seek_callback2))
 typedef CURLcode (*_curl_seek_callback1)(void *, curl_off_t, int);
 typedef CURLcode (*_curl_seek_callback2)(const void *, curl_off_t, int);
+
+/* evaluates to true if expr is of type curl_auth_callback or "similar" */
+#define _curl_is_auth_cb(expr)                                                \
+  (__builtin_types_compatible_p(__typeof__(expr), curl_write_callback) ||     \
+   _curl_callback_compatible((expr), _curl_auth_callback1) ||                 \
+   _curl_callback_compatible((expr), _curl_auth_callback2) ||                 \
+   _curl_callback_compatible((expr), _curl_auth_callback3) ||                 \
+   _curl_callback_compatible((expr), _curl_auth_callback4))
+typedef size_t (_curl_auth_callback1)(CURL *, struct curl_auth_info *,
+                                      void *);
+typedef size_t (_curl_auth_callback2)(CURL *, struct curl_auth_info *,
+                                      const void *);
+typedef size_t (_curl_auth_callback3)(CURL *, const struct curl_auth_info *,
+                                      void *);
+typedef size_t (_curl_auth_callback4)(CURL *, const struct curl_auth_info *,
+                                      const void *);
 
 
 #endif /* __CURL_TYPECHECK_GCC_H */

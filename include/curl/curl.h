@@ -666,7 +666,7 @@ struct curl_auth_info {
    */
 
 typedef curlautherr
-(*curl_auth_callback)(CURL* handle,
+(*curl_auth_callback)(CURL *handle,
                       struct curl_auth_info *info,
                       void *userdata);
 
@@ -1582,7 +1582,6 @@ typedef enum {
 
   /* Function that will be called on a 401 or 407 error when curl is not able
      to form a response automatically. Must be set to a curl_auth_callback. */
-  /* FIXME: this is not checked in typecheck-gcc.h */
   CINIT(HTTP_AUTH_FUNCTION, FUNCTIONPOINT, 218),
 
   /* User data supplied to the HTTP_AUTH_FUNCTION. */
