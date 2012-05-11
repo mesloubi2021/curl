@@ -460,8 +460,11 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   info.username = not_empty ? data->set.str[username_key] : NULL;
   info.password = not_empty ? data->set.str[password_key] : NULL;
 
-  /* If not_empty is set, username and password must both be set */
-  DEBUGASSERT((info.username && info.password) || !not_empty);
+  /* If not_empty is set, make sure username and password are not NULL */
+  if(not_empty && !info.username)
+    info.username = "";
+  if(not_empty && !info.password)
+    info.password = "";
 
   /* Call the callback. */
   result = (*data->set.authfunction)(data, &info, data->set.authdata);
