@@ -17,14 +17,13 @@
 # To check:
 # (From Daniel Stenberg) The cmake build selected to run gcc with -fPIC on my box while the plain configure script did not.
 # (From Daniel Stenberg) The gcc command line use neither -g nor any -O options. As a developer, I also treasure our configure scripts's --enable-debug option that sets a long range of "picky" compiler options.
-cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
-include(Utilities)
 
-project( curl C )
-include ( dist.cmake )
-set(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CURL_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+project ( curl C )
+cmake_minimum_required( VERSION 2.8 )
+include ( cmake/dist.cmake )
+include ( Utilities )
+set ( CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
+set ( CURL_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 
 file (READ ${CURL_SOURCE_DIR}/include/curl/curlver.h CURL_VERSION_H_CONTENTS)
 string (REGEX MATCH "LIBCURL_VERSION_MAJOR[ \t]+([0-9]+)"
@@ -192,7 +191,7 @@ include (CheckTypeSize)
 
 # On windows preload settings
 if(WIN32)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Platforms/WindowsCache.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platforms/WindowsCache.cmake)
 endif(WIN32)
 
 # This macro checks if the symbol exists in the library and if it
@@ -567,7 +566,7 @@ macro(CURL_INTERNAL_TEST CURL_TEST)
     message(STATUS "Performing Curl Test ${CURL_TEST}")
     try_compile(${CURL_TEST}
       ${CMAKE_BINARY_DIR}
-      ${CMAKE_CURRENT_SOURCE_DIR}/CMake/CurlTests.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CurlTests.c
       CMAKE_FLAGS -DCOMPILE_DEFINITIONS:STRING=${MACRO_CHECK_FUNCTION_DEFINITIONS}
       "${CURL_TEST_ADD_LIBRARIES}"
       OUTPUT_VARIABLE OUTPUT)
@@ -599,7 +598,7 @@ macro(CURL_INTERNAL_TEST_RUN CURL_TEST)
     message(STATUS "Performing Curl Test ${CURL_TEST}")
     try_run(${CURL_TEST} ${CURL_TEST}_COMPILE
       ${CMAKE_BINARY_DIR}
-      ${CMAKE_CURRENT_SOURCE_DIR}/CMake/CurlTests.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CurlTests.c
       CMAKE_FLAGS -DCOMPILE_DEFINITIONS:STRING=${MACRO_CHECK_FUNCTION_DEFINITIONS}
       "${CURL_TEST_ADD_LIBRARIES}"
       OUTPUT_VARIABLE OUTPUT)
@@ -786,7 +785,7 @@ else()
   set(CURL_SIZEOF_CURL_SOCKLEN_T ${SIZEOF_INT})
 endif()
 
-include(CMake/OtherTests.cmake)
+include(cmake/OtherTests.cmake)
 
 add_definitions(-DHAVE_CONFIG_H)
 

@@ -5,6 +5,7 @@ desc="Curl is a command line tool for transferring data specified with URL synta
 url="http://curl.haxx.se/"
 author="Daniel Stenberg"
 maintainer="David Manura, Peter Drahos"
+license="MIT"
 
 depends = {
 	"zlib >= 1.2",
