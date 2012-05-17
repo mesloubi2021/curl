@@ -95,6 +95,8 @@ static int http_getsock_do(struct connectdata *conn,
                            curl_socket_t *socks,
                            int numsocks);
 static int http_should_fail(struct connectdata *conn);
+static bool http_auth_callback_ready(struct connectdata *conn,
+                                     curl_auth_type type);
 
 #ifdef USE_SSL
 static CURLcode https_connecting(struct connectdata *conn, bool *done);
@@ -551,13 +553,41 @@ static CURLcode Curl_http_auth_new_req(struct connectdata *conn,
   return CURLE_OK;
 }
 
+/**
+ * http_auth_callback_ready() determines whether an auth callback exists and
+ * the connection is in the right state to call it.
+ *
+ * @param conn all information about the current connection
+ * @param type type of callback to check
+ *
+ * @retval 0 auth callback cannot be called
+ *
+ * @retval 1 auth callback can be called
+ */
+static bool http_auth_callback_ready(struct connectdata *conn,
+                                     curl_auth_type type)
+{
+  struct SessionHandle *data = conn->data;
+
+  /* We can call a curl_auth_callback if one exists and we are not already in
+     the middle of a multistep auth (such as NTLM). */
+  switch(type) {
+  case CURLAUTH_TYPE_HTTP:
+    return data->set.authfunction && !data->state.authhost.multi;
+  case CURLAUTH_TYPE_PROXY:
+    return data->set.authfunction && !data->state.authproxy.multi;
+  default:
+    DEBUGASSERT(0);
+    return 0;
+  }
+}
+
 /*
  * Curl_http_auth_act() gets called when all HTTP headers have been received
  * and it checks what authentication methods that are available and decides
  * which one (if any) to use. It will set 'newurl' if an auth method was
  * picked.
  */
-
 CURLcode Curl_http_auth_act(struct connectdata *conn)
 {
   struct SessionHandle *data = conn->data;
@@ -565,12 +595,10 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   bool pickproxy = FALSE;
   CURLcode code = CURLE_OK;
 
-  /* We can call a curl_auth_callback if one exists and we are not already in
-     the middle of a multistep auth (such as NTLM). */
-  bool host_callback_ready = data->set.authfunction &&
-                             !data->state.authhost.multi;
-  bool proxy_callback_ready = data->set.authfunction &&
-                              !data->state.authproxy.multi;
+  bool host_callback_ready = http_auth_callback_ready(conn,
+                                                      CURLAUTH_TYPE_HTTP);
+  bool proxy_callback_ready = http_auth_callback_ready(conn,
+                                                       CURLAUTH_TYPE_PROXY);
 
 #ifndef NDEBUG
   bool host_callback_called = FALSE;
@@ -1143,9 +1171,11 @@ static int http_should_fail(struct connectdata *conn)
   ** Either we're not authenticating, or we're supposed to
   ** be authenticating something else.  This is an error.
   */
-  if((httpcode == 401) && !conn->bits.user_passwd)
+  if((httpcode == 401) && !(conn->bits.user_passwd ||
+              http_auth_callback_ready(conn, CURLAUTH_TYPE_HTTP)))
     return TRUE;
-  if((httpcode == 407) && !conn->bits.proxy_user_passwd)
+  if((httpcode == 407) && !(conn->bits.proxy_user_passwd ||
+              http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY)))
     return TRUE;
 
   return data->state.authproblem;
@@ -3314,22 +3344,26 @@ CURLcode Curl_http_readwrite_headers(struct SessionHandle *data,
          * depending on how authentication is working.  Other codes
          * are definitely errors, so give up here.
          */
-        if(data->set.http_fail_on_error && (k->httpcode >= 400) &&
-           ((k->httpcode != 401) || !conn->bits.user_passwd) &&
-           ((k->httpcode != 407) || !conn->bits.proxy_user_passwd) ) {
-
-          if(data->state.resume_from &&
-             (data->set.httpreq==HTTPREQ_GET) &&
-             (k->httpcode == 416)) {
-            /* "Requested Range Not Satisfiable", just proceed and
-               pretend this is no error */
-          }
-          else {
-            /* serious error, go home! */
-            failf (data, "The requested URL returned error: %d",
-                   k->httpcode);
-            return CURLE_HTTP_RETURNED_ERROR;
-          }
+        if(data->set.http_fail_on_error && (k->httpcode >= 400)) {
+          bool host_auth_ok = conn->bits.user_passwd ||
+            http_auth_callback_ready(conn, CURLAUTH_TYPE_HTTP);
+          bool proxy_auth_ok = conn->bits.proxy_user_passwd ||
+            http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY);
+          if(((k->httpcode != 401) || !host_auth_ok) &&
+             ((k->httpcode != 407) || !proxy_auth_ok)) {
+              if(data->state.resume_from &&
+                 (data->set.httpreq==HTTPREQ_GET) &&
+                 (k->httpcode == 416)) {
+                /* "Requested Range Not Satisfiable", just proceed and
+                   pretend this is no error */
+              }
+              else {
+                /* serious error, go home! */
+                failf (data, "The requested URL returned error: %d",
+                       k->httpcode);
+                return CURLE_HTTP_RETURNED_ERROR;
+              }
+           }
         }
 
         if(conn->httpversion == 10) {
