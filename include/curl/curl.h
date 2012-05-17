@@ -635,12 +635,12 @@ typedef enum {
 struct curl_auth_info {
   curl_auth_type type;     /* host or proxy auth */
   curl_auth_scheme scheme; /* chosen scheme */
-  const char *url;         /* url that requires auth */
-  const char *realm;       /* realm parsed from authenticate header (NULL for
+  char *url;               /* url that requires auth */
+  char *realm;             /* realm parsed from authenticate header (NULL for
                               some schemes) */
   unsigned retry_count;    /* number of failed attempts */
-  const char *username;    /* contains last username tried or NULL */
-  const char *password;    /* contains last password tried or NULL */
+  char *username;          /* contains last username tried or NULL */
+  char *password;          /* contains last password tried or NULL */
 };
 
 /* This callback is called when a 401 response with WWW-Authenticate headers or
