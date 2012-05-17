@@ -443,7 +443,8 @@ static bool strings_are_different(const char *oldstr, const char *newstr)
  * should not.
  */
 static CURLcode Curl_http_auth_callback(struct connectdata *conn,
-                                        curl_auth_type type)
+                                        curl_auth_type type,
+                                        bool auth_succeeded)
 {
   struct SessionHandle *data = conn->data;
 
@@ -469,6 +470,9 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   else
     /* FIXME: need to parse the realm for other auth schemes too. */
     info.realm = NULL;
+  /* FIXME: auth_succeeded will always be false. Implement the true case (need
+     to figure out where this function would be called from) */
+  info.succeeded = auth_succeeded;
   info.retry_count = authstate->retries;
 
   /* If not_empty is set, make sure username and password are not NULL */
@@ -490,8 +494,10 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   /* Call the callback. */
   result = (*data->set.authfunction)(data, &info, data->set.authdata);
 
-  /* Refuse to continue if the username and password have not changed */
-  if(!strings_are_different(info.username, data->set.str[username_key]) &&
+  /* If the auth failed, refuse to continue if the username and password have
+     not changed */
+  if(!auth_succeeded &&
+     !strings_are_different(info.username, data->set.str[username_key]) &&
      !strings_are_different(info.password, data->set.str[password_key]))
     result = CURLAUTHE_CANCEL;
 
@@ -586,7 +592,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
       pickhost = pickoneauth(&data->state.authhost);
       if(pickhost) {
         data->state.authhost.retries += 1;
-        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST) ==
+        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST, 0) ==
                    CURLE_OK;
 #ifndef NDEBUG
         host_callback_called = TRUE;
@@ -599,7 +605,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
       pickproxy = pickoneauth(&data->state.authproxy);
       if(pickproxy) {
         data->state.authproxy.retries += 1;
-        pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY) ==
+        pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY, 0) ==
                     CURLE_OK;
 #ifndef NDEBUG
         proxy_callback_called = TRUE;
@@ -652,13 +658,15 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
     /* If we have a scheme and no username/password, call the auth callback so
        that the client can set one. */
     if(pickhost && !conn->bits.user_passwd) {
-      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST) == CURLE_OK;
+      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST, 0) ==
+                 CURLE_OK;
 #ifndef NDEBUG
       host_callback_called = TRUE;
 #endif
     }
     if(pickproxy && !conn->bits.proxy_user_passwd) {
-      pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY)==CURLE_OK;
+      pickproxy = Curl_http_auth_callback(conn, CURLAUTH_TYPE_PROXY, 0) ==
+                  CURLE_OK;
 #ifndef NDEBUG
       proxy_callback_called = TRUE;
 #endif
