@@ -49,7 +49,7 @@ static CURLcode update_set_string(struct SessionHandle *data, int key,
  * password (normally set with curl_easy_setopt) at any time, including from
  * within a callback. It is not safe to call from another thread, though.
  *
- * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * type can be CURLAUTH_TYPE_HTTP or CURLAUTH_TYPE_PROXY. Any other value will
  * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
  *
  * NOTE: if the credentials are set to NULL or to empty strings, empty
@@ -63,7 +63,7 @@ CURLcode curl_cb_set_credentials(CURL *curl, curl_auth_type type,
   struct SessionHandle *data = (struct SessionHandle *)curl;
   DEBUGASSERT(data && data->state.current_conn);
   switch(type) {
-  case CURLAUTH_TYPE_HOST:
+  case CURLAUTH_TYPE_HTTP:
     result = update_set_string(data, STRING_USERNAME, username);
     if(CURLE_OK != result)
       return result;
@@ -86,7 +86,7 @@ CURLcode curl_cb_set_credentials(CURL *curl, curl_auth_type type,
  * including from within a callback. It is not safe to call from another
  * thread, though.
  *
- * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * type can be CURLAUTH_TYPE_HTTP or CURLAUTH_TYPE_PROXY. Any other value will
  * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
  */
 CURLcode curl_cb_clear_credentials(CURL *curl, curl_auth_type type)
@@ -95,7 +95,7 @@ CURLcode curl_cb_clear_credentials(CURL *curl, curl_auth_type type)
   DEBUGASSERT(data && data->state.current_conn);
   // Curl_safefree includes setting the variable to NULL.
   switch(type) {
-  case CURLAUTH_TYPE_HOST:
+  case CURLAUTH_TYPE_HTTP:
     Curl_safefree(data->set.str[STRING_USERNAME]);
     Curl_safefree(data->set.str[STRING_PASSWORD]);
     data->state.current_conn->bits.user_passwd = FALSE;

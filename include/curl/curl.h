@@ -617,10 +617,11 @@ typedef long curl_auth_scheme;
 
 typedef enum {
   CURLAUTH_TYPE_NONE = 0, /* No authentication headers received */
-  CURLAUTH_TYPE_HOST = 1, /* WWW-Authenticate header received,
+  CURLAUTH_TYPE_HTTP = 1, /* WWW-Authenticate header received,
                              Authorization header expected */
   CURLAUTH_TYPE_PROXY = 2 /* Proxy-Authenticate header received,
                              Proxy-Authorization header expected */
+  /* Additional auth types, such as FTP and SMTP, will go here */
 } curl_auth_type;
 
 /* Result of a curl_auth_callback */
@@ -2265,7 +2266,7 @@ CURL_EXTERN CURLcode curl_easy_pause(CURL *handle, int bitmask);
  * password (normally set with curl_easy_setopt) at any time, including from
  * within a callback. It is not safe to call from another thread, though.
  *
- * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * type can be CURLAUTH_TYPE_HTTP or CURLAUTH_TYPE_PROXY. Any other value will
  * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
  *
  * NOTE: if the credentials are set to NULL or to empty strings, empty
@@ -2288,7 +2289,7 @@ CURL_EXTERN CURLcode curl_cb_set_credentials(CURL *handle,
  * including from within a callback. It is not safe to call from another
  * thread, though.
  *
- * type can be CURLAUTH_TYPE_HOST or CURLAUTH_TYPE_PROXY. Any other value will
+ * type can be CURLAUTH_TYPE_HTTP or CURLAUTH_TYPE_PROXY. Any other value will
  * cause this function to return CURLE_BAD_FUNCTION_ARGUMENT.
  */
 CURL_EXTERN CURLcode curl_cb_clear_credentials(CURL *handle,

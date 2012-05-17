@@ -448,14 +448,14 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
 {
   struct SessionHandle *data = conn->data;
 
-  int username_key = type == CURLAUTH_TYPE_HOST ? STRING_USERNAME
+  int username_key = type == CURLAUTH_TYPE_HTTP ? STRING_USERNAME
                                                 : STRING_PROXYUSERNAME;
-  int password_key = type == CURLAUTH_TYPE_HOST ? STRING_PASSWORD
+  int password_key = type == CURLAUTH_TYPE_HTTP ? STRING_PASSWORD
                                                 : STRING_PROXYPASSWORD;
-  struct auth *authstate = type == CURLAUTH_TYPE_HOST ? &data->state.authhost
+  struct auth *authstate = type == CURLAUTH_TYPE_HTTP ? &data->state.authhost
                                                       : &data->state.authproxy;
   bool not_empty =
-    type == CURLAUTH_TYPE_HOST ? conn->bits.user_passwd
+    type == CURLAUTH_TYPE_HTTP ? conn->bits.user_passwd
                                : conn->bits.proxy_user_passwd;
 
   curlautherr result = CURLAUTHE_OK;
@@ -465,7 +465,7 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   info.scheme = authstate->picked;
   info.url = data->change.url;
   if(CURLAUTH_DIGEST == authstate->picked)
-    info.realm = type == CURLAUTH_TYPE_HOST ? data->state.digest.realm
+    info.realm = type == CURLAUTH_TYPE_HTTP ? data->state.digest.realm
                                             : data->state.proxydigest.realm;
   else
     /* FIXME: need to parse the realm for other auth schemes too. */
@@ -592,7 +592,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
       pickhost = pickoneauth(&data->state.authhost);
       if(pickhost) {
         data->state.authhost.retries += 1;
-        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST, 0) ==
+        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HTTP, 0) ==
                    CURLE_OK;
 #ifndef NDEBUG
         host_callback_called = TRUE;
@@ -658,7 +658,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
     /* If we have a scheme and no username/password, call the auth callback so
        that the client can set one. */
     if(pickhost && !conn->bits.user_passwd) {
-      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST, 0) ==
+      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HTTP, 0) ==
                  CURLE_OK;
 #ifndef NDEBUG
       host_callback_called = TRUE;
