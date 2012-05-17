@@ -638,6 +638,7 @@ struct curl_auth_info {
   char *url;               /* url that requires auth */
   char *realm;             /* realm parsed from authenticate header (NULL for
                               some schemes) */
+  int succeeded;           /* 1 if auth was successful, 0 if it failed */
   unsigned retry_count;    /* number of failed attempts */
   char *username;          /* contains last username tried or NULL */
   char *password;          /* contains last password tried or NULL */
