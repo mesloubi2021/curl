@@ -1,0 +1,40 @@
+@import "version.inc" ;
+@import "libcurl.inc";
+@import "outercurve.inc" ;
+
+#define { 
+    flavor: "${flav??vc10}"; 
+    arch : "${arc??x86}";
+}
+
+package {
+    name: "libcurl-dev[${flavor}]";
+    display-name: "libcurl developer library";
+    arch: @"${arch}";
+}
+
+metadata {
+    summary: "The libcurl developer library";
+}
+
+files[libs] {
+    root: @"..\builds\libcurl-${flavor}-${arch}-release-dll-ssl-dll-zlib-dll-ssh2-dll-ipv6-sspi\lib\";
+
+    include: {
+        "libcurl.lib",
+        //"libcurl.exp",
+    };
+    
+    trim-path: all;
+};
+
+requires {
+    package: "libcurl-dev-common-${package-version}-any-${Package.PublicKeyToken}";
+    package: "libcurl[${flavor}]-${package-version}-${Package.Architecture}-${Package.PublicKeyToken}";
+}
+
+developer-library[libcurl[${flavor}]] {
+    libraries : {
+        libs
+    };
+}

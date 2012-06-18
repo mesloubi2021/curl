@@ -1,0 +1,81 @@
+@import "version.inc";
+@import "libcurl.inc";
+@import "outercurve.inc";
+
+#define { 
+    flavor: "${flav??vc10}"; 
+    arch : "${arc??x86}";
+}
+
+package {
+    name: "curl[${flavor}]";
+    display-name: "curl";
+    arch: @"${arch}";
+}
+
+metadata {
+    summary: "curl";
+}
+
+files[exes] {
+    root: @"..\builds\libcurl-${flavor}-${arch}-release-dll-ssl-dll-zlib-dll-ssh2-dll-ipv6-sspi\bin\";
+  
+    include: {
+        "curl.exe",
+    };
+    
+    trim-path: all;
+};
+
+files[files-to-sign] {
+    include: { 
+        exes
+    };    
+}
+
+requires {
+    package: "libcurl[${flavor}]-${package-version}-${Package.Architecture}-${Package.PublicKeyToken}";
+    package: "libssh2[${flavor}]-1.3-${Package.Architecture}-1e373a58e25250cb";
+    package: "openssl[${flavor}]-1.0.0-${Package.Architecture}-1e373a58e25250cb";
+    package: "zlib[${flavor}]-1.2.5-${Package.Architecture}-1e373a58e25250cb";
+}
+
+manifest[things-that-need-them] {
+    assembly : {
+        "libcurl[${flavor}]",
+        "libssh2[${flavor}]",
+        "openssl[${flavor}]",
+        "zlib[${flavor}]",
+    };
+
+    include : { 
+        exes
+    };
+}
+
+application {
+    include : {
+        exes,
+    };
+}
+
+package-composition {
+    symlinks : { 
+        exes => @"${bin}\${each.Name}" = @"${packagedir}\${each.Name}";
+    };
+}
+
+signing {
+    attributes : {
+        company="Outercurve Foundation",
+        description="${Package.PackageDetails.SummaryDescription}",
+        product-name="${Package.Name}",
+        product-version="${package-version}",
+        file-version="${package-version}",
+    };
+    
+    replace-signature: true; 
+    include: { 
+        files-to-sign
+    };    
+}

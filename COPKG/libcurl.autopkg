@@ -1,0 +1,73 @@
+@import "version.inc";
+@import "libcurl.inc";
+@import "outercurve.inc";
+
+#define { 
+    flavor: "${flav??vc10}"; 
+    arch : "${arc??x86}";
+}
+
+package {
+    name: "libcurl[${flavor}]";
+    display-name: "libcurl";
+    arch: @"${arch}";
+}
+
+metadata {
+    summary: "libcurl";
+}
+
+files[dlls] {
+    root: @"..\builds\libcurl-${flavor}-${arch}-release-dll-ssl-dll-zlib-dll-ssh2-dll-ipv6-sspi\bin\";
+  
+    include: {
+        "libcurl.dll",
+    };
+    
+    trim-path: all;
+};
+
+files[files-to-sign] {
+    include: { 
+        dlls
+    };    
+}
+
+requires {
+    package: "libssh2[${flavor}]-1.3-${Package.Architecture}-1e373a58e25250cb";
+    package: "openssl[${flavor}]-1.0.0-${Package.Architecture}-1e373a58e25250cb";
+    package: "zlib[${flavor}]-1.2.5-${Package.Architecture}-1e373a58e25250cb";
+}
+
+manifest[things-that-need-them] {
+    assembly : {
+        "libssh2[${flavor}]",
+        "openssl[${flavor}]",
+        "zlib[${flavor}]",
+    };
+
+    include : { 
+        dlls
+    };
+}
+
+assembly[libcurl[${flavor}]] {
+    include : {
+        dlls
+    };
+}
+
+signing {
+    attributes : {
+        company="Outercurve Foundation",
+        description="${Package.PackageDetails.SummaryDescription}",
+        product-name="libssh2",
+        product-version="${package-version}",
+        file-version="${package-version}",
+    };
+    
+    replace-signature: true; 
+    include: { 
+        files-to-sign
+    };    
+}
