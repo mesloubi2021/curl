@@ -425,17 +425,12 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
   return CURLE_OK;
 }
 
-static bool strings_are_different(const char *oldstr, const char *newstr)
+static int safe_strcmp(const char *s1, const char *s2)
 {
-  bool was_empty = !oldstr || oldstr[0] == '\0';
-  bool is_empty = !newstr || newstr[0] == '\0';
-  if(was_empty && is_empty)
-    return FALSE;
-  if(oldstr == newstr)
-    return FALSE;
-  if(!was_empty && !is_empty && strcmp(oldstr, newstr) == 0)
-    return FALSE;
-  return TRUE;
+  /* Treat NULL equal to the empty string. */
+  if(!s1) s1 = "";
+  if(!s2) s2 = "";
+  return strcmp(s1, s2);
 }
 
 /* Call the curl_auth_callback for the given auth type.
@@ -498,8 +493,8 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   /* If the auth failed, refuse to continue if the username and password have
      not changed */
   if(!auth_succeeded &&
-     !strings_are_different(info.username, data->set.str[username_key]) &&
-     !strings_are_different(info.password, data->set.str[password_key]))
+     safe_strcmp(info.username, data->set.str[username_key]) == 0 &&
+     safe_strcmp(info.password, data->set.str[password_key]) == 0)
     result = CURLAUTHE_CANCEL;
 
   Curl_safefree(info.username);
