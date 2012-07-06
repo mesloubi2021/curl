@@ -93,7 +93,7 @@ CURLcode curl_cb_clear_credentials(CURL *curl, curl_auth_type type)
 {
   struct SessionHandle *data = (struct SessionHandle *)curl;
   DEBUGASSERT(data && data->state.current_conn);
-  // Curl_safefree includes setting the variable to NULL.
+  /* Curl_safefree includes setting the variable to NULL. */
   switch(type) {
   case CURLAUTH_TYPE_HOST:
     Curl_safefree(data->set.str[STRING_USERNAME]);
