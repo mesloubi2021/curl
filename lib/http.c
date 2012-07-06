@@ -450,14 +450,14 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
 {
   struct SessionHandle *data = conn->data;
 
-  int username_key = type == CURLAUTH_TYPE_HTTP ? STRING_USERNAME
+  int username_key = type == CURLAUTH_TYPE_HOST ? STRING_USERNAME
                                                 : STRING_PROXYUSERNAME;
-  int password_key = type == CURLAUTH_TYPE_HTTP ? STRING_PASSWORD
+  int password_key = type == CURLAUTH_TYPE_HOST ? STRING_PASSWORD
                                                 : STRING_PROXYPASSWORD;
-  struct auth *authstate = type == CURLAUTH_TYPE_HTTP ? &data->state.authhost
+  struct auth *authstate = type == CURLAUTH_TYPE_HOST ? &data->state.authhost
                                                       : &data->state.authproxy;
   bool not_empty =
-    type == CURLAUTH_TYPE_HTTP ? conn->bits.user_passwd
+    type == CURLAUTH_TYPE_HOST ? conn->bits.user_passwd
                                : conn->bits.proxy_user_passwd;
 
   curlautherr result = CURLAUTHE_OK;
@@ -467,7 +467,7 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   info.scheme = authstate->picked;
   info.url = data->change.url;
   if(CURLAUTH_DIGEST == authstate->picked)
-    info.realm = type == CURLAUTH_TYPE_HTTP ? data->state.digest.realm
+    info.realm = type == CURLAUTH_TYPE_HOST ? data->state.digest.realm
                                             : data->state.proxydigest.realm;
   else
     /* FIXME: need to parse the realm for other auth schemes too. */
@@ -572,7 +572,7 @@ static bool http_auth_callback_ready(struct connectdata *conn,
   /* We can call a curl_auth_callback if one exists and we are not already in
      the middle of a multistep auth (such as NTLM). */
   switch(type) {
-  case CURLAUTH_TYPE_HTTP:
+  case CURLAUTH_TYPE_HOST:
     return data->set.authfunction && !data->state.authhost.multi;
   case CURLAUTH_TYPE_PROXY:
     return data->set.authfunction && !data->state.authproxy.multi;
@@ -596,7 +596,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   CURLcode code = CURLE_OK;
 
   bool host_callback_ready = http_auth_callback_ready(conn,
-                                                      CURLAUTH_TYPE_HTTP);
+                                                      CURLAUTH_TYPE_HOST);
   bool proxy_callback_ready = http_auth_callback_ready(conn,
                                                        CURLAUTH_TYPE_PROXY);
 
@@ -620,7 +620,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
       pickhost = pickoneauth(&data->state.authhost);
       if(pickhost) {
         data->state.authhost.retries += 1;
-        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HTTP, 0) ==
+        pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST, 0) ==
                    CURLE_OK;
 #ifndef NDEBUG
         host_callback_called = TRUE;
@@ -686,7 +686,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
     /* If we have a scheme and no username/password, call the auth callback so
        that the client can set one. */
     if(pickhost && !conn->bits.user_passwd) {
-      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HTTP, 0) ==
+      pickhost = Curl_http_auth_callback(conn, CURLAUTH_TYPE_HOST, 0) ==
                  CURLE_OK;
 #ifndef NDEBUG
       host_callback_called = TRUE;
@@ -1172,7 +1172,7 @@ static int http_should_fail(struct connectdata *conn)
   ** be authenticating something else.  This is an error.
   */
   if((httpcode == 401) && !(conn->bits.user_passwd ||
-              http_auth_callback_ready(conn, CURLAUTH_TYPE_HTTP)))
+              http_auth_callback_ready(conn, CURLAUTH_TYPE_HOST)))
     return TRUE;
   if((httpcode == 407) && !(conn->bits.proxy_user_passwd ||
               http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY)))
@@ -3347,7 +3347,7 @@ CURLcode Curl_http_readwrite_headers(struct SessionHandle *data,
          */
         if(data->set.http_fail_on_error && (k->httpcode >= 400)) {
           bool host_auth_ok = conn->bits.user_passwd ||
-            http_auth_callback_ready(conn, CURLAUTH_TYPE_HTTP);
+            http_auth_callback_ready(conn, CURLAUTH_TYPE_HOST);
           bool proxy_auth_ok = conn->bits.proxy_user_passwd ||
             http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY);
           if(((k->httpcode != 401) || !host_auth_ok) &&
