@@ -1164,13 +1164,21 @@ static int http_should_fail(struct connectdata *conn)
   /*
   ** Either we're not authenticating, or we're supposed to
   ** be authenticating something else.  This is an error.
+  ** But never abort on error if there's an auth callback -
+  ** the callback has a chance to correct it.
   */
-  if((httpcode == 401) && !(conn->bits.user_passwd ||
-              http_auth_callback_ready(conn, CURLAUTH_TYPE_HOST)))
-    return TRUE;
-  if((httpcode == 407) && !(conn->bits.proxy_user_passwd ||
-              http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY)))
-    return TRUE;
+  if(httpcode == 401) {
+    if(http_auth_callback_ready(conn, CURLAUTH_TYPE_HOST))
+      return FALSE;
+    if(conn->bits.user_passwd)
+      return TRUE;
+  }
+  if(httpcode == 407) {
+    if(http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY))
+      return FALSE;
+    if(conn->bits.proxy_user_passwd)
+      return TRUE;
+  }
 
   return data->state.authproblem;
 }
