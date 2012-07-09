@@ -444,15 +444,34 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
 {
   struct SessionHandle *data = conn->data;
 
-  int username_key = type == CURLAUTH_TYPE_HOST ? STRING_USERNAME
-                                                : STRING_PROXYUSERNAME;
-  int password_key = type == CURLAUTH_TYPE_HOST ? STRING_PASSWORD
-                                                : STRING_PROXYPASSWORD;
-  struct auth *authstate = type == CURLAUTH_TYPE_HOST ? &data->state.authhost
-                                                      : &data->state.authproxy;
-  bool not_empty =
-    type == CURLAUTH_TYPE_HOST ? conn->bits.user_passwd
-                               : conn->bits.proxy_user_passwd;
+  struct auth *authstate;
+  char* digest_realm;
+  bool not_empty;
+
+  /* Keep pointers to username and password since they can be updated from
+     another function. */
+  char** username_ptr;
+  char** password_ptr;
+
+  switch(type) {
+  case CURLAUTH_TYPE_HOST:
+    authstate = &data->state.authhost;
+    digest_realm = data->state.digest.realm;
+    not_empty = conn->bits.user_passwd;
+    username_ptr = &conn->user;
+    password_ptr = &conn->passwd;
+    break;
+  case CURLAUTH_TYPE_PROXY:
+    authstate = &data->state.authproxy;
+    digest_realm = data->state.proxydigest.realm;
+    not_empty = conn->bits.proxy_user_passwd;
+    username_ptr = &conn->proxyuser;
+    password_ptr = &conn->proxypasswd;
+    break;
+  default:
+    DEBUGASSERT(false);
+    return CURLAUTHE_UNKNOWN;
+  }
 
   curlautherr result = CURLAUTHE_OK;
 
@@ -461,8 +480,7 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   info.scheme = authstate->picked;
   info.url = data->change.url;
   if(CURLAUTH_DIGEST == authstate->picked)
-    info.realm = type == CURLAUTH_TYPE_HOST ? data->state.digest.realm
-                                            : data->state.proxydigest.realm;
+    info.realm = digest_realm;
   else
     /* FIXME: need to parse the realm for other auth schemes too. */
     info.realm = NULL;
@@ -475,14 +493,10 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   info.username = NULL;
   info.password = NULL;
   if(not_empty) {
-    info.username =
-      data->set.str[username_key] ? strdup(data->set.str[username_key])
-                                  : strdup("");
+    info.username = *username_ptr ? strdup(*username_ptr) : strdup("");
     if(!info.username)
       return CURLE_OUT_OF_MEMORY;
-    info.password =
-      data->set.str[password_key] ? strdup(data->set.str[password_key])
-                                  : strdup("");
+    info.password = *password_ptr ? strdup(*password_ptr) : strdup("");
     if(!info.password)
       return CURLE_OUT_OF_MEMORY;
   }
@@ -493,8 +507,8 @@ static CURLcode Curl_http_auth_callback(struct connectdata *conn,
   /* If the auth failed, refuse to continue if the username and password have
      not changed */
   if(!auth_succeeded &&
-     safe_strcmp(info.username, data->set.str[username_key]) == 0 &&
-     safe_strcmp(info.password, data->set.str[password_key]) == 0)
+     safe_strcmp(info.username, *username_ptr) == 0 &&
+     safe_strcmp(info.password, *password_ptr) == 0)
     result = CURLAUTHE_CANCEL;
 
   Curl_safefree(info.username);
