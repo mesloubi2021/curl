@@ -42,7 +42,7 @@ files[docs] {
 }
 
 // the 'name' of the developer library isn't terribly important...
-developer-library[libcurl] {
+developer-library[curl] {
     headers: { 
         headers
     };
