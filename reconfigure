@@ -1,0 +1,3 @@
+#!/bin/sh
+./buildconf
+./configure --prefix=/home/jmason/dev/thirdparty/curlinstall/ --enable-debug --enable-curldebug --enable-warnings --with-gssapi
