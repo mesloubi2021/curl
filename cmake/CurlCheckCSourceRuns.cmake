@@ -44,7 +44,7 @@ macro(CURL_CHECK_C_SOURCE_RUNS SOURCE VAR)
 
     set(src "${src}\nint main() { ${SOURCE} ; return 0; }")
     set(CMAKE_CONFIGURABLE_FILE_CONTENT "${src}")
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeConfigurableFile.in
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeConfigurableFile.in
       "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.c"
       IMMEDIATE)
     message(STATUS "Performing Test ${message}")
