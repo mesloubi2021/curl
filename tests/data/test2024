@@ -26,17 +26,6 @@ This is a bad password page!
 </data100>
 
 <!-- Second request has Digest auth, right password -->
-<data200>
-HTTP/1.1 401 Need Basic or Digest auth
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
-WWW-Authenticate: Digest realm="testrealm", nonce="2"
-
-This is not the real page!
-</data200>
-
 <data1200>
 HTTP/1.1 200 Things are fine in server land
 Server: Microsoft-IIS/5.0
@@ -52,47 +41,25 @@ HTTP/1.1 401 Sorry wrong password (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 29
-WWW-Authenticate: Digest realm="testrealm", nonce="3"
+WWW-Authenticate: Digest realm="testrealm", nonce="2"
 WWW-Authenticate: Basic realm="testrealm"
 
 This is a bad password page!
 </data300>
 
 <!-- Fourth request has Digest auth, wrong password -->
-<data400>
-HTTP/1.1 401 Need Basic or Digest auth (2)
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
-WWW-Authenticate: Digest realm="testrealm", nonce="4"
-
-This is not the real page!
-</data400>
-
 <data1400>
 HTTP/1.1 401 Sorry wrong password (3)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 29
-WWW-Authenticate: Digest realm="testrealm", nonce="5"
+WWW-Authenticate: Digest realm="testrealm", nonce="3"
 WWW-Authenticate: Basic realm="testrealm"
 
 This is a bad password page!
 </data1400>
 
 <!-- Fifth request has Digest auth, right password -->
-<data500>
-HTTP/1.1 401 Need Basic or Digest auth (3)
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
-WWW-Authenticate: Digest realm="testrealm", nonce="6"
-
-This is not the real page!
-</data500>
-
 <data1500>
 HTTP/1.1 200 Things are fine in server land (2)
 Server: Microsoft-IIS/5.0
@@ -111,13 +78,6 @@ WWW-Authenticate: Digest realm="testrealm", nonce="1"
 WWW-Authenticate: Basic realm="testrealm"
 
 This is a bad password page!
-HTTP/1.1 401 Need Basic or Digest auth
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
-WWW-Authenticate: Digest realm="testrealm", nonce="2"
-
 HTTP/1.1 200 Things are fine in server land
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
@@ -128,32 +88,18 @@ HTTP/1.1 401 Sorry wrong password (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 29
-WWW-Authenticate: Digest realm="testrealm", nonce="3"
+WWW-Authenticate: Digest realm="testrealm", nonce="2"
 WWW-Authenticate: Basic realm="testrealm"
 
 This is a bad password page!
-HTTP/1.1 401 Need Basic or Digest auth (2)
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
-WWW-Authenticate: Digest realm="testrealm", nonce="4"
-
 HTTP/1.1 401 Sorry wrong password (3)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 29
-WWW-Authenticate: Digest realm="testrealm", nonce="5"
+WWW-Authenticate: Digest realm="testrealm", nonce="3"
 WWW-Authenticate: Basic realm="testrealm"
 
 This is a bad password page!
-HTTP/1.1 401 Need Basic or Digest auth (3)
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
-WWW-Authenticate: Digest realm="testrealm", nonce="6"
-
 HTTP/1.1 200 Things are fine in server land (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
@@ -202,11 +148,7 @@ Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20240200 HTTP/1.1
-Host: %HOSTIP:%HTTPPORT
-Accept: */*
-
-GET /20240200 HTTP/1.1
-Authorization: Digest username="testuser", realm="testrealm", nonce="2", uri="/20240200", response="510ad5d6857c98adac0142431442c351"
+Authorization: Digest username="testuser", realm="testrealm", nonce="1", uri="/20240200", response="ed646c565f79e2dd9fa37cb5a621213c"
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
@@ -216,20 +158,12 @@ Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20240400 HTTP/1.1
-Host: %HOSTIP:%HTTPPORT
-Accept: */*
-
-GET /20240400 HTTP/1.1
-Authorization: Digest username="testuser", realm="testrealm", nonce="4", uri="/20240400", response="c2e731662159d77b88606aba23935935"
+Authorization: Digest username="testuser", realm="testrealm", nonce="2", uri="/20240400", response="9741ced8caacc6124770187b36f007c5"
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20240500 HTTP/1.1
-Host: %HOSTIP:%HTTPPORT
-Accept: */*
-
-GET /20240500 HTTP/1.1
-Authorization: Digest username="testuser", realm="testrealm", nonce="6", uri="/20240500", response="440673db0856934334c8bb8c81c8959e"
+Authorization: Digest username="testuser", realm="testrealm", nonce="3", uri="/20240500", response="5bc77ec8c2d443b27a1b55f1fd8fbb13"
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 

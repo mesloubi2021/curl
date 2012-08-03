@@ -53,7 +53,7 @@ HTTP/1.1 401 NTLM intermediate
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 33
-WWW-Authenticate: NTLM TlRMTVNTUAACAAAAEAAQADAAAAAHggEAfxv6FB5jrvEAAAAAAAAAAAAAAABAAAAATgBUAEwATQBBAHUAdABoAA==
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
 
 This is still not the real page!
 </data1201>
@@ -107,7 +107,7 @@ HTTP/1.1 401 NTLM intermediate (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 33
-WWW-Authenticate: NTLM TlRMTVNTUAACAAAAEAAQADAAAAAHggEAG1aokhDJRY8AAAAAAAAAAAAAAABAAAAATgBUAEwATQBBAHUAdABoAA==
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
 
 This is still not the real page!
 </data1401>
@@ -140,7 +140,7 @@ HTTP/1.1 401 NTLM intermediate (3)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 33
-WWW-Authenticate: NTLM TlRMTVNTUAACAAAAEAAQADAAAAAHggEAJOodh13HtVkAAAAAAAAAAAAAAABAAAAATgBUAEwATQBBAHUAdABoAA==
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
 
 This is still not the real page!
 </data1501>
@@ -170,18 +170,11 @@ WWW-Authenticate: Digest realm="testrealm", nonce="2"
 WWW-Authenticate: NTLM
 
 This is a bad password page!
-HTTP/1.1 401 Need Digest or NTLM auth (2)
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: NTLM
-WWW-Authenticate: Digest realm="testrealm", nonce="3"
-
 HTTP/1.1 401 NTLM intermediate
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 33
-WWW-Authenticate: NTLM TlRMTVNTUAACAAAAEAAQADAAAAAHggEAfxv6FB5jrvEAAAAAAAAAAAAAAABAAAAATgBUAEwATQBBAHUAdABoAA==
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
 
 HTTP/1.1 200 Things are fine in server land
 Server: Microsoft-IIS/5.0
@@ -204,18 +197,11 @@ WWW-Authenticate: NTLM
 WWW-Authenticate: Digest realm="testrealm", nonce="5"
 
 This is a bad password page!
-HTTP/1.1 401 Need Digest or NTLM auth (4)
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Digest realm="testrealm", nonce="6"
-WWW-Authenticate: NTLM
-
 HTTP/1.1 401 NTLM intermediate (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 33
-WWW-Authenticate: NTLM TlRMTVNTUAACAAAAEAAQADAAAAAHggEAG1aokhDJRY8AAAAAAAAAAAAAAABAAAAATgBUAEwATQBBAHUAdABoAA==
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
 
 HTTP/1.1 401 Sorry wrong password (3)
 Server: Microsoft-IIS/5.0
@@ -225,18 +211,11 @@ WWW-Authenticate: NTLM
 WWW-Authenticate: Digest realm="testrealm", nonce="7"
 
 This is a bad password page!
-HTTP/1.1 401 Need Digest or NTLM auth (5)
-Server: Microsoft-IIS/5.0
-Content-Type: text/html; charset=iso-8859-1
-Content-Length: 27
-WWW-Authenticate: Digest realm="testrealm", nonce="8"
-WWW-Authenticate: NTLM
-
 HTTP/1.1 401 NTLM intermediate (3)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 33
-WWW-Authenticate: NTLM TlRMTVNTUAACAAAAEAAQADAAAAAHggEAJOodh13HtVkAAAAAAAAAAAAAAABAAAAATgBUAEwATQBBAHUAdABoAA==
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
 
 HTTP/1.1 200 Things are fine in server land (2)
 Server: Microsoft-IIS/5.0
@@ -290,16 +269,12 @@ Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20280200 HTTP/1.1
+Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA=
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20280200 HTTP/1.1
-Authorization: NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=
-Host: %HOSTIP:%HTTPPORT
-Accept: */*
-
-GET /20280200 HTTP/1.1
-Authorization: NTLM TlRMTVNTUAADAAAAGAAYAHgAAAAYABgAkAAAAAAAAABAAAAAEAAQAEAAAAAoACgAUAAAAAAAAAAAAAAAB4IAAHQAZQBzAHQAdQBzAGUAcgBqAG0AYQBzAG8AbgAtAFQAaABpAG4AawBQAGEAZAAtAFcANQAwADAAHXFlfAO9HviepuKNBaaJ0sa4P/PLL1VcHXFlfAO9HviepuKNBaaJ0sa4P/PLL1Vc
+Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEAAAAAYABgAWAAAAAAAAABwAAAACAAIAHAAAAAIAAgAeAAAAAAAAAAAAAAABoIBAI+/Fp9IERAQ74OsdNPbBpg7o8CVwLSO4DtFyIcZHUMKVktWIu92s2892OVpd2JzqnRlc3R1c2VyY3VybGhvc3Q=
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
@@ -308,35 +283,27 @@ Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20280300 HTTP/1.1
-Authorization: Digest username="testuser", realm="testrealm", nonce="4", uri="/20280300", response="c5f603d7a155f06f22de628d7620c3d2"
+Authorization: Digest username="testuser", realm="testrealm", nonce="4", uri="/20280300", response="1aa5d90da9803ca12d04b24e0f19476e"
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20280400 HTTP/1.1
+Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA=
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20280400 HTTP/1.1
-Authorization: NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=
-Host: %HOSTIP:%HTTPPORT
-Accept: */*
-
-GET /20280400 HTTP/1.1
-Authorization: NTLM TlRMTVNTUAADAAAAGAAYAHgAAAAYABgAkAAAAAAAAABAAAAAEAAQAEAAAAAoACgAUAAAAAAAAAAAAAAAB4IAAHQAZQBzAHQAdQBzAGUAcgBqAG0AYQBzAG8AbgAtAFQAaABpAG4AawBQAGEAZAAtAFcANQAwADAA+aYCRpqYE9ZEh/QVB5WAOti0BJlRh3OI+aYCRpqYE9ZEh/QVB5WAOti0BJlRh3OI
+Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEAAAAAYABgAWAAAAAAAAABwAAAACAAIAHAAAAAIAAgAeAAAAAAAAAAAAAAABoIBANgKEcT5xUUBHw5+0m4FjWTGNzg6PeHJHbaPwNwCt/tXcnIeTQCTMAg12SPDyNXMf3Rlc3R1c2VyY3VybGhvc3Q=
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20280500 HTTP/1.1
+Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA=
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20280500 HTTP/1.1
-Authorization: NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=
-Host: %HOSTIP:%HTTPPORT
-Accept: */*
-
-GET /20280500 HTTP/1.1
-Authorization: NTLM TlRMTVNTUAADAAAAGAAYAHgAAAAYABgAkAAAAAAAAABAAAAAEAAQAEAAAAAoACgAUAAAAAAAAAAAAAAAB4IAAHQAZQBzAHQAdQBzAGUAcgBqAG0AYQBzAG8AbgAtAFQAaABpAG4AawBQAGEAZAAtAFcANQAwADAABF/Fwh0/okttZkDhupg07YAflT4v1UieBF/Fwh0/okttZkDhupg07YAflT4v1Uie
+Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEAAAAAYABgAWAAAAAAAAABwAAAACAAIAHAAAAAIAAgAeAAAAAAAAAAAAAAABoIBAI+/Fp9IERAQ74OsdNPbBpg7o8CVwLSO4DtFyIcZHUMKVktWIu92s2892OVpd2JzqnRlc3R1c2VyY3VybGhvc3Q=
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 

@@ -56,9 +56,9 @@ WWW-Authenticate: Digest realm="testrealm", nonce="3"
 WWW-Authenticate: Basic realm="testrealm"
 
 This is not the real page!
-</data100>
+</data300>
 
-<data1100>
+<data1300>
 HTTP/1.1 401 Sorry wrong password (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
@@ -67,7 +67,7 @@ WWW-Authenticate: Basic realm="testrealm"
 WWW-Authenticate: Digest realm="testrealm", nonce="4"
 
 This is a bad password page!
-</data1100>
+</data1300>
 
 <!-- Fourth request has Basic auth, wrong password -->
 <data400>
@@ -96,15 +96,15 @@ HTTP/1.1 401 Need Basic or Digest auth
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
 WWW-Authenticate: Digest realm="testrealm", nonce="1"
+WWW-Authenticate: Basic realm="testrealm"
 
 HTTP/1.1 401 Sorry wrong password
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 29
-WWW-Authenticate: Digest realm="testrealm", nonce="2"
 WWW-Authenticate: Basic realm="testrealm"
+WWW-Authenticate: Digest realm="testrealm", nonce="2"
 
 This is a bad password page!
 HTTP/1.1 200 Things are fine in server land
@@ -117,23 +117,23 @@ HTTP/1.1 401 Need Basic or Digest auth (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 27
-WWW-Authenticate: Basic realm="testrealm"
 WWW-Authenticate: Digest realm="testrealm", nonce="3"
+WWW-Authenticate: Basic realm="testrealm"
 
 HTTP/1.1 401 Sorry wrong password (2)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 29
-WWW-Authenticate: Digest realm="testrealm", nonce="4"
 WWW-Authenticate: Basic realm="testrealm"
+WWW-Authenticate: Digest realm="testrealm", nonce="4"
 
 This is a bad password page!
 HTTP/1.1 401 Sorry wrong password (3)
 Server: Microsoft-IIS/5.0
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 29
-WWW-Authenticate: Basic realm="testrealm"
 WWW-Authenticate: Digest realm="testrealm", nonce="5"
+WWW-Authenticate: Basic realm="testrealm"
 
 This is a bad password page!
 HTTP/1.1 200 Things are fine in server land (2)
@@ -197,7 +197,7 @@ Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
 GET /20260300 HTTP/1.1
-Authorization: Digest username="testuser", realm="testrealm", nonce="3", uri="/20230500", response="90967176912d1a831e24dcdb0bacf6fe"
+Authorization: Digest username="testuser", realm="testrealm", nonce="3", uri="/20260300", response="132242e602882251929be93228c830ae"
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 
