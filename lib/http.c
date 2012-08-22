@@ -1184,13 +1184,13 @@ static int http_should_fail(struct connectdata *conn)
   if(httpcode == 401) {
     if(http_auth_callback_ready(conn, CURLAUTH_TYPE_HOST))
       return FALSE;
-    if(conn->bits.user_passwd)
+    if(!conn->bits.user_passwd)
       return TRUE;
   }
   if(httpcode == 407) {
     if(http_auth_callback_ready(conn, CURLAUTH_TYPE_PROXY))
       return FALSE;
-    if(conn->bits.proxy_user_passwd)
+    if(!conn->bits.proxy_user_passwd)
       return TRUE;
   }
 
