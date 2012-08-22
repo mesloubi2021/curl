@@ -12,6 +12,10 @@
 
  Name                           Introduced  Deprecated  Removed
 
+CURLAUTHE_CANCEL                7.28.0
+CURLAUTHE_OK                    7.28.0
+CURLAUTHE_OUT_OF_MEMORY         7.28.0
+CURLAUTHE_UNKNOWN               7.28.0
 CURLAUTH_ANY                    7.10.6
 CURLAUTH_ANYSAFE                7.10.6
 CURLAUTH_BASIC                  7.10.6
@@ -22,6 +26,9 @@ CURLAUTH_NONE                   7.10.6
 CURLAUTH_NTLM                   7.10.6
 CURLAUTH_NTLM_WB                7.22.0
 CURLAUTH_ONLY                   7.21.3
+CURLAUTH_TYPE_HOST              7.28.0
+CURLAUTH_TYPE_NONE              7.28.0
+CURLAUTH_TYPE_PROXY             7.28.0
 CURLCLOSEPOLICY_CALLBACK        7.7
 CURLCLOSEPOLICY_LEAST_RECENTLY_USED 7.7
 CURLCLOSEPOLICY_LEAST_TRAFFIC   7.7
@@ -356,6 +363,8 @@ CURLOPT_GSSAPI_DELEGATION       7.22.0
 CURLOPT_HEADER                  7.1
 CURLOPT_HEADERDATA              7.10
 CURLOPT_HEADERFUNCTION          7.7.2
+CURLOPT_HTTP_AUTH_DATA          7.28.0
+CURLOPT_HTTP_AUTH_FUNCTION      7.28.0
 CURLOPT_HTTP200ALIASES          7.10.3
 CURLOPT_HTTPAUTH                7.10.6
 CURLOPT_HTTPGET                 7.8.1
