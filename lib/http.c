@@ -3415,8 +3415,6 @@ CURLcode Curl_http_readwrite_headers(struct SessionHandle *data,
               }
               else {
                 /* serious error, go home! */
-                failf (data, "The requested URL returned error: %d",
-                       k->httpcode);
                 print_http_error(data);
                 return CURLE_HTTP_RETURNED_ERROR;
               }
