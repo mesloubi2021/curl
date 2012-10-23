@@ -100,7 +100,7 @@ test2016 test2017 test2018 test2019 test2020 test2021 test2022 \
 test2023 test2024 test2025 \
 test2026 test2027 test2028 \
 test2029 test2030 test2031 \
-test2032
+test2032 test2033
 
 EXTRA_DIST = $(TESTCASES) DISABLED
 

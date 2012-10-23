@@ -1,0 +1,289 @@
+<testcase>
+<info>
+<keywords>
+HTTP
+HTTP GET
+HTTP Basic auth
+HTTP Digest auth
+HTTP NTLM auth
+</keywords>
+</info>
+# Server-side
+<reply>
+
+<!-- Basic auth, wrong password -->
+<data1000>
+HTTP/1.1 401 Need credentials
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 27
+WWW-Authenticate: Basic realm="testrealm"
+
+This is not the real page!
+</data1000>
+
+<data1001>
+HTTP/1.1 401 Sorry wrong password
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 29
+WWW-Authenticate: Basic realm="testrealm"
+
+This is a bad password page!
+</data1001>
+
+<!-- Basic auth, right password -->
+<data1101>
+HTTP/1.1 200 Things are fine in server land
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 32
+
+Finally, this is the real page!
+</data1101>
+
+<!-- Digest auth, wrong password -->
+<data1201>
+HTTP/1.1 401 Need credentials (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 27
+WWW-Authenticate: Digest realm="testrealm", nonce="1"
+
+This is not the real page!
+</data1201>
+
+<data2200>
+HTTP/1.1 401 Sorry wrong password (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 29
+WWW-Authenticate: Digest realm="testrealm", nonce="2"
+
+This is a bad password page!
+</data2200>
+
+<!-- Digest auth, right password -->
+<data2300>
+HTTP/1.1 200 Things are fine in server land (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 32
+
+Finally, this is the real page!
+</data2300>
+
+<!-- NTLM auth, wrong password -->
+<data2400>
+HTTP/1.1 401 Need credentials (3)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 27
+WWW-Authenticate: NTLM
+
+This is not the real page!
+</data2400>
+
+<data2401>
+HTTP/1.1 401 NTLM intermediate
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 33
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
+
+This is still not the real page!
+</data2401>
+
+<data2402>
+HTTP/1.1 401 Sorry wrong password (3)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 29
+WWW-Authenticate: NTLM
+
+This is a bad password page!
+</data2402>
+
+<!-- Fifth request has NTLM auth, right password -->
+<data2501>
+HTTP/1.1 401 NTLM intermediate (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 33
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
+
+This is still not the real page!
+</data2501>
+
+<data2502>
+HTTP/1.1 200 Things are fine in server land (3)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 32
+
+Finally, this is the real page!
+</data2502>
+
+<datacheck>
+HTTP/1.1 401 Need credentials
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 27
+WWW-Authenticate: Basic realm="testrealm"
+
+HTTP/1.1 401 Sorry wrong password
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 29
+WWW-Authenticate: Basic realm="testrealm"
+
+This is a bad password page!
+HTTP/1.1 200 Things are fine in server land
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 32
+
+Finally, this is the real page!
+HTTP/1.1 401 Need credentials (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 27
+WWW-Authenticate: Digest realm="testrealm", nonce="1"
+
+HTTP/1.1 401 Sorry wrong password (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 29
+WWW-Authenticate: Digest realm="testrealm", nonce="2"
+
+This is a bad password page!
+HTTP/1.1 200 Things are fine in server land (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 32
+
+Finally, this is the real page!
+HTTP/1.1 401 Need credentials (3)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 27
+WWW-Authenticate: NTLM
+
+HTTP/1.1 401 NTLM intermediate
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 33
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
+
+HTTP/1.1 401 Sorry wrong password (3)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 29
+WWW-Authenticate: NTLM
+
+This is a bad password page!
+HTTP/1.1 401 NTLM intermediate (2)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 33
+WWW-Authenticate: NTLM TlRMTVNTUAACAAAACAAIADAAAAAGggEAq6U1NAWaJCIAAAAAAAAAAAAAAAA4AAAATlRMTUF1dGg=
+
+HTTP/1.1 200 Things are fine in server land (3)
+Server: Microsoft-IIS/5.0
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 32
+
+Finally, this is the real page!
+</datacheck>
+
+</reply>
+
+# Client-side
+<client>
+<server>
+http
+</server>
+<tool>
+lib2033
+</tool>
+
+ <name>
+HTTP authorization reuse of connection
+ </name>
+ <setenv>
+# we force our own host name, in order to make the test machine independent
+CURL_GETHOSTNAME=curlhost
+# we try to use the LD_PRELOAD hack, if not a debug build
+LD_PRELOAD=%PWD/libtest/.libs/libhostname.so
+ </setenv>
+ <command>
+http://%HOSTIP:%HTTPPORT/2033
+</command>
+<precheck>
+chkhostname curlhost
+</precheck>
+</client>
+
+# Verify data after the test has been "shot"
+<verify>
+<strip>
+^User-Agent:.*
+</strip>
+<protocol>
+GET /20331000 HTTP/1.1
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331000 HTTP/1.1
+Authorization: Basic dGVzdHVzZXI6d3JvbmdwYXNz
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331100 HTTP/1.1
+Authorization: Basic dGVzdHVzZXI6dGVzdHBhc3M=
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331200 HTTP/1.1
+Authorization: Basic dGVzdHVzZXI6d3JvbmdwYXNz
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331200 HTTP/1.1
+Authorization: Digest username="testuser", realm="testrealm", nonce="1", uri="/20331200", response="26cd2dfd2530928aae8e6a24e2f556ed"
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331300 HTTP/1.1
+Authorization: Digest username="testuser", realm="testrealm", nonce="2", uri="/20331300", response="1f384402edebde265effd0a7b164563e"
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331400 HTTP/1.1
+Authorization: Digest username="testuser", realm="testrealm", nonce="2", uri="/20331400", response="de1e24bdf7a953d97df2a260d5703eae"
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331400 HTTP/1.1
+Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA=
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331400 HTTP/1.1
+Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEAAAAAYABgAWAAAAAAAAABwAAAACAAIAHAAAAAIAAgAeAAAAAAAAAAAAAAABoIBANgKEcT5xUUBHw5+0m4FjWTGNzg6PeHJHbaPwNwCt/tXcnIeTQCTMAg12SPDyNXMf3Rlc3R1c2VyY3VybGhvc3Q=
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331500 HTTP/1.1
+Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA=
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+GET /20331500 HTTP/1.1
+Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEAAAAAYABgAWAAAAAAAAABwAAAACAAIAHAAAAAIAAgAeAAAAAAAAAAAAAAABoIBAI+/Fp9IERAQ74OsdNPbBpg7o8CVwLSO4DtFyIcZHUMKVktWIu92s2892OVpd2JzqnRlc3R1c2VyY3VybGhvc3Q=
+Host: %HOSTIP:%HTTPPORT
+Accept: */*
+
+</protocol>
+</verify>
+</testcase>
