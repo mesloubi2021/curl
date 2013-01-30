@@ -2167,6 +2167,19 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   Curl_safefree (conn->allocptr.userpwd);
   conn->allocptr.userpwd = NULL;
 
+  if(data->state.authproxy.picked == CURLAUTH_NTLM ||
+     data->state.authproxy.picked == CURLAUTH_NTLM_WB) {
+    /* Despite what the above comment says, for PROXY basic and digest, this
+     * cannot be cleared or test 540 in the curl test suite will break. (The
+     * test expects the digest header to be included in all requests on a
+     * connection.) But it definitely cannot be reused for NTLM since NTLM
+     * needs an exchange of alternating messages, so sending the same one twice
+     * in a row cannot be understood by the server. So clear the proxyuserpwd
+     * only for NTLM auth.
+     */
+    Curl_safefree (conn->allocptr.proxyuserpwd);
+  }
+
   if(result)
     return result;
 
