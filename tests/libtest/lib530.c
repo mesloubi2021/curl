@@ -29,6 +29,17 @@
 
 #define NUM_HANDLES 4
 
+size_t testwrite( char *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    int i = (int) userdata;
+    char* buf = malloc(size*nmemb+1);
+    memcpy(buf, ptr, size*nmemb);
+    buf[size*nmemb] = 0;
+    fprintf(stderr, "handle %d read [%s]\n", i, buf);
+    free(buf);
+    return size*nmemb;
+}
+
 int test(char *URL)
 {
   int res = 0;
@@ -59,6 +70,8 @@ int test(char *URL)
     easy_setopt(curl[i], CURLOPT_VERBOSE, 1L);
     /* include headers */
     easy_setopt(curl[i], CURLOPT_HEADER, 1L);
+    easy_setopt(curl[i], CURLOPT_WRITEFUNCTION, &testwrite);
+    easy_setopt(curl[i], CURLOPT_WRITEDATA, (void *) i);
     /* add handle to multi */
     multi_add_handle(m, curl[i]);
   }
@@ -75,7 +88,9 @@ int test(char *URL)
     interval.tv_sec = 1;
     interval.tv_usec = 0;
 
+    fprintf(stderr, "Calling multi_perform...\n");
     multi_perform(m, &running);
+    fprintf(stderr, "running now %d\n", running);
 
     abort_on_test_timeout();
 
