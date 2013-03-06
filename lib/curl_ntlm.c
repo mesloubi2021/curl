@@ -89,24 +89,67 @@ CURLcode Curl_input_ntlm(struct connectdata *conn,
 
     if(*header) {
       result = Curl_ntlm_decode_type2_message(conn->data, header, ntlm);
-      if(CURLE_OK != result)
+      if(CURLE_OK != result) {
+        infof(conn->data, "aborting NTLM auth on connection #%ld because the "
+              "server sent a malformed type-2 header\n", conn->connection_id);
+        ntlm->state = NTLMSTATE_NONE;
         return result;
+      }
 
-      ntlm->state = NTLMSTATE_TYPE2; /* We got a type-2 message */
+      /* Always respond to a type-2 message with a type-3 message - assume the
+       * server knows what it's doing. Log a warning if in the wrong state,
+       * though:
+       *
+       * NTLMSTATE_NONE: server sent a type-2 message without any prompting
+       * NTLMSTATE_PICKED: ditto
+       * NTLMSTATE_TYPE1_SENT: expected state; next step of authorization
+       *                       continuing
+       * NTLMSTATE_TYPE2_RECEIVED: we already received a type-2 and have not
+       *                           responded (shouldn't have called this
+       *                           function yet)
+       * NTLMSTATE_TYPE3_SENT: server responded with another type-2 for some
+       *                       reason
+       * NTLMSTATE_AUTHORIZED: we already did a full NTLM handshake, and the
+       *                       server sent another type-2 to restart auth
+       */
+      DEBUGASSERT(ntlm->state != NTLMSTATE_TYPE2_RECEIVED);
+      if(ntlm->state != NTLMSTATE_TYPE1_SENT)
+        infof(conn->data, "received an unexpected NTLM type-2 message on "
+              "connection #%ld\n", conn->connection_id);
+      ntlm->state = NTLMSTATE_TYPE2_RECEIVED;
     }
     else {
-      if(ntlm->state == NTLMSTATE_TYPE3) {
-        infof(conn->data, "NTLM handshake rejected\n");
-        Curl_http_ntlm_cleanup(conn);
-        ntlm->state = NTLMSTATE_NONE;
+      /* If the server sent just "NTLM", set the state back to NONE (because we
+       * may choose a different auth type based on other headers; the state
+       * will be updated to PICKED if we choose to actually use NTLM auth.) If
+       * it's just after we sent an NTLM message treat it as a failure (return
+       * ACCESS_DENIED)
+       *
+       * NTLMSTATE_NONE: starting NTLM auth
+       * NTLMSTATE_PICKED: ditto
+       * NTLMSTATE_TYPE1_SENT: expected state; authorization failed
+       * NTLMSTATE_TYPE2_RECEIVED: we already received a type-2 and have not
+       *                           responded (shouldn't have called this
+       *                           function yet) - treat as authorization
+       *                           failed
+       * NTLMSTATE_TYPE3_SENT: expected state; authorization failed
+       * NTLMSTATE_AUTHORIZED: a previous NTLM handshake succeeded on this
+       *                       connection, but the server requested to
+       *                       authenticate again (it's allowed to do that)
+       */
+      curlntlm oldstate = ntlm->state;
+      DEBUGASSERT(ntlm->state != NTLMSTATE_TYPE2_RECEIVED);
+      ntlm->state = NTLMSTATE_NONE;
+      if(oldstate == NTLMSTATE_TYPE1_SENT||oldstate == NTLMSTATE_TYPE3_SENT) {
+        infof(conn->data, "NTLM handshake failure on connection #%ld\n",
+              conn->connection_id);
         return CURLE_REMOTE_ACCESS_DENIED;
       }
-      else if(ntlm->state >= NTLMSTATE_TYPE1) {
-        infof(conn->data, "NTLM handshake failure (internal error)\n");
+      else if(oldstate == NTLMSTATE_TYPE2_RECEIVED) {
+        infof(conn->data, "NTLM handshake failure on connection #%ld "
+              "(internal error)\n", conn->connection_id);
         return CURLE_REMOTE_ACCESS_DENIED;
       }
-
-      ntlm->state = NTLMSTATE_TYPE1; /* We should send away a type-1 */
     }
   }
 
@@ -175,9 +218,19 @@ CURLcode Curl_output_ntlm(struct connectdata *conn,
   }
 #endif
 
+  /* NTLMSTATE_NONE: NTLM auth was not picked; should not get here
+   * NTLMSTATE_PICKED: starting of NTLM auth; send a type-1
+   * NTLMSTATE_TYPE1_SENT: we already sent a type-1; we shouldn't be here until
+   *                       we receive a response
+   * NTLMSTATE_TYPE2_RECEIVED: send a type-3
+   * NTLMSTATE_TYPE3_SENT: we already sent a type-3; we shouldn't be here
+   *                       because any response ends the handshake
+   * NTLMSTATE_AUTHORIZED: we already did an NTLM handshake, so just clean up;
+   *                       we only get here if NTLM is the only auth type in
+   *                       authp->wanted
+   */
   switch(ntlm->state) {
-  case NTLMSTATE_TYPE1:
-  default: /* for the weird cases we (re)start here */
+  case NTLMSTATE_PICKED:
     /* Create a type-1 message */
     error = Curl_ntlm_create_type1_message(userp, passwdp, ntlm, &base64,
                                            &len);
@@ -192,10 +245,11 @@ CURLcode Curl_output_ntlm(struct connectdata *conn,
                               base64);
       DEBUG_OUT(fprintf(stderr, "**** Header %s\n ", *allocuserpwd));
       free(base64);
+      ntlm->state = NTLMSTATE_TYPE1_SENT;
     }
     break;
 
-  case NTLMSTATE_TYPE2:
+  case NTLMSTATE_TYPE2_RECEIVED:
     /* We already received the type-2 message, create a type-3 message */
     error = Curl_ntlm_create_type3_message(conn->data, userp, passwdp,
                                            ntlm, &base64, &len);
@@ -210,12 +264,12 @@ CURLcode Curl_output_ntlm(struct connectdata *conn,
       DEBUG_OUT(fprintf(stderr, "**** %s\n ", *allocuserpwd));
       free(base64);
 
-      ntlm->state = NTLMSTATE_TYPE3; /* we send a type-3 */
+      ntlm->state = NTLMSTATE_TYPE3_SENT; /* we send a type-3 */
       authp->done = TRUE;
     }
     break;
 
-  case NTLMSTATE_TYPE3:
+  case NTLMSTATE_AUTHORIZED:
     /* connection is already authenticated,
      * don't send a header in future requests */
     if(*allocuserpwd) {
@@ -224,9 +278,31 @@ CURLcode Curl_output_ntlm(struct connectdata *conn,
     }
     authp->done = TRUE;
     break;
+
+  default:
+    /* this function should not be called in this state */
+    DEBUGASSERT(FALSE);
+    break;
   }
 
   return CURLE_OK;
+}
+
+/* If the auth type is set to NTLM, and an NTLM handshake hasn't started yet,
+ * set the connection state to NTLMSTATE_PICKED so that the handshake will
+ * start on that connection next time Curl_output_ntlm is called.
+ * (ConnectionExists will force the connection to be reused since its state is
+ * not NTLMSTATE_NONE.)
+ */
+void Curl_http_ntlm_checkstate(struct connectdata *conn, bool proxy)
+{
+  struct ntlmdata *ntlm = proxy ? &conn->proxyntlm : &conn->ntlm;
+  struct auth *auth = proxy ? &conn->data->state.authproxy :
+                              &conn->data->state.authhost;
+
+  if(ntlm->state == NTLMSTATE_NONE &&
+          (auth->picked == CURLAUTH_NTLM || auth->picked == CURLAUTH_NTLM_WB))
+    ntlm->state = NTLMSTATE_PICKED;
 }
 
 void Curl_http_ntlm_cleanup(struct connectdata *conn)

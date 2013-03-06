@@ -384,7 +384,10 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
        (data->state.authhost.picked == CURLAUTH_NTLM_WB)) {
       if(((expectsend - bytessent) < 2000) ||
          (conn->ntlm.state != NTLMSTATE_NONE) ||
-         (conn->proxyntlm.state != NTLMSTATE_NONE)) {
+         (conn->ntlm.state > NTLMSTATE_PICKED &&
+          conn->ntlm.state < NTLMSTATE_AUTHORIZED) ||
+         (conn->proxyntlm.state > NTLMSTATE_PICKED &&
+          conn->proxyntlm.state < NTLMSTATE_AUTHORIZED)) {
         /* The NTLM-negotiation has started *OR* there is just a little (<2K)
            data left to send, keep on sending. */
 
@@ -447,6 +450,8 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
     pickhost = pickoneauth(&data->state.authhost);
     if(!pickhost)
       data->state.authproblem = TRUE;
+    else
+      Curl_http_ntlm_checkstate(conn, /*proxy*/ FALSE);
   }
   if(conn->bits.proxy_user_passwd &&
      ((data->req.httpcode == 407) ||
@@ -454,6 +459,8 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
     pickproxy = pickoneauth(&data->state.authproxy);
     if(!pickproxy)
       data->state.authproblem = TRUE;
+    else
+      Curl_http_ntlm_checkstate(conn, /*proxy*/ TRUE);
   }
 
   if(pickhost || pickproxy) {
@@ -635,17 +642,21 @@ Curl_http_output_auth(struct connectdata *conn,
     return CURLE_OK; /* no authentication with no user or password */
   }
 
-  if(authhost->want && !authhost->picked)
+  if(authhost->want && !authhost->picked) {
     /* The app has selected one or more methods, but none has been picked
        so far by a server round-trip. Then we set the picked one to the
        want one, and if this is one single bit it'll be used instantly. */
     authhost->picked = authhost->want;
+    Curl_http_ntlm_checkstate(conn, /*proxy*/ FALSE);
+  }
 
-  if(authproxy->want && !authproxy->picked)
+  if(authproxy->want && !authproxy->picked) {
     /* The app has selected one or more methods, but none has been picked so
        far by a proxy round-trip. Then we set the picked one to the want one,
        and if this is one single bit it'll be used instantly. */
     authproxy->picked = authproxy->want;
+    Curl_http_ntlm_checkstate(conn, /*proxy*/ TRUE);
+  }
 
 #ifndef CURL_DISABLE_PROXY
   /* Send proxy authentication header if needed */
@@ -3128,6 +3139,41 @@ CURLcode Curl_http_readwrite_headers(struct SessionHandle *data,
            data->state.httpversion > conn->httpversion)
           /* store the lowest server version we encounter */
           data->state.httpversion = conn->httpversion;
+
+        /* If this is NOT 401/407, that means any authentication in progress
+         * succeeded. (Even if it was a different error.) Since NTLM state is
+         * held per-connection and could affect further requests on this
+         * connection, update it now.
+         *
+         * On the other hand, if the connection was already marked AUTHORIZED,
+         * but the server sent a 401/407, it's not authorized any more...
+         */
+        if(k->httpcode == 401) {
+          if(conn->ntlm.state == NTLMSTATE_AUTHORIZED)
+            conn->ntlm.state = NTLMSTATE_NONE;
+        }
+        else {
+          if(conn->ntlm.state == NTLMSTATE_TYPE3_SENT)
+            conn->ntlm.state = NTLMSTATE_AUTHORIZED;
+          else if(conn->ntlm.state != NTLMSTATE_NONE &&
+                  conn->ntlm.state != NTLMSTATE_AUTHORIZED) {
+            /* NTLM handshake was not finished, but server abandoned it */
+            conn->ntlm.state = NTLMSTATE_NONE;
+          }
+        }
+        if(k->httpcode == 407) {
+          if(conn->proxyntlm.state == NTLMSTATE_AUTHORIZED)
+            conn->proxyntlm.state = NTLMSTATE_NONE;
+        }
+        else {
+          if(conn->proxyntlm.state == NTLMSTATE_TYPE3_SENT)
+            conn->proxyntlm.state = NTLMSTATE_AUTHORIZED;
+          else if(conn->proxyntlm.state != NTLMSTATE_NONE &&
+                   conn->proxyntlm.state != NTLMSTATE_AUTHORIZED) {
+            /* NTLM handshake was not finished, but server abandoned it */
+            conn->proxyntlm.state = NTLMSTATE_NONE;
+          }
+        }
 
         /*
          * This code executes as part of processing the header.  As a

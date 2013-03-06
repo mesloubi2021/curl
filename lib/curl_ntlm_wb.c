@@ -263,17 +263,17 @@ static CURLcode ntlm_wb_response(struct connectdata *conn,
   goto done;
 wrfinish:
   /* Samba/winbind installed but not configured */
-  if(state == NTLMSTATE_TYPE1 &&
+  if(state == NTLMSTATE_TYPE1_SENT &&
      size == 3 &&
      buf[0] == 'P' && buf[1] == 'W')
     return CURLE_REMOTE_ACCESS_DENIED;
   /* invalid response */
   if(size < 4)
     goto done;
-  if(state == NTLMSTATE_TYPE1 &&
+  if(state == NTLMSTATE_TYPE1_SENT &&
      (buf[0]!='Y' || buf[1]!='R' || buf[2]!=' '))
     goto done;
-  if(state == NTLMSTATE_TYPE2 &&
+  if(state == NTLMSTATE_TYPE2_RECEIVED &&
      (buf[0]!='K' || buf[1]!='K' || buf[2]!=' ') &&
      (buf[0]!='A' || buf[1]!='F' || buf[2]!=' '))
     goto done;
@@ -325,7 +325,7 @@ CURLcode Curl_output_ntlm_wb(struct connectdata *conn,
     userp="";
 
   switch(ntlm->state) {
-  case NTLMSTATE_TYPE1:
+  case NTLMSTATE_TYPE1_SENT:
   default:
     /* Use Samba's 'winbind' daemon to support NTLM authentication,
      * by delegating the NTLM challenge/response protocal to a helper
@@ -355,7 +355,7 @@ CURLcode Curl_output_ntlm_wb(struct connectdata *conn,
     Curl_safefree(conn->response_header);
     conn->response_header = NULL;
     break;
-  case NTLMSTATE_TYPE2:
+  case NTLMSTATE_TYPE2_RECEIVED:
     input = aprintf("TT %s", conn->challenge_header);
     if(!input)
       return CURLE_OUT_OF_MEMORY;
@@ -370,11 +370,11 @@ CURLcode Curl_output_ntlm_wb(struct connectdata *conn,
                             proxy ? "Proxy-" : "",
                             conn->response_header);
     DEBUG_OUT(fprintf(stderr, "**** %s\n ", *allocuserpwd));
-    ntlm->state = NTLMSTATE_TYPE3; /* we sent a type-3 */
+    ntlm->state = NTLMSTATE_TYPE3_SENT; /* we sent a type-3 */
     authp->done = TRUE;
     Curl_ntlm_wb_cleanup(conn);
     break;
-  case NTLMSTATE_TYPE3:
+  case NTLMSTATE_TYPE3_SENT:
     /* connection is already authenticated,
      * don't send a header in future requests */
     if(*allocuserpwd) {
