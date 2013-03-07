@@ -77,6 +77,8 @@ CURLcode Curl_input_ntlm(struct connectdata *conn,
 
   ntlm = proxy ? &conn->proxyntlm : &conn->ntlm;
 
+  infof(conn->data, "Curl_input_ntlm(%d) with state %d\n", proxy, ntlm->state);
+
   /* skip initial whitespaces */
   while(*header && ISSPACE(*header))
     header++;
@@ -201,6 +203,9 @@ CURLcode Curl_output_ntlm(struct connectdata *conn,
     authp = &conn->data->state.authhost;
   }
   authp->done = FALSE;
+
+  infof(conn->data, "Curl_output_ntlm(%d) with state %d\n", proxy,
+        ntlm->state);
 
   /* not set means empty */
   if(!userp)

@@ -3130,6 +3130,8 @@ ConnectionExists(struct SessionHandle *data,
                            lastconn->ntlm.state < NTLMSTATE_AUTHORIZED;
     bool inProxyNTLMHandshake =lastconn->proxyntlm.state >= NTLMSTATE_PICKED &&
                                lastconn->proxyntlm.state <NTLMSTATE_AUTHORIZED;
+    infof(data, "lastconn is #%ld (inNTLM %d, inProxyNTLM %d)\n",
+          lastconn->connection_id, inNTLMHandshake, inProxyNTLMHandshake);
     if(inNTLMHandshake || inProxyNTLMHandshake) {
       size_t pipeLen = lastconn->send_pipe->size + lastconn->recv_pipe->size;
       if(ConnectionMatches(data, needle, lastconn,
@@ -3146,7 +3148,9 @@ ConnectionExists(struct SessionHandle *data,
       return FALSE;
     }
   }
-
+  else {
+    infof(data, "lastconn not set\n");
+  }
   /* Look up the bundle with all the connections to this
      particular host */
   bundle = Curl_conncache_find_bundle(data->state.conn_cache,
