@@ -148,6 +148,7 @@ int test(char *URL)
   int handlenum = 0;
   struct timeval last_handle_add;
 
+  fprintf(stderr, "curl_off_t is %d bytes, long int is %d bytes\n", sizeof(curl_off_t), sizeof(long int));
   if(parse_url_file("log/urls.txt") <= 0)
     goto test_cleanup;
 
