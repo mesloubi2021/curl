@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+	<Linkage-zlib>$(UsesConfigurationType)</Linkage-zlib>
+	<Linkage-zlib_redist>$(UsesConfigurationType)</Linkage-zlib_redist>
+	<CallingConvention-zlib>$(CallingConvention)</CallingConvention-zlib>
+	<Linkage-openssl>$(UsesConfigurationType)</Linkage-openssl>
+	<Linkage-openssl_redist>$(UsesConfigurationType)</Linkage-openssl_redist>
+	<CallingConvention-openssl>$(CallingConvention)</CallingConvention-openssl>
+	<Linkage-libssh2>$(UsesConfigurationType)</Linkage-libssh2>
+	<Linkage-libssh2_redist>$(UsesConfigurationType)</Linkage-libssh2_redist>
+	<CallingConvention-libssh2>$(CallingConvention)</CallingConvention-libssh2>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)packages\zlib\build\native\zlib.props" Condition="exists('$(MSBuildThisFileDirectory)packages\zlib\build\native\zlib.props')"/>
+  <Import Project="$(MSBuildThisFileDirectory)packages\zlib.redist\build\native\zlib.redist.props" Condition="exists('$(MSBuildThisFileDirectory)packages\zlib.redist\build\native\zlib.redist.props')"/>
+  <Import Project="$(MSBuildThisFileDirectory)packages\openssl\build\native\openssl.props" Condition="exists('$(MSBuildThisFileDirectory)packages\openssl\build\native\openssl.props')"/>
+  <Import Project="$(MSBuildThisFileDirectory)packages\openssl.redist\build\native\openssl.redist.props" Condition="exists('$(MSBuildThisFileDirectory)packages\openssl.redist\build\native\openssl.redist.props')"/>
+  <Import Project="$(MSBuildThisFileDirectory)packages\libssh2\build\native\libssh2.props" Condition="exists('$(MSBuildThisFileDirectory)packages\libssh2\build\native\libssh2.props')"/>
+  <Import Project="$(MSBuildThisFileDirectory)packages\libssh2.redist\build\native\libssh2.redist.props" Condition="exists('$(MSBuildThisFileDirectory)packages\libssh2.redist\build\native\libssh2.redist.props')"/>
+</Project>
