@@ -25,6 +25,12 @@ libcurl homepage:  http://curl.haxx.se/libcurl/";
 
 	};
 
+    dependencies {
+        packages : {
+            libssh2/1.4;
+        };
+    }
+
 	// the files that go into the content folders
 	// (inserted into the nuspec file)
 	files {
@@ -39,16 +45,16 @@ libcurl homepage:  http://curl.haxx.se/libcurl/";
 
 		docs: { ..\docs\**\* };
     
-		("v100,v110", "Win32,x64", "release,debug", "Dynamic", "cdecl") => {
-			[${0},${1},${2},${3},${4}] {
-				bin:     { .\output\${0}\${1}\${2}\${3}\${4}\lib\libcurl.dll };
-				symbols: { .\output\${0}\${1}\${2}\${3}\${4}\lib\libcurl.pdb };
+		("v100,v110", "Win32,x64", "release,debug", "Dynamic") => {
+			[${0},${1},${2},${3}] {
+				bin:     { .\output\${0}\${1}\${2}\${3}\libcurl.dll };
+				symbols: { .\output\${0}\${1}\${2}\${3}\libcurl.pdb };
 			};
 		};
-		("v100,v110", "Win32,x64", "release,debug", "Dynamic, Static,ltcg", "cdecl") => {
-			[${0},${1},${2},${3},${4}] {
-				lib:     { .\output\${0}\${1}\${2}\${3}\${4}\lib\libcurl.lib };
-				tools:   { .\output\${0}\${1}\${2}\${3}\${4}\lib\curl.exe };
+		("v100,v110", "Win32,x64", "release,debug", "Dynamic, Static,ltcg") => {
+			[${0},${1},${2},${3}] {
+				lib:     { .\output\${0}\${1}\${2}\${3}\libcurl.lib };
+				tools:   { .\output\${0}\${1}\${2}\${3}\curl.exe };
 			};
 		};
 	};
