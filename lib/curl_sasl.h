@@ -25,18 +25,13 @@
 #include "pingpong.h"
 
 /* Authentication mechanism flags */
-#define SASL_MECH_LOGIN         (1 << 0)
-#define SASL_MECH_PLAIN         (1 << 1)
-#define SASL_MECH_CRAM_MD5      (1 << 2)
-#define SASL_MECH_DIGEST_MD5    (1 << 3)
-#define SASL_MECH_GSSAPI        (1 << 4)
-#define SASL_MECH_EXTERNAL      (1 << 5)
-#define SASL_MECH_NTLM          (1 << 6)
-#define SASL_MECH_XOAUTH2       (1 << 7)
-
-/* Authentication mechanism values */
-#define SASL_AUTH_NONE          0
-#define SASL_AUTH_ANY           ~0U
+#define SASL_MECH_LOGIN         0x0001
+#define SASL_MECH_PLAIN         0x0002
+#define SASL_MECH_CRAM_MD5      0x0004
+#define SASL_MECH_DIGEST_MD5    0x0008
+#define SASL_MECH_GSSAPI        0x0010
+#define SASL_MECH_EXTERNAL      0x0020
+#define SASL_MECH_NTLM          0x0040
 
 /* This is used to generate a base64 encoded PLAIN authentication message */
 CURLcode Curl_sasl_create_plain_message(struct SessionHandle *data,
@@ -85,13 +80,6 @@ CURLcode Curl_sasl_create_ntlm_type3_message(struct SessionHandle *data,
                                              char **outptr, size_t *outlen);
 
 #endif /* USE_NTLM */
-
-/* This is used to generate a base64 encoded XOAUTH2 authentication message
-   containing the user name and bearer token */
-CURLcode Curl_sasl_create_xoauth2_message(struct SessionHandle *data,
-                                          const char *user,
-                                          const char *bearer,
-                                          char **outptr, size_t *outlen);
 
 /* This is used to cleanup any libraries or curl modules used by the sasl
    functions */

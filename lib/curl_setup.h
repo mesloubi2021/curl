@@ -270,9 +270,7 @@
 #    endif
 #  endif
 #  include <tchar.h>
-#  ifdef UNICODE
-     typedef wchar_t *(*curl_wcsdup_callback)(const wchar_t *str);
-#  endif
+   typedef wchar_t *(*curl_wcsdup_callback)(const wchar_t *str);
 #endif
 
 /*
@@ -371,9 +369,7 @@
 #  include <sys/stat.h>
 #  undef  lseek
 #  define lseek(fdes,offset,whence)  _lseeki64(fdes, offset, whence)
-#  undef  fstat
 #  define fstat(fdes,stp)            _fstati64(fdes, stp)
-#  undef  stat
 #  define stat(fname,stp)            _stati64(fname, stp)
 #  define struct_stat                struct _stati64
 #  define LSEEK_ERROR                (__int64)-1
@@ -620,7 +616,7 @@ int netware_init(void);
 #if defined(USE_GNUTLS) || defined(USE_SSLEAY) || defined(USE_NSS) || \
     defined(USE_QSOSSL) || defined(USE_POLARSSL) || defined(USE_AXTLS) || \
     defined(USE_CYASSL) || defined(USE_SCHANNEL) || \
-    defined(USE_DARWINSSL) || defined(USE_GSKIT)
+    defined(USE_DARWINSSL)
 #define USE_SSL    /* SSL support has been enabled */
 #endif
 

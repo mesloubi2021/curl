@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -50,18 +50,15 @@ enum host_lookup_state {
 
 /*
  * @unittest: 1304
- *
- * *loginp and *passwordp MUST be allocated if they aren't NULL when passed
- * in.
  */
 int Curl_parsenetrc(const char *host,
-                    char **loginp,
-                    char **passwordp,
+                    char *login,
+                    char *password,
                     char *netrcfile)
 {
   FILE *file;
   int retcode=1;
-  int specific_login = (**loginp != 0);
+  int specific_login = (login[0] != 0);
   char *home = NULL;
   bool home_alloc = FALSE;
   bool netrc_alloc = FALSE;
@@ -112,7 +109,7 @@ int Curl_parsenetrc(const char *host,
       tok=strtok_r(netrcbuffer, " \t\n", &tok_buf);
       while(!done && tok) {
 
-        if(**loginp && **passwordp) {
+        if(login[0] && password[0]) {
           done=TRUE;
           break;
         }
@@ -141,22 +138,16 @@ int Curl_parsenetrc(const char *host,
           /* we are now parsing sub-keywords concerning "our" host */
           if(state_login) {
             if(specific_login) {
-              state_our_login = Curl_raw_equal(*loginp, tok);
+              state_our_login = Curl_raw_equal(login, tok);
             }
             else {
-              free(*loginp);
-              *loginp = strdup(tok);
-              if(!*loginp)
-                return -1; /* allocation failed */
+              strncpy(login, tok, LOGINSIZE-1);
             }
             state_login=0;
           }
           else if(state_password) {
             if(state_our_login || !specific_login) {
-              free(*passwordp);
-              *passwordp = strdup(tok);
-              if(!*passwordp)
-                return -1; /* allocation failed */
+              strncpy(password, tok, PASSWORDSIZE-1);
             }
             state_password=0;
           }

@@ -22,7 +22,6 @@
  * RFC2831 DIGEST-MD5 authentication
  * RFC4422 Simple Authentication and Security Layer (SASL)
  * RFC4616 PLAIN authentication
- * RFC6749 OAuth 2.0 Authorization Framework
  *
  ***************************************************************************/
 
@@ -33,7 +32,7 @@
 
 #include "curl_base64.h"
 #include "curl_md5.h"
-#include "sslgen.h"
+#include "curl_rand.h"
 #include "curl_hmac.h"
 #include "curl_ntlm_msgs.h"
 #include "curl_sasl.h"
@@ -95,18 +94,18 @@ CURLcode Curl_sasl_create_plain_message(struct SessionHandle *data,
                                         const char *passwdp,
                                         char **outptr, size_t *outlen)
 {
-  CURLcode result;
-  char *plainauth;
+  char plainauth[2 * MAX_CURL_USER_LENGTH + MAX_CURL_PASSWORD_LENGTH];
   size_t ulen;
   size_t plen;
 
   ulen = strlen(userp);
   plen = strlen(passwdp);
 
-  plainauth = malloc(2 * ulen + plen + 2);
-  if(!plainauth) {
+  if(2 * ulen + plen + 2 > sizeof(plainauth)) {
     *outlen = 0;
     *outptr = NULL;
+
+    /* Plainauth too small */
     return CURLE_OUT_OF_MEMORY;
   }
 
@@ -118,10 +117,8 @@ CURLcode Curl_sasl_create_plain_message(struct SessionHandle *data,
   memcpy(plainauth + 2 * ulen + 2, passwdp, plen);
 
   /* Base64 encode the reply */
-  result = Curl_base64_encode(data, plainauth, 2 * ulen + plen + 2, outptr,
-                              outlen);
-  Curl_safefree(plainauth);
-  return result;
+  return Curl_base64_encode(data, plainauth, 2 * ulen + plen + 2, outptr,
+                            outlen);
 }
 
 /*
@@ -193,7 +190,7 @@ CURLcode Curl_sasl_create_cram_md5_message(struct SessionHandle *data,
   size_t chlglen = 0;
   HMAC_context *ctxt;
   unsigned char digest[MD5_DIGEST_LEN];
-  char *response;
+  char response[MAX_CURL_USER_LENGTH + 2 * MD5_DIGEST_LEN + 1];
 
   /* Decode the challenge if necessary */
   if(chlg64len && *chlg64 != '=') {
@@ -223,19 +220,14 @@ CURLcode Curl_sasl_create_cram_md5_message(struct SessionHandle *data,
   Curl_HMAC_final(ctxt, digest);
 
   /* Prepare the response */
-  response = aprintf(
+  snprintf(response, sizeof(response),
       "%s %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
            userp, digest[0], digest[1], digest[2], digest[3], digest[4],
            digest[5], digest[6], digest[7], digest[8], digest[9], digest[10],
            digest[11], digest[12], digest[13], digest[14], digest[15]);
-  if(!response)
-    return CURLE_OUT_OF_MEMORY;
 
   /* Base64 encode the reply */
-  result = Curl_base64_encode(data, response, 0, outptr, outlen);
-
-  Curl_safefree(response);
-  return result;
+  return Curl_base64_encode(data, response, 0, outptr, outlen);
 }
 
 /*
@@ -322,7 +314,7 @@ CURLcode Curl_sasl_create_digest_md5_message(struct SessionHandle *data,
 
   /* Generate 64 bits of random data */
   for(i = 0; i < 8; i++)
-    cnonce[i] = table16[Curl_rand(data)%16];
+    cnonce[i] = table16[Curl_rand()%16];
 
   /* So far so good, now calculate A1 and H(A1) according to RFC 2831 */
   ctxt = Curl_MD5_init(Curl_DIGEST_MD5);
@@ -477,40 +469,6 @@ CURLcode Curl_sasl_create_ntlm_type3_message(struct SessionHandle *data,
   return result;
 }
 #endif /* USE_NTLM */
-
-/*
- * Curl_sasl_create_xoauth2_message()
- *
- * This is used to generate an already encoded XOAUTH2 message ready
- * for sending to the recipient.
- *
- * Parameters:
- *
- * data    [in]     - The session handle.
- * user    [in]     - The user name.
- * bearer  [in]     - The XOAUTH Bearer token.
- * outptr  [in/out] - The address where a pointer to newly allocated memory
- *                    holding the result will be stored upon completion.
- * outlen  [out]    - The length of the output message.
- *
- * Returns CURLE_OK on success.
- */
-CURLcode Curl_sasl_create_xoauth2_message(struct SessionHandle *data,
-                                          const char *user,
-                                          const char *bearer,
-                                          char **outptr, size_t *outlen)
-{
-  char *xoauth;
-
-  xoauth = aprintf("user=%s\1auth=Bearer %s\1\1", user, bearer);
-
-  if(!xoauth)
-    return CURLE_OUT_OF_MEMORY;
-
-  /* Base64 encode the reply */
-  return Curl_base64_encode(data, xoauth, strlen(xoauth), outptr,
-                            outlen);
-}
 
 /*
  * Curl_sasl_cleanup()

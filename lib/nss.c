@@ -1482,8 +1482,10 @@ static ssize_t nss_send(struct connectdata *conn,  /* connection data */
                         size_t len,                /* amount to write */
                         CURLcode *curlcode)
 {
-  ssize_t rc = PR_Send(conn->ssl[sockindex].handle, mem, (int)len, 0,
-                       PR_INTERVAL_NO_WAIT);
+  int rc;
+
+  rc = PR_Send(conn->ssl[sockindex].handle, mem, (int)len, 0, -1);
+
   if(rc < 0) {
     PRInt32 err = PR_GetError();
     if(err == PR_WOULD_BLOCK_ERROR)
@@ -1511,8 +1513,9 @@ static ssize_t nss_recv(struct connectdata * conn, /* connection data */
                         size_t buffersize,         /* max amount to read */
                         CURLcode *curlcode)
 {
-  ssize_t nread = PR_Recv(conn->ssl[num].handle, buf, (int)buffersize, 0,
-                          PR_INTERVAL_NO_WAIT);
+  ssize_t nread;
+
+  nread = PR_Recv(conn->ssl[num].handle, buf, (int)buffersize, 0, -1);
   if(nread < 0) {
     /* failed SSL read */
     PRInt32 err = PR_GetError();
@@ -1543,8 +1546,9 @@ size_t Curl_nss_version(char *buffer, size_t size)
 
 int Curl_nss_seed(struct SessionHandle *data)
 {
-  /* make sure that NSS is initialized */
-  return !!Curl_nss_force_init(data);
+  /* TODO: implement? */
+  (void) data;
+  return 0;
 }
 
 void Curl_nss_random(struct SessionHandle *data,
@@ -1552,11 +1556,7 @@ void Curl_nss_random(struct SessionHandle *data,
                      size_t length)
 {
   Curl_nss_seed(data);  /* Initiate the seed if not already done */
-  if(SECSuccess != PK11_GenerateRandom(entropy, curlx_uztosi(length))) {
-    /* no way to signal a failure from here, we have to abort */
-    failf(data, "PK11_GenerateRandom() failed, calling abort()...");
-    abort();
-  }
+  PK11_GenerateRandom(entropy, curlx_uztosi(length));
 }
 
 void Curl_nss_md5sum(unsigned char *tmp, /* input */

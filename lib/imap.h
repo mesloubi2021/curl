@@ -43,7 +43,6 @@ typedef enum {
   IMAP_AUTHENTICATE_DIGESTMD5_RESP,
   IMAP_AUTHENTICATE_NTLM,
   IMAP_AUTHENTICATE_NTLM_TYPE2MSG,
-  IMAP_AUTHENTICATE_XOAUTH2,
   IMAP_AUTHENTICATE_FINAL,
   IMAP_LOGIN,
   IMAP_LIST,
@@ -77,7 +76,6 @@ struct imap_conn {
   imapstate state;            /* Always use imap.c:state() to change state! */
   bool ssldone;               /* Is connect() over SSL done? */
   unsigned int authmechs;     /* Accepted authentication mechanisms */
-  unsigned int prefmech;      /* Preferred authentication mechanism */
   unsigned int authused;      /* Auth mechanism used for the connection */
   int cmdid;                  /* Last used command ID */
   char resptag[5];            /* Response tag to wait for */

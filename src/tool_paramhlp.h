@@ -33,8 +33,6 @@ void cleanarg(char *str);
 
 ParameterError str2num(long *val, const char *str);
 ParameterError str2unum(long *val, const char *str);
-ParameterError str2double(double *val, const char *str);
-ParameterError str2udouble(double *val, const char *str);
 
 long proto2num(struct Configurable *config, long *val, const char *str);
 

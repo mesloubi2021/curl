@@ -43,7 +43,7 @@
 /* Common method for using gss api */
 
 OM_uint32 Curl_gss_init_sec_context(
-    struct SessionHandle *data,
+    struct connectdata *conn,
     OM_uint32 * minor_status,
     gss_ctx_id_t * context,
     gss_name_t target_name,

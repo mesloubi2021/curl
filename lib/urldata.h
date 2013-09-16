@@ -134,10 +134,6 @@
 #include <qsossl.h>
 #endif
 
-#ifdef USE_GSKIT
-#include <gskssl.h>
-#endif
-
 #ifdef USE_AXTLS
 #include <axTLS/ssl.h>
 #undef malloc
@@ -188,7 +184,6 @@
 #include "http.h"
 #include "rtsp.h"
 #include "wildcard.h"
-#include "multihandle.h"
 
 #ifdef HAVE_GSSAPI
 # ifdef HAVE_GSSGNU
@@ -222,9 +217,9 @@
 #define CURLMIN(x,y) ((x)<(y)?(x):(y))
 
 
-#ifdef HAVE_GSSAPI
-/* Types needed for krb5-ftp connections */
-struct krb5buffer {
+#if defined(HAVE_KRB4) || defined(HAVE_GSSAPI)
+/* Types needed for krb4/5-ftp connections */
+struct krb4buffer {
   void *data;
   size_t size;
   size_t index;
@@ -248,7 +243,6 @@ struct curl_schannel_cred {
   CredHandle cred_handle;
   TimeStamp time_stamp;
   int refcount;
-  bool cached;
 };
 
 struct curl_schannel_ctxt {
@@ -327,15 +321,9 @@ struct ssl_connect_data {
 #ifdef USE_QSOSSL
   SSLHandle *handle;
 #endif /* USE_QSOSSL */
-#ifdef USE_GSKIT
-  gsk_handle handle;
-  int iocport;
-  ssl_connect_state connecting_state;
-#endif
 #ifdef USE_AXTLS
   SSL_CTX* ssl_ctx;
   SSL*     ssl;
-  ssl_connect_state connecting_state;
 #endif /* USE_AXTLS */
 #ifdef USE_SCHANNEL
   struct curl_schannel_cred *cred;
@@ -462,6 +450,7 @@ struct negotiatedata {
 #endif
 #endif
 };
+
 #endif
 
 
@@ -475,6 +464,9 @@ struct ConnectBits {
   bool httpproxy;    /* if set, this transfer is done through a http proxy */
   bool user_passwd;    /* do we use user+password for this connection? */
   bool proxy_user_passwd; /* user+password for the proxy? */
+  bool user_keytab;    /*do we need user(spn)+ keytab*/
+  bool credential_cache; /*do we have credential cache defined*/
+  bool service_principal; /* Target name or SPN */
   bool ipv6_ip; /* we communicate with a remote site specified with pure IPv6
                    IP address */
   bool ipv6;    /* we communicate with a site using an IPv6 address */
@@ -577,7 +569,7 @@ struct Curl_async {
 /* These function pointer types are here only to allow easier typecasting
    within the source when we need to cast between data pointers (such as NULL)
    and function pointers. */
-typedef CURLcode (*Curl_do_more_func)(struct connectdata *, int *);
+typedef CURLcode (*Curl_do_more_func)(struct connectdata *, bool *);
 typedef CURLcode (*Curl_done_func)(struct connectdata *, CURLcode, bool);
 
 
@@ -692,9 +684,6 @@ struct SingleRequest {
   bool forbidchunk;   /* used only to explicitly forbid chunk-upload for
                          specific upload buffers. See readmoredata() in
                          http.c for details. */
-
-  void *protop;       /* Allocated protocol-specific data. Each protocol
-                         handler makes sure this points to data it needs. */
 };
 
 /*
@@ -806,6 +795,7 @@ typedef ssize_t (Curl_recv)(struct connectdata *conn, /* connection data */
  * unique for an entire connection.
  */
 struct connectdata {
+
   /* 'data' is the CURRENT SessionHandle using this connection -- take great
      caution that this might very well vary between different times this
      connection is used! */
@@ -874,9 +864,9 @@ struct connectdata {
 
   char *user;    /* user name string, allocated */
   char *passwd;  /* password string, allocated */
-  char *options; /* options string, allocated */
-
-  char *xoauth2_bearer; /* bearer token for xoauth2, allocated */
+  char *keytab_location;	/* keytab location */
+  char *service_principal;  /* service principal name */
+  char *credential_cache;   /*for credential cache location name */
 
   char *proxyuser;    /* proxy user name string, allocated */
   char *proxypasswd;  /* proxy password string, allocated */
@@ -936,12 +926,12 @@ struct connectdata {
   } allocptr;
 
   int sec_complete; /* if kerberos is enabled for this connection */
-#ifdef HAVE_GSSAPI
+#if defined(HAVE_KRB4) || defined(HAVE_GSSAPI)
   enum protection_level command_prot;
   enum protection_level data_prot;
   enum protection_level request_data_prot;
   size_t buffer_size;
-  struct krb5buffer in_buffer;
+  struct krb4buffer in_buffer;
   void *app_data;
   const struct Curl_sec_client_mech *mech;
   struct sockaddr_in local_addr;
@@ -1001,14 +991,13 @@ struct connectdata {
 
   union {
     struct ftp_conn ftpc;
-    struct http_conn httpc;
     struct ssh_conn sshc;
     struct tftp_state_data *tftpc;
     struct imap_conn imapc;
     struct pop3_conn pop3c;
     struct smtp_conn smtpc;
     struct rtsp_conn rtspc;
-    void *generic; /* RTMP and LDAP use this */
+    void *generic;
   } proto;
 
   int cselect_bits; /* bitmask of socket events */
@@ -1155,6 +1144,11 @@ typedef enum {
  * Session-data MUST be put in the connectdata struct and here.  */
 #define MAX_CURL_USER_LENGTH 256
 #define MAX_CURL_PASSWORD_LENGTH 256
+#define MAX_CURL_USER_LENGTH_TXT "255"
+#define MAX_CURL_PASSWORD_LENGTH_TXT "255"
+#define MAX_CURL_KEYTAB_LOCATION_LENGTH 256				
+#define MAX_CURL_SERVICE_PRINCIPAL_LENGTH 256
+#define MAX_CURL_CREDENTIAL_CACHE_LENGTH 256
 
 struct auth {
   unsigned long want;  /* Bitmask set to the authentication methods wanted by
@@ -1279,6 +1273,30 @@ struct UrlState {
   long rtsp_next_server_CSeq; /* the session's next server CSeq */
   long rtsp_CSeq_recv; /* most recent CSeq received */
 
+  /* Protocol specific data.
+   *
+   *************************************************************************
+   * Note that this data will be REMOVED after each request, so anything that
+   * should be kept/stored on a per-connection basis and thus live for the
+   * next request on the same connection MUST be put in the connectdata struct!
+   *************************************************************************/
+  union {
+    struct HTTP *http;
+    struct HTTP *https;  /* alias, just for the sake of being more readable */
+    struct RTSP *rtsp;
+    struct FTP *ftp;
+    /* void *tftp;    not used */
+    struct FILEPROTO *file;
+    void *telnet;        /* private for telnet.c-eyes only */
+    void *generic;
+    struct SSHPROTO *ssh;
+    struct IMAP *imap;
+    struct POP3 *pop3;
+    struct SMTP *smtp;
+  } proto;
+  /* current user of this SessionHandle instance, or NULL */
+  struct connectdata *current_conn;
+
   /* if true, force SSL connection retry (workaround for certain servers) */
   bool ssl_connect_retry;
 };
@@ -1310,7 +1328,7 @@ struct DynamicStatic {
  * the 'DynamicStatic' struct.
  * Character pointer fields point to dynamic storage, unless otherwise stated.
  */
-
+struct Curl_one_easy; /* declared and used only in multi.c */
 struct Curl_multi;    /* declared and used only in multi.c */
 
 enum dupstring {
@@ -1345,7 +1363,6 @@ enum dupstring {
   STRING_SSL_ISSUERCERT,  /* issuer cert file to check certificate */
   STRING_USERNAME,        /* <username>, if used */
   STRING_PASSWORD,        /* <password>, if used */
-  STRING_OPTIONS,         /* <options>, if used */
   STRING_PROXYUSERNAME,   /* Proxy <username>, if used */
   STRING_PROXYPASSWORD,   /* Proxy <password>, if used */
   STRING_NOPROXY,         /* List of hosts which should not use the proxy, if
@@ -1353,6 +1370,9 @@ enum dupstring {
   STRING_RTSP_SESSION_ID, /* Session ID to use */
   STRING_RTSP_STREAM_URI, /* Stream URI for this request */
   STRING_RTSP_TRANSPORT,  /* Transport for this session */
+  STRING_KEYTAB_LOCATION,	/* For keytab location option */
+  STRING_SERVICE_PRINCIPAL, /* For service principal name */
+  STRING_CREDENTIAL_CACHE, /* For location of credential cache*/	
 #ifdef USE_LIBSSH2
   STRING_SSH_PRIVATE_KEY, /* path to the private key file for auth */
   STRING_SSH_PUBLIC_KEY,  /* path to the public key file for auth */
@@ -1369,8 +1389,6 @@ enum dupstring {
   STRING_TLSAUTH_USERNAME,     /* TLS auth <username> */
   STRING_TLSAUTH_PASSWORD,     /* TLS auth <password> */
 #endif
-
-  STRING_BEARER,          /* <bearer>, if used */
 
   /* -- end of strings -- */
   STRING_LAST /* not used, just an end-of-list marker */
@@ -1412,8 +1430,7 @@ struct UserDefined {
   curl_read_callback fread_func;     /* function that reads the input */
   int is_fread_set; /* boolean, has read callback been set to non-NULL? */
   int is_fwrite_set; /* boolean, has write callback been set to non-NULL? */
-  curl_progress_callback fprogress; /* OLD and deprecated progress callback  */
-  curl_xferinfo_callback fxferinfo; /* progress callback */
+  curl_progress_callback fprogress;  /* function for progress information */
   curl_debug_callback fdebug;      /* function that write informational data */
   curl_ioctl_callback ioctl_func;  /* function for I/O control */
   curl_sockopt_callback fsockopt;  /* function for setting socket options */
@@ -1474,6 +1491,12 @@ struct UserDefined {
   long dns_cache_timeout; /* DNS cache timeout */
   long buffer_size;      /* size of receive buffer to use */
   void *private_data; /* application-private data */
+
+  struct Curl_one_easy *one_easy; /* When adding an easy handle to a multi
+                                     handle, an internal 'Curl_one_easy'
+                                     struct is created and this is a pointer
+                                     to the particular struct associated with
+                                     this SessionHandle */
 
   struct curl_slist *http200aliases; /* linked list of aliases for http200 */
 
@@ -1553,7 +1576,6 @@ struct UserDefined {
   long socks5_gssapi_nec; /* flag to support nec socks5 server */
 #endif
   struct curl_slist *mail_rcpt; /* linked list of mail recipients */
-  bool sasl_ir;         /* Enable/disable SASL initial response */
   /* Common RTSP header options */
   Curl_RtspReq rtspreq; /* RTSP request type */
   long rtspversion; /* like httpversion, for RTSP */
@@ -1597,31 +1619,24 @@ struct Names {
  */
 
 struct SessionHandle {
-  /* first, two fields for the linked list of these */
-  struct SessionHandle *next;
-  struct SessionHandle *prev;
-
-  struct connectdata *easy_conn;     /* the "unit's" connection */
-
-  CURLMstate mstate;  /* the handle's state */
-  CURLcode result;   /* previous result */
-
-  struct Curl_message msg; /* A single posted message. */
-
-  /* Array with the plain socket numbers this handle takes care of, in no
-     particular order. Note that all sockets are added to the sockhash, where
-     the state etc are also kept. This array is mostly used to detect when a
-     socket is to be removed from the hash. See singlesocket(). */
-  curl_socket_t sockets[MAX_SOCKSPEREASYHANDLE];
-  int numsocks;
-
   struct Names dns;
+   /* GSS-credential object possessed inbetween calls */
+  #ifdef HAVE_GSSAPI
+	gss_cred_id_t curl_gss_creds;
+	gss_cred_id_t deleg_gss_creds;
+	bool isIntermediateServer;
+	bool isCredSet;
+  #endif HAVE_GSSAPI
+  
   struct Curl_multi *multi;    /* if non-NULL, points to the multi handle
                                   struct to which this "belongs" when used by
                                   the multi interface */
   struct Curl_multi *multi_easy; /* if non-NULL, points to the multi handle
                                     struct to which this "belongs" when used
                                     by the easy interface */
+  struct Curl_one_easy *multi_pos; /* if non-NULL, points to its position
+                                      in multi controlling structure to assist
+                                      in removal. */
   struct Curl_share *share;    /* Share, handles global variable mutexing */
   struct SingleRequest req;    /* Request-specific data */
   struct UserDefined set;      /* values set by the libcurl user */

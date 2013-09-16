@@ -107,8 +107,6 @@ For FTP/SMTP/POP/IMAP, these are supported:
 REPLY [command] [return value] [response string]
  - Changes how the server responds to the [command]. [response string] is
    evaluated as a perl string, so it can contain embedded \r\n, for example.
-   There's a special [command] named "welcome" (without quotes) which is the
-   string sent immediately on connect as a welcome.
 COUNT [command] [num]
  - Do the REPLY change for [command] only [num] times and then go back to the
    built-in approach
@@ -125,13 +123,6 @@ SLOWDOWN
  - Send FTP responses with 0.01 sec delay between each byte
 PASVBADIP
  - makes PASV send back an illegal IP in its 227 response
-CAPA [capabilities]
- - Enables support for and specifies a list of space separated capabilities to
-   return to the client for the IMAP CAPABILITY, POP3 CAPA and SMTP EHLO
-   commands
-AUTH [mechanisms]
- - Enables support for SASL authentication and specifies a list of space
-   separated mechanisms for IMAP, POP3 and SMTP
 
 For HTTP/HTTPS:
 auth_required   if this is set and a POST/PUT is made without auth, the
@@ -151,10 +142,6 @@ rtp: part [num] channel [num] size [num]
 connection-monitor When used, this will log [DISCONNECT] to the server.input
                log when the connection is disconnected.
 
-
-For TFTP:
-writedelay: [secs] delay this amount between reply packets (each packet being
-                   512 bytes payload)
 </servercmd>
 </reply>
 
@@ -268,9 +255,7 @@ data that is defined within the <reply><data></data></reply> section.
 If there's no test number found above, the HTTP test server will use the
 number following the last dot in the given hostname (made so that a CONNECT
 can still pass on test number) so that "foo.bar.123" gets treated as test case
-123. Alternatively, if an ipv6-address is provided to CONNECT, the last
-hexadecimal group in the address will be used as the test numer! For example
-the address "[1234::ff]" would be treated as test case 255.
+123.
 
 Set type="perl" to write the test case as a perl script. It implies that
 there's no memory debugging and valgrind gets shut off for this test.
@@ -329,11 +314,8 @@ Variables are substituted on the contents of the file as in the <command>
 section.
 </file>
 
-<stdin [nonewline="yes"]>
+<stdin>
 Pass this given data on stdin to the tool.
-
-If 'nonewline' is set, we will cut off the trailing newline of this given data
-before comparing with the one actually received by the client
 </stdin>
 
 </client>

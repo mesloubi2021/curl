@@ -60,7 +60,7 @@ int test(char *URL)
 
   multi_init(m);
 
-  multi_setopt(m, CURLMOPT_MAXCONNECTS, 3L);
+  multi_setopt(m, CURLMOPT_MAXCONNECTS, 3);
 
   /* get NUM_HANDLES easy handles */
   for(i=0; i < NUM_HANDLES; i++) {

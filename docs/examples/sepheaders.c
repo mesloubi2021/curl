@@ -54,31 +54,29 @@ int main(void)
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 
   /* open the files */
-  headerfile = fopen(headerfilename,"wb");
+  headerfile = fopen(headerfilename,"w");
   if (headerfile == NULL) {
     curl_easy_cleanup(curl_handle);
     return -1;
   }
-  bodyfile = fopen(bodyfilename,"wb");
+  bodyfile = fopen(bodyfilename,"w");
   if (bodyfile == NULL) {
     curl_easy_cleanup(curl_handle);
     return -1;
   }
 
-  /* we want the headers be written to this file handle */
+  /* we want the headers to this file handle */
   curl_easy_setopt(curl_handle,   CURLOPT_WRITEHEADER, headerfile);
 
-  /* we want the body be written to this file handle instead of stdout */
-  curl_easy_setopt(curl_handle,   CURLOPT_WRITEDATA, bodyfile);
+  /*
+   * Notice here that if you want the actual data sent anywhere else but
+   * stdout, you should consider using the CURLOPT_WRITEDATA option.  */
 
   /* get it! */
   curl_easy_perform(curl_handle);
 
   /* close the header file */
   fclose(headerfile);
-
-  /* close the body file */
-  fclose(bodyfile);
 
   /* cleanup curl stuff */
   curl_easy_cleanup(curl_handle);

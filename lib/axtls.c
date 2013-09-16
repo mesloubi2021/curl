@@ -41,11 +41,25 @@
 #define _MPRINTF_REPLACE /* use our functions only */
 #include <curl/mprintf.h>
 #include "curl_memory.h"
-#include <unistd.h>
 /* The last #include file should be: */
 #include "memdebug.h"
 #include "hostcheck.h"
 
+
+/* SSL_read is opied from axTLS compat layer */
+static int SSL_read(SSL *ssl, void *buf, int num)
+{
+  uint8_t *read_buf;
+  int ret;
+
+  while((ret = ssl_read(ssl, &read_buf)) == SSL_OK);
+
+  if(ret > SSL_OK) {
+    memcpy(buf, read_buf, ret > num ? num : ret);
+  }
+
+  return ret;
+}
 
 /* Global axTLS init, called from Curl_ssl_init() */
 int Curl_axtls_init(void)
@@ -117,40 +131,31 @@ static CURLcode map_error_to_curl(int axtls_err)
 static Curl_recv axtls_recv;
 static Curl_send axtls_send;
 
-static void free_ssl_structs(struct ssl_connect_data *connssl)
-{
-  if(connssl->ssl) {
-    ssl_free (connssl->ssl);
-    connssl->ssl = NULL;
-  }
-  if(connssl->ssl_ctx) {
-    ssl_ctx_free(connssl->ssl_ctx);
-    connssl->ssl_ctx = NULL;
-  }
-}
-
 /*
- * For both blocking and non-blocking connects, this function sets up the
- * ssl context and state.  This function is called after the TCP connect
- * has completed.
+ * This function is called after the TCP connect has completed. Setup the TLS
+ * layer and do all necessary magic.
  */
-static CURLcode connect_prep(struct connectdata *conn, int sockindex)
+CURLcode
+Curl_axtls_connect(struct connectdata *conn,
+                  int sockindex)
+
 {
   struct SessionHandle *data = conn->data;
   SSL_CTX *ssl_ctx;
-  SSL *ssl = NULL;
+  SSL *ssl;
   int cert_types[] = {SSL_OBJ_X509_CERT, SSL_OBJ_PKCS12, 0};
   int key_types[] = {SSL_OBJ_RSA_KEY, SSL_OBJ_PKCS8, SSL_OBJ_PKCS12, 0};
   int i, ssl_fcn_return;
   const uint8_t *ssl_sessionid;
   size_t ssl_idsize;
+  const char *peer_CN;
+  uint32_t dns_altname_index;
+  const char *dns_altname;
+  int8_t found_subject_alt_names = 0;
+  int8_t found_subject_alt_name_matching_conn = 0;
 
-  /* Assuming users will not compile in custom key/cert to axTLS.
-  *  Also, even for blocking connects, use axTLS non-blocking feature.
-  */
-  uint32_t client_option = SSL_NO_DEFAULT_KEY |
-    SSL_SERVER_VERIFY_LATER |
-    SSL_CONNECT_IN_PARTS;
+  /* Assuming users will not compile in custom key/cert to axTLS */
+  uint32_t client_option = SSL_NO_DEFAULT_KEY|SSL_SERVER_VERIFY_LATER;
 
   if(conn->ssl[sockindex].state == ssl_connection_complete)
     /* to make us tolerant against being called more than once for the
@@ -179,9 +184,6 @@ static CURLcode connect_prep(struct connectdata *conn, int sockindex)
     return CURLE_SSL_CONNECT_ERROR;
   }
 
-  conn->ssl[sockindex].ssl_ctx = ssl_ctx;
-  conn->ssl[sockindex].ssl = NULL;
-
   /* Load the trusted CA cert bundle file */
   if(data->set.ssl.CAfile) {
     if(ssl_obj_load(ssl_ctx, SSL_OBJ_X509_CACERT, data->set.ssl.CAfile, NULL)
@@ -189,6 +191,7 @@ static CURLcode connect_prep(struct connectdata *conn, int sockindex)
       infof(data, "error reading ca cert file %s \n",
             data->set.ssl.CAfile);
       if(data->set.ssl.verifypeer) {
+        Curl_axtls_close(conn, sockindex);
         return CURLE_SSL_CACERT_BADFILE;
       }
     }
@@ -222,6 +225,7 @@ static CURLcode connect_prep(struct connectdata *conn, int sockindex)
     if(cert_types[i] == 0) {
       failf(data, "%s is not x509 or pkcs12 format",
             data->set.str[STRING_CERT]);
+      Curl_axtls_close(conn, sockindex);
       return CURLE_SSL_CERTPROBLEM;
     }
   }
@@ -246,6 +250,7 @@ static CURLcode connect_prep(struct connectdata *conn, int sockindex)
     if(key_types[i] == 0) {
       failf(data, "Failure: %s is not a supported key file",
             data->set.str[STRING_KEY]);
+      Curl_axtls_close(conn, sockindex);
       return CURLE_SSL_CONNECT_ERROR;
     }
   }
@@ -266,25 +271,14 @@ static CURLcode connect_prep(struct connectdata *conn, int sockindex)
   else
     ssl = ssl_client_new(ssl_ctx, conn->sock[sockindex], NULL, 0);
 
-  conn->ssl[sockindex].ssl = ssl;
-  return CURLE_OK;
-}
-
-/*
- * For both blocking and non-blocking connects, this function finalizes the
- * SSL connection.
- */
-static CURLcode connect_finish(struct connectdata *conn, int sockindex)
-{
-  struct SessionHandle *data = conn->data;
-  SSL *ssl = conn->ssl[sockindex].ssl;
-  const uint8_t *ssl_sessionid;
-  size_t ssl_idsize;
-  const char *peer_CN;
-  uint32_t dns_altname_index;
-  const char *dns_altname;
-  int8_t found_subject_alt_names = 0;
-  int8_t found_subject_alt_name_matching_conn = 0;
+  /* Check to make sure handshake was ok. */
+  ssl_fcn_return = ssl_handshake_status(ssl);
+  if(ssl_fcn_return != SSL_OK) {
+    Curl_axtls_close(conn, sockindex);
+    ssl_display_error(ssl_fcn_return); /* goes to stdout. */
+    return map_error_to_curl(ssl_fcn_return);
+  }
+  infof (data, "handshake completed successfully\n");
 
   /* Here, gtls.c gets the peer certificates and fails out depending on
    * settings in "data."  axTLS api doesn't have get cert chain fcn, so omit?
@@ -295,7 +289,7 @@ static CURLcode connect_finish(struct connectdata *conn, int sockindex)
     if(ssl_verify_cert(ssl) != SSL_OK) {
       Curl_axtls_close(conn, sockindex);
       failf(data, "server cert verify failed");
-      return CURLE_PEER_FAILED_VERIFICATION;
+      return CURLE_SSL_CONNECT_ERROR;
     }
   }
   else
@@ -311,6 +305,7 @@ static CURLcode connect_finish(struct connectdata *conn, int sockindex)
    * 3) displays a bunch of cert information.  axTLS doesn't support most of
    *    this, but a couple fields are available.
    */
+
 
   /* There is no (DNS) Altnames count in the version 1.4.8 API. There is a
      risk of an inifite loop */
@@ -331,29 +326,20 @@ static CURLcode connect_finish(struct connectdata *conn, int sockindex)
 
   /* RFC2818 checks */
   if(found_subject_alt_names && !found_subject_alt_name_matching_conn) {
-    if(data->set.ssl.verifyhost) {
-      /* Break connection ! */
-      Curl_axtls_close(conn, sockindex);
-      failf(data, "\tsubjectAltName(s) do not match %s\n",
-            conn->host.dispname);
-      return CURLE_PEER_FAILED_VERIFICATION;
-    }
-    else
-      infof(data, "\tsubjectAltName(s) do not match %s\n",
-            conn->host.dispname);
+    /* Break connection ! */
+    Curl_axtls_close(conn, sockindex);
+    failf(data, "\tsubjectAltName(s) do not match %s\n", conn->host.dispname);
+    return CURLE_PEER_FAILED_VERIFICATION;
   }
   else if(found_subject_alt_names == 0) {
     /* Per RFC2818, when no Subject Alt Names were available, examine the peer
        CN as a legacy fallback */
     peer_CN = ssl_get_cert_dn(ssl, SSL_X509_CERT_COMMON_NAME);
     if(peer_CN == NULL) {
-      if(data->set.ssl.verifyhost) {
-        Curl_axtls_close(conn, sockindex);
-        failf(data, "unable to obtain common name from peer certificate");
-        return CURLE_PEER_FAILED_VERIFICATION;
-      }
-      else
-        infof(data, "unable to obtain common name from peer certificate");
+      /* Similar behaviour to the OpenSSL interface */
+      Curl_axtls_close(conn, sockindex);
+      failf(data, "unable to obtain common name from peer certificate");
+      return CURLE_PEER_FAILED_VERIFICATION;
     }
     else {
       if(!Curl_cert_hostcheck((const char *)peer_CN, conn->host.name)) {
@@ -373,6 +359,8 @@ static CURLcode connect_finish(struct connectdata *conn, int sockindex)
 
   /* General housekeeping */
   conn->ssl[sockindex].state = ssl_connection_complete;
+  conn->ssl[sockindex].ssl = ssl;
+  conn->ssl[sockindex].ssl_ctx = ssl_ctx;
   conn->recv[sockindex] = axtls_recv;
   conn->send[sockindex] = axtls_send;
 
@@ -386,107 +374,6 @@ static CURLcode connect_finish(struct connectdata *conn, int sockindex)
   return CURLE_OK;
 }
 
-/*
- * Use axTLS's non-blocking connection feature to open an SSL connection.
- * This is called after a TCP connection is already established.
-*/
-CURLcode Curl_axtls_connect_nonblocking(
-    struct connectdata *conn,
-    int sockindex,
-    bool *done)
-{
-  CURLcode conn_step;
-  int ssl_fcn_return;
-
- *done = FALSE;
-  /* connectdata is calloc'd and connecting_state is only changed in this
-     function, so this is safe, as the state is effectively initialized. */
-  if(conn->ssl[sockindex].connecting_state == ssl_connect_1) {
-    conn_step = connect_prep(conn, sockindex);
-    if(conn_step != CURLE_OK) {
-      Curl_axtls_close(conn, sockindex);
-      return conn_step;
-    }
-    conn->ssl[sockindex].connecting_state = ssl_connect_2;
-  }
-
-  if(conn->ssl[sockindex].connecting_state == ssl_connect_2) {
-    /* Check to make sure handshake was ok. */
-    if(ssl_handshake_status(conn->ssl[sockindex].ssl) != SSL_OK) {
-      ssl_fcn_return = ssl_read(conn->ssl[sockindex].ssl, NULL);
-      if(ssl_fcn_return < 0) {
-        Curl_axtls_close(conn, sockindex);
-        ssl_display_error(ssl_fcn_return); /* goes to stdout. */
-        return map_error_to_curl(ssl_fcn_return);
-      }
-      else {
-        return CURLE_OK; /* Return control to caller for retries */
-      }
-    }
-    infof (conn->data, "handshake completed successfully\n");
-    conn->ssl[sockindex].connecting_state = ssl_connect_3;
-  }
-
-  if(conn->ssl[sockindex].connecting_state == ssl_connect_3) {
-    conn_step = connect_finish(conn, sockindex);
-    if(conn_step != CURLE_OK) {
-      Curl_axtls_close(conn, sockindex);
-      return conn_step;
-    }
-
-    /* Reset connect state */
-    conn->ssl[sockindex].connecting_state = ssl_connect_1;
-
-    *done = TRUE;
-    return CURLE_OK;
-  }
-
-  /* Unrecognized state.  Things are very bad. */
-  conn->ssl[sockindex].state  = ssl_connection_none;
-  conn->ssl[sockindex].connecting_state = ssl_connect_1;
-  /* Return value perhaps not strictly correct, but distinguishes the issue.*/
-  return CURLE_BAD_FUNCTION_ARGUMENT;
-}
-
-
-/*
- * This function is called after the TCP connect has completed. Setup the TLS
- * layer and do all necessary magic for a blocking connect.
- */
-CURLcode
-Curl_axtls_connect(struct connectdata *conn,
-                  int sockindex)
-
-{
-  CURLcode conn_step = connect_prep(conn, sockindex);
-  int ssl_fcn_return;
-  SSL *ssl = conn->ssl[sockindex].ssl;
-
-  if(conn_step != CURLE_OK) {
-    Curl_axtls_close(conn, sockindex);
-    return conn_step;
-  }
-
-  /* Check to make sure handshake was ok. */
-  while(ssl_handshake_status(ssl) != SSL_OK) {
-    ssl_fcn_return = ssl_read(ssl, NULL);
-    if(ssl_fcn_return < 0) {
-      Curl_axtls_close(conn, sockindex);
-      ssl_display_error(ssl_fcn_return); /* goes to stdout. */
-      return map_error_to_curl(ssl_fcn_return);
-    }
-    usleep(10000);
-  }
-  infof (conn->data, "handshake completed successfully\n");
-
-  conn_step = connect_finish(conn, sockindex);
-  if(conn_step != CURLE_OK) {
-    Curl_axtls_close(conn, sockindex);
-    return conn_step;
-  }
-
-  return CURLE_OK;
-}
 
 /* return number of sent (non-SSL) bytes */
 static ssize_t axtls_send(struct connectdata *conn,
@@ -520,7 +407,7 @@ void Curl_axtls_close(struct connectdata *conn, int sockindex)
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
 
   infof(conn->data, "  Curl_axtls_close\n");
-
+  if(connssl->ssl) {
     /* line from ssluse.c: (void)SSL_shutdown(connssl->ssl);
        axTLS compat layer does nothing for SSL_shutdown */
 
@@ -528,7 +415,13 @@ void Curl_axtls_close(struct connectdata *conn, int sockindex)
        equivalent.  ssl_free and ssl_ctx_free close things.
        SSL_set_connect_state(connssl->handle); */
 
-  free_ssl_structs(connssl);
+    ssl_free (connssl->ssl);
+    connssl->ssl = NULL;
+  }
+  if(connssl->ssl_ctx) {
+    ssl_ctx_free (connssl->ssl_ctx);
+    connssl->ssl_ctx = NULL;
+  }
 }
 
 /*
@@ -543,7 +436,8 @@ int Curl_axtls_shutdown(struct connectdata *conn, int sockindex)
   int retval = 0;
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
   struct SessionHandle *data = conn->data;
-  uint8_t *buf;
+  char buf[120]; /* We will use this for the OpenSSL error buffer, so it has
+                    to be at least 120 bytes long. */
   ssize_t nread;
 
   infof(conn->data, "  Curl_axtls_shutdown\n");
@@ -563,10 +457,9 @@ int Curl_axtls_shutdown(struct connectdata *conn, int sockindex)
                                  CURL_SOCKET_BAD, SSL_SHUTDOWN_TIMEOUT);
     if(what > 0) {
       /* Something to read, let's do it and hope that it is the close
-         notify alert from the server.  buf is managed internally by
-         axTLS and will be released upon calling ssl_free via
-         free_ssl_structs. */
-      nread = (ssize_t)ssl_read(connssl->ssl, &buf);
+         notify alert from the server */
+      nread = (ssize_t)SSL_read(conn->ssl[sockindex].ssl, buf,
+                                sizeof(buf));
 
       if(nread < SSL_OK) {
         failf(data, "close notify alert not received during shutdown");
@@ -583,7 +476,8 @@ int Curl_axtls_shutdown(struct connectdata *conn, int sockindex)
       retval = -1;
     }
 
-    free_ssl_structs(connssl);
+    ssl_free (connssl->ssl);
+    connssl->ssl = NULL;
   }
   return retval;
 }
@@ -596,36 +490,26 @@ static ssize_t axtls_recv(struct connectdata *conn, /* connection data */
 {
   struct ssl_connect_data *connssl = &conn->ssl[num];
   ssize_t ret = 0;
-  uint8_t *read_buf;
 
   infof(conn->data, "  axtls_recv\n");
 
-  *err = CURLE_OK;
   if(connssl) {
-    ret = ssl_read(connssl->ssl, &read_buf);
-    if(ret > SSL_OK) {
-      /* ssl_read returns SSL_OK if there is more data to read, so if it is
-         larger, then all data has been read already.  */
-      memcpy(buf, read_buf,
-             (size_t)ret > buffersize ? buffersize : (size_t)ret);
-    }
-    else if(ret == SSL_OK) {
-      /* more data to be read, signal caller to call again */
-      *err = CURLE_AGAIN;
-      ret = -1;
-    }
-    else if(ret == -3) {
-      /* With patched axTLS, SSL_CLOSE_NOTIFY=-3.  Hard-coding until axTLS
-         team approves proposed fix. */
+    ret = (ssize_t)SSL_read(conn->ssl[num].ssl, buf, (int)buffersize);
+
+    /* axTLS isn't terribly generous about error reporting */
+    /* With patched axTLS, SSL_CLOSE_NOTIFY=-3.  Hard-coding until axTLS
+       team approves proposed fix. */
+    if(ret == -3 ) {
       Curl_axtls_close(conn, num);
     }
-    else {
-      failf(conn->data, "axTLS recv error (%d)", ret);
+    else if(ret < 0) {
+      failf(conn->data, "axTLS recv error (%d)", (int)ret);
       *err = map_error_to_curl(ret);
-      ret = -1;
+      return -1;
     }
   }
 
+  *err = CURLE_OK;
   return ret;
 }
 

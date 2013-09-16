@@ -274,7 +274,6 @@ my $gdbxwin;      # use windowed gdb when using gdb
 my $keepoutfiles; # keep stdout and stderr files after tests
 my $listonly;     # only list the tests
 my $postmortem;   # display detailed info about failed tests
-my $run_event_based; # run curl with --test-event to test the event API
 
 my %run;          # running server
 my %doesntrun;    # servers that don't work, identified by pidfile
@@ -495,9 +494,7 @@ sub checktestcmd {
 #
 sub runclient {
     my ($cmd)=@_;
-    my $ret = system($cmd);
-    print "CMD ($ret): $cmd\n" if($verbose);
-    return $ret;
+    return system($cmd);
 
 # This is one way to test curl on a remote machine
 #    my $out = system("ssh $CLIENTIP cd \'$pwd\' \\; \'$cmd\'");
@@ -2711,11 +2708,7 @@ sub timestampskippedevents {
 # Run a single specified test case
 #
 sub singletest {
-    my ($evbased, # 1 means switch on if possible (and "curl" is tested)
-                  # returns "not a test" if it can't be used for this test
-        $testnum,
-        $count,
-        $total)=@_;
+    my ($testnum, $count, $total)=@_;
 
     my @what;
     my $why;
@@ -3132,7 +3125,6 @@ sub singletest {
     my $CMDLINE;
     my $cmdargs;
     my $cmdtype = $cmdhash{'type'} || "default";
-    my $fail_due_event_based = $evbased;
     if($cmdtype eq "perl") {
         # run the command line prepended with "perl"
         $cmdargs ="$cmd";
@@ -3148,22 +3140,15 @@ sub singletest {
         $disablevalgrind=1;
     }
     elsif(!$tool) {
-        # run curl, add suitable command line options
+        # run curl, add --verbose for debug information output
         $cmd = "-1 ".$cmd if(exists $feature{"SSL"} && ($has_axtls));
 
         my $inc="";
         if((!$cmdhash{'option'}) || ($cmdhash{'option'} !~ /no-include/)) {
-            $inc = " --include";
+            $inc = "--include ";
         }
 
-        $cmdargs = "$out$inc ";
-        $cmdargs .= "--trace-ascii log/trace$testnum ";
-        $cmdargs .= "--trace-time ";
-        if($evbased) {
-            $cmdargs .= "--test-event ";
-            $fail_due_event_based--;
-        }
-        $cmdargs .= $cmd;
+        $cmdargs ="$out $inc--trace-ascii log/trace$testnum --trace-time $cmd";
     }
     else {
         $cmdargs = " $cmd"; # $cmd is the command line for the test file
@@ -3184,22 +3169,10 @@ sub singletest {
         $DBGCURL=$CMDLINE;
     }
 
-    if($fail_due_event_based) {
-        logmsg "This test cannot run event based\n";
-        return -1;
-    }
-
     my @stdintest = getpart("client", "stdin");
 
     if(@stdintest) {
         my $stdinfile="$LOGDIR/stdin-for-$testnum";
-
-        my %hash = getpartattr("client", "stdin");
-        if($hash{'nonewline'}) {
-            # cut off the final newline from the final line of the stdin data
-            chomp($stdintest[$#stdintest]);
-        }
-
         writearray($stdinfile, \@stdintest);
 
         $cmdargs .= " <$stdinfile";
@@ -3773,8 +3746,6 @@ sub singletest {
     else {
         $ok .= "-"; # valgrind not checked
     }
-    # add 'E' for event-based
-    $ok .= $evbased ? "E" : "-";
 
     logmsg "$ok " if(!$short);
 
@@ -4433,16 +4404,6 @@ while(@ARGV) {
         $DBGCURL=$CURL=$ARGV[1];
         shift @ARGV;
     }
-    elsif ($ARGV[0] eq "-vc") {
-        # use this path to a curl used to verify servers
-
-        # Particularly useful when you introduce a crashing bug somewhere in
-        # the development version as then it won't be able to run any tests
-        # since it can't verify the servers!
-
-        $VCURL=$ARGV[1];
-        shift @ARGV;
-    }
     elsif ($ARGV[0] eq "-d") {
         # have the servers display protocol output
         $debugprotocol=1;
@@ -4483,10 +4444,6 @@ while(@ARGV) {
     elsif($ARGV[0] eq "-a") {
         # continue anyway, even if a test fail
         $anyway=1;
-    }
-    elsif($ARGV[0] eq "-e") {
-        # run the tests cases event based if possible
-        $run_event_based=1;
     }
     elsif($ARGV[0] eq "-p") {
         $postmortem=1;
@@ -4548,7 +4505,6 @@ Usage: runtests.pl [options] [test selection(s)]
   -am      automake style output PASS/FAIL: [number] [name]
   -t[N]    torture (simulate memory alloc failures); N means fail Nth alloc
   -v       verbose output
-  -vc path use this curl only to verify the existing servers
   [num]    like "5 6 9" or " 5 to 22 " to run those tests only
   [!num]   like "!5 !6 !9" to disable those tests
   [keyword] like "IPv6" to select only tests containing the key word
@@ -4860,7 +4816,7 @@ foreach $testnum (@at) {
     $lasttest = $testnum if($testnum > $lasttest);
     $count++;
 
-    my $error = singletest($run_event_based, $testnum, $count, scalar(@at));
+    my $error = singletest($testnum, $count, scalar(@at));
     if($error < 0) {
         # not a test we can run
         next;

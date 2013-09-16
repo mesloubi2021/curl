@@ -378,7 +378,7 @@ static CURLcode ldap_do(struct connectdata *conn, bool *done)
   if(!lr)
     return CURLE_OUT_OF_MEMORY;
   lr->msgid = msgid;
-  data->req.protop = lr;
+  data->state.proto.generic = lr;
   Curl_setup_transfer(conn, FIRSTSOCKET, -1, FALSE, NULL, -1, NULL);
   *done = TRUE;
   return CURLE_OK;
@@ -387,7 +387,7 @@ static CURLcode ldap_do(struct connectdata *conn, bool *done)
 static CURLcode ldap_done(struct connectdata *conn, CURLcode res,
                           bool premature)
 {
-  ldapreqinfo *lr = conn->data->req.protop;
+  ldapreqinfo *lr = conn->data->state.proto.generic;
   (void)res;
   (void)premature;
 
@@ -398,7 +398,7 @@ static CURLcode ldap_done(struct connectdata *conn, CURLcode res,
       ldap_abandon_ext(li->ld, lr->msgid, NULL, NULL);
       lr->msgid = 0;
     }
-    conn->data->req.protop = NULL;
+    conn->data->state.proto.generic = NULL;
     free(lr);
   }
   return CURLE_OK;
@@ -409,7 +409,7 @@ static ssize_t ldap_recv(struct connectdata *conn, int sockindex, char *buf,
 {
   ldapconninfo *li = conn->proto.generic;
   struct SessionHandle *data=conn->data;
-  ldapreqinfo *lr = data->req.protop;
+  ldapreqinfo *lr = data->state.proto.generic;
   int rc, ret;
   LDAPMessage *result = NULL;
   LDAPMessage *ent;

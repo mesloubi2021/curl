@@ -101,13 +101,11 @@ CURLcode Curl_fillreadbuffer(struct connectdata *conn, int bytes, int *nreadp)
 #ifdef CURL_DOES_CONVERSIONS
   bool sending_http_headers = FALSE;
 
-  if(conn->handler->protocol&(CURLPROTO_HTTP|CURLPROTO_RTSP)) {
-    const struct HTTP *http = data->req.protop;
-
-    if(http->sending == HTTPSEND_REQUEST)
-      /* We're sending the HTTP request headers, not the data.
-         Remember that so we don't re-translate them into garbage. */
-      sending_http_headers = TRUE;
+  if((conn->handler->protocol&(CURLPROTO_HTTP|CURLPROTO_RTSP)) &&
+     (data->state.proto.http->sending == HTTPSEND_REQUEST)) {
+    /* We're sending the HTTP request headers, not the data.
+       Remember that so we don't re-translate them into garbage. */
+    sending_http_headers = TRUE;
   }
 #endif
 
@@ -812,10 +810,9 @@ static CURLcode readwrite_upload(struct SessionHandle *data,
         /* HTTP pollution, this should be written nicer to become more
            protocol agnostic. */
         int fillcount;
-        struct HTTP *http = data->req.protop;
 
         if((k->exp100 == EXP100_SENDING_REQUEST) &&
-           (http->sending == HTTPSEND_BODY)) {
+           (data->state.proto.http->sending == HTTPSEND_BODY)) {
           /* If this call is to send body data, we must take some action:
              We have sent off the full HTTP 1.1 request, and we shall now
              go into the Expect: 100 state and await such a header */
@@ -830,7 +827,7 @@ static CURLcode readwrite_upload(struct SessionHandle *data,
         }
 
         if(conn->handler->protocol&(CURLPROTO_HTTP|CURLPROTO_RTSP)) {
-          if(http->sending == HTTPSEND_REQUEST)
+          if(data->state.proto.http->sending == HTTPSEND_REQUEST)
             /* We're sending the HTTP request headers, not the data.
                Remember that so we don't change the line endings. */
             sending_http_headers = TRUE;
@@ -1855,7 +1852,7 @@ CURLcode Curl_retry_request(struct connectdata *conn,
         data->req.headerbytecount == 0) &&
         conn->bits.reuse &&
         !data->set.opt_no_body &&
-       data->set.rtspreq != RTSPREQ_RECEIVE)) {
+        data->set.rtspreq != RTSPREQ_RECEIVE)) {
     /* We got no data, we attempted to re-use a connection and yet we want a
        "body". This might happen if the connection was left alive when we were
        done using it before, but that was closed when we wanted to read from
@@ -1873,11 +1870,9 @@ CURLcode Curl_retry_request(struct connectdata *conn,
                                 transferred! */
 
 
-    if(conn->handler->protocol&CURLPROTO_HTTP) {
-      struct HTTP *http = data->req.protop;
-      if(http->writebytecount)
-        return Curl_readrewind(conn);
-    }
+    if((conn->handler->protocol&CURLPROTO_HTTP) &&
+       data->state.proto.http->writebytecount)
+      return Curl_readrewind(conn);
   }
   return CURLE_OK;
 }
@@ -1935,7 +1930,6 @@ Curl_setup_transfer(
       k->keepon |= KEEP_RECV;
 
     if(conn->writesockfd != CURL_SOCKET_BAD) {
-      struct HTTP *http = data->req.protop;
       /* HTTP 1.1 magic:
 
          Even if we require a 100-return code before uploading data, we might
@@ -1946,16 +1940,13 @@ Curl_setup_transfer(
          state info where we wait for the 100-return code
       */
       if((data->state.expect100header) &&
-         (conn->handler->protocol&CURLPROTO_HTTP) &&
-         (http->sending == HTTPSEND_BODY)) {
+         (data->state.proto.http->sending == HTTPSEND_BODY)) {
         /* wait with write until we either got 100-continue or a timeout */
         k->exp100 = EXP100_AWAITING_CONTINUE;
         k->start100 = Curl_tvnow();
 
-        /* Set a timeout for the multi interface. Add the inaccuracy margin so
-           that we don't fire slightly too early and get denied to run. */
-        Curl_expire(data, CURL_TIMEOUT_EXPECT_100 +
-                    MULTI_TIMEOUT_INACCURACY / 1000);
+        /* set a timeout for the multi interface */
+        Curl_expire(data, CURL_TIMEOUT_EXPECT_100);
       }
       else {
         if(data->state.expect100header)

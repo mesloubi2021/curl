@@ -6,7 +6,6 @@
  *                             \___|\___/|_| \_\_____|
  *
  * Copyright (C) 2013, Linus Nielsen Feltzing, <linus@haxx.se>
- * Copyright (C) 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -85,10 +84,9 @@ bool Curl_pipeline_penalized(struct SessionHandle *data,
        (curl_off_t)conn->chunk.datasize > chunk_penalty_size)
       penalized = TRUE;
 
-    infof(data, "Conn: %ld (%p) Receive pipe weight: (%" FORMAT_OFF_T
-          "/%zu), penalized: %s\n",
-          conn->connection_id, (void *)conn, recv_size,
-          conn->chunk.datasize, penalized?"TRUE":"FALSE");
+    infof(data, "Conn: %d (%p) Receive pipe weight: (%d/%d), penalized: %d\n",
+          conn->connection_id, conn, recv_size,
+          conn->chunk.datasize, penalized);
     return penalized;
   }
   return FALSE;
@@ -103,7 +101,7 @@ CURLcode Curl_add_handle_to_pipeline(struct SessionHandle *handle,
 
   pipeline = conn->send_pipe;
 
-  infof(conn->data, "Adding handle: conn: %p\n", (void *)conn);
+  infof(conn->data, "Adding handle: conn: %p\n", conn);
   infof(conn->data, "Adding handle: send: %d\n", conn->send_pipe->size);
   infof(conn->data, "Adding handle: recv: %d\n", conn->recv_pipe->size);
   rc = Curl_addHandleToPipeline(handle, pipeline);
@@ -113,7 +111,7 @@ CURLcode Curl_add_handle_to_pipeline(struct SessionHandle *handle,
     conn->writechannel_inuse = FALSE; /* not in use yet */
 #ifdef DEBUGBUILD
     infof(conn->data, "%p is at send pipe head!\n",
-          (void *)conn->send_pipe->head->ptr);
+          conn->send_pipe->head->ptr);
 #endif
     Curl_expire(conn->send_pipe->head->ptr, 1);
   }
@@ -146,7 +144,7 @@ void Curl_move_handle_from_send_to_recv_pipe(struct SessionHandle *handle,
         conn->writechannel_inuse = FALSE; /* not used now */
 #ifdef DEBUGBUILD
         infof(conn->data, "%p is at send pipe head B!\n",
-              (void *)conn->send_pipe->head->ptr);
+              conn->send_pipe->head->ptr);
 #endif
         Curl_expire(conn->send_pipe->head->ptr, 1);
       }
@@ -322,9 +320,9 @@ void print_pipeline(struct connectdata *conn)
     curr = cb_ptr->conn_list->head;
     while(curr) {
       conn = curr->ptr;
-      infof(data, "- Conn %ld (%p) send_pipe: %zu, recv_pipe: %zu\n",
+      infof(data, "- Conn %d (%p) send_pipe: %d, recv_pipe: %d\n",
             conn->connection_id,
-            (void *)conn,
+            conn,
             conn->send_pipe->size,
             conn->recv_pipe->size);
       curr = curr->next;

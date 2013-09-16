@@ -66,6 +66,16 @@ get_gss_name(struct connectdata *conn, bool proxy,
   else
     service = "HTTP";
 
+  if(conn->bits.service_principal) { 
+	 infof(conn->data, "KRB5_DATA: Curl SSPI build is being used \n"); 
+	 length = strlen(conn->service_principal);
+	 if(length + 1 > sizeof(neg_ctx->server_name))
+		return EMSGSIZE;
+	 snprintf(neg_ctx->server_name, sizeof(neg_ctx->server_name), "%s",
+     conn->service_principal);
+	 return 0;
+  }
+
   length = strlen(service) + 1 + strlen(proxy ? conn->proxy.name :
                                         conn->host.name) + 1;
   if(length + 1 > sizeof(neg_ctx->server_name))
@@ -227,8 +237,10 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
 
   Curl_unicodefree(sname);
 
-  if(GSS_ERROR(neg_ctx->status))
-    return -1;
+  if(GSS_ERROR(neg_ctx->status)) {
+	  infof(conn->data, "KRB5_ERROR: SSPI intialize context failed, error code : %lu \n", neg_ctx->status);	   
+	  return -1;
+  }
 
   if(neg_ctx->status == SEC_I_COMPLETE_NEEDED ||
      neg_ctx->status == SEC_I_COMPLETE_AND_CONTINUE) {

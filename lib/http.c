@@ -75,7 +75,6 @@
 #include "non-ascii.h"
 #include "bundles.h"
 #include "pipeline.h"
-#include "http2.h"
 
 #define _MPRINTF_REPLACE /* use our functions only */
 #include <curl/mprintf.h>
@@ -106,7 +105,7 @@ static int https_getsock(struct connectdata *conn,
  */
 const struct Curl_handler Curl_handler_http = {
   "HTTP",                               /* scheme */
-  Curl_http_setup_conn,                 /* setup_connection */
+  ZERO_NULL,                            /* setup_connection */
   Curl_http,                            /* do_it */
   Curl_http_done,                       /* done */
   ZERO_NULL,                            /* do_more */
@@ -130,7 +129,7 @@ const struct Curl_handler Curl_handler_http = {
  */
 const struct Curl_handler Curl_handler_https = {
   "HTTPS",                              /* scheme */
-  Curl_http_setup_conn,                 /* setup_connection */
+  ZERO_NULL,                            /* setup_connection */
   Curl_http,                            /* do_it */
   Curl_http_done,                       /* done */
   ZERO_NULL,                            /* do_more */
@@ -149,19 +148,6 @@ const struct Curl_handler Curl_handler_https = {
 };
 #endif
 
-
-CURLcode Curl_http_setup_conn(struct connectdata *conn)
-{
-  /* allocate the HTTP-specific struct for the SessionHandle, only to survive
-     during this request */
-  DEBUGASSERT(conn->data->req.protop == NULL);
-
-  conn->data->req.protop = calloc(1, sizeof(struct HTTP));
-  if(!conn->data->req.protop)
-    return CURLE_OUT_OF_MEMORY;
-
-  return CURLE_OK;
-}
 
 /*
  * checkheaders() checks the linked list of custom HTTP headers for a
@@ -344,7 +330,7 @@ static bool pickoneauth(struct auth *pick)
 static CURLcode http_perhapsrewind(struct connectdata *conn)
 {
   struct SessionHandle *data = conn->data;
-  struct HTTP *http = data->req.protop;
+  struct HTTP *http = data->state.proto.http;
   curl_off_t bytessent;
   curl_off_t expectsend = -1; /* default is unknown */
 
@@ -455,15 +441,13 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   if(data->state.authproblem)
     return data->set.http_fail_on_error?CURLE_HTTP_RETURNED_ERROR:CURLE_OK;
 
-  if(conn->bits.user_passwd &&
-     ((data->req.httpcode == 401) ||
+  if(((data->req.httpcode == 401) ||
       (conn->bits.authneg && data->req.httpcode < 300))) {
     pickhost = pickoneauth(&data->state.authhost);
     if(!pickhost)
       data->state.authproblem = TRUE;
   }
-  if(conn->bits.proxy_user_passwd &&
-     ((data->req.httpcode == 407) ||
+  if(((data->req.httpcode == 407) ||
       (conn->bits.authneg && data->req.httpcode < 300))) {
     pickproxy = pickoneauth(&data->state.authproxy);
     if(!pickproxy)
@@ -640,14 +624,17 @@ Curl_http_output_auth(struct connectdata *conn,
   authhost = &data->state.authhost;
   authproxy = &data->state.authproxy;
 
-  if((conn->bits.httpproxy && conn->bits.proxy_user_passwd) ||
-     conn->bits.user_passwd)
-    /* continue please */ ;
-  else {
-    authhost->done = TRUE;
-    authproxy->done = TRUE;
-    return CURLE_OK; /* no authentication with no user or password */
-  }
+  /*commented to solve bug 440 in curl
+   *
+   *if((conn->bits.httpproxy && conn->bits.proxy_user_passwd) ||
+   *  conn->bits.user_passwd)
+   * continue please
+   *else {
+   * authhost->done = TRUE;
+   * authproxy->done = TRUE;
+   * return CURLE_OK;  //no authentication without username/password
+   *}
+   */
 
   if(authhost->want && !authhost->picked)
     /* The app has selected one or more methods, but none has been picked
@@ -962,7 +949,7 @@ static size_t readmoredata(char *buffer,
                            void *userp)
 {
   struct connectdata *conn = (struct connectdata *)userp;
-  struct HTTP *http = conn->data->req.protop;
+  struct HTTP *http = conn->data->state.proto.http;
   size_t fullsize = size * nitems;
 
   if(0 == http->postsize)
@@ -1033,7 +1020,7 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer *in,
   CURLcode res;
   char *ptr;
   size_t size;
-  struct HTTP *http = conn->data->req.protop;
+  struct HTTP *http = conn->data->state.proto.http;
   size_t sendsize;
   curl_socket_t sockfd;
   size_t headersize;
@@ -1416,7 +1403,7 @@ CURLcode Curl_http_done(struct connectdata *conn,
                         CURLcode status, bool premature)
 {
   struct SessionHandle *data = conn->data;
-  struct HTTP *http =data->req.protop;
+  struct HTTP *http =data->state.proto.http;
 
   Curl_unencode_cleanup(conn);
 
@@ -1456,7 +1443,6 @@ CURLcode Curl_http_done(struct connectdata *conn,
   if(!premature && /* this check is pointless when DONE is called before the
                       entire operation is complete */
      !conn->bits.retry &&
-     !data->set.connect_only &&
      ((http->readbytecount +
        data->req.headerbytecount -
        data->req.deductheadercount)) <= 0) {
@@ -1471,19 +1457,14 @@ CURLcode Curl_http_done(struct connectdata *conn,
 }
 
 
-/*
- * Determine if we should use HTTP 1.1 (OR BETTER) for this request. Reasons
- * to avoid it include:
- *
- * - if the user specifically requested HTTP 1.0
- * - if the server we are connected to only supports 1.0
- * - if any server previously contacted to handle this request only supports
- * 1.0.
- */
-static bool use_http_1_1plus(const struct SessionHandle *data,
-                             const struct connectdata *conn)
+/* Determine if we should use HTTP 1.1 for this request. Reasons to avoid it
+   are if the user specifically requested HTTP 1.0, if the server we are
+   connected to only supports 1.0, or if any server previously contacted to
+   handle this request only supports 1.0. */
+static bool use_http_1_1(const struct SessionHandle *data,
+                         const struct connectdata *conn)
 {
-  return ((data->set.httpversion >= CURL_HTTP_VERSION_1_1) ||
+  return ((data->set.httpversion == CURL_HTTP_VERSION_1_1) ||
          ((data->set.httpversion != CURL_HTTP_VERSION_1_0) &&
           ((conn->httpversion == 11) ||
            ((conn->httpversion != 10) &&
@@ -1499,7 +1480,7 @@ static CURLcode expect100(struct SessionHandle *data,
   const char *ptr;
   data->state.expect100header = FALSE; /* default to false unless it is set
                                           to TRUE below */
-  if(use_http_1_1plus(data, conn)) {
+  if(use_http_1_1(data, conn)) {
     /* if not doing HTTP 1.0 or disabled explicitly, we add a Expect:
        100-continue to the headers which actually speeds up post operations
        (as there is one packet coming back from the web server) */
@@ -1675,7 +1656,20 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
      the rest of the request in the PERFORM phase. */
   *done = TRUE;
 
-  http = data->req.protop;
+  /* If there already is a protocol-specific struct allocated for this
+     sessionhandle, deal with it */
+  Curl_reset_reqproto(conn);
+
+  if(!data->state.proto.http) {
+    /* Only allocate this struct if we don't already have it! */
+
+    http = calloc(1, sizeof(struct HTTP));
+    if(!http)
+      return CURLE_OUT_OF_MEMORY;
+    data->state.proto.http = http;
+  }
+  else
+    http = data->state.proto.http;
 
   if(!data->state.this_is_a_follow) {
     /* this is not a followed location, get the original host name */
@@ -1802,7 +1796,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
       if(conn->bits.authneg)
         /* don't enable chunked during auth neg */
         ;
-      else if(use_http_1_1plus(data, conn)) {
+      else if(use_http_1_1(data, conn)) {
         /* HTTP, upload, unknown file size and not HTTP 1.0 */
         data->req.upload_chunky = TRUE;
       }
@@ -2102,7 +2096,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
 
   /* Use 1.1 unless the user specifically asked for 1.0 or the server only
      supports 1.0 */
-  httpstring= use_http_1_1plus(data, conn)?"1.1":"1.0";
+  httpstring= use_http_1_1(data, conn)?"1.1":"1.0";
 
   /* initialize a dynamic send-buffer */
   req_buffer = Curl_add_buffer_init();
@@ -2179,15 +2173,6 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
 
   if(result)
     return result;
-
-  if(!(conn->handler->flags&PROTOPT_SSL) &&
-     (data->set.httpversion == CURL_HTTP_VERSION_2_0)) {
-    /* append HTTP2 updrade magic stuff to the HTTP request if it isn't done
-       over SSL */
-    result = Curl_http2_request(req_buffer, conn);
-    if(result)
-      return result;
-  }
 
 #if !defined(CURL_DISABLE_COOKIES)
   if(data->cookies || addcookies) {

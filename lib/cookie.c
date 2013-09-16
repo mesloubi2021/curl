@@ -89,7 +89,6 @@ Example set of cookies:
 #include "strequal.h"
 #include "strtok.h"
 #include "sendf.h"
-#include "slist.h"
 #include "curl_memory.h"
 #include "share.h"
 #include "strtoofft.h"
@@ -107,8 +106,6 @@ static void freecookie(struct Cookie *co)
     free(co->domain);
   if(co->path)
     free(co->path);
-  if(co->spath)
-    free(co->spath);
   if(co->name)
     free(co->name);
   if(co->value)
@@ -144,116 +141,6 @@ static bool tailmatch(const char *cooke_domain, const char *hostname)
   if('.' == *(hostname + hostname_len - cookie_domain_len - 1))
     return TRUE;
   return FALSE;
-}
-
-/*
- * matching cookie path and url path
- * RFC6265 5.1.4 Paths and Path-Match
- */
-static bool pathmatch(const char* cookie_path, const char* request_uri)
-{
-  size_t cookie_path_len;
-  size_t uri_path_len;
-  char* uri_path = NULL;
-  char* pos;
-  bool ret = FALSE;
-
-  /* cookie_path must not have last '/' separator. ex: /sample */
-  cookie_path_len = strlen(cookie_path);
-  if(1 == cookie_path_len) {
-    /* cookie_path must be '/' */
-    return TRUE;
-  }
-
-  uri_path = strdup(request_uri);
-  if(!uri_path)
-    return FALSE;
-  pos = strchr(uri_path, '?');
-  if(pos)
-    *pos = 0x0;
-
-  /* #-fragments are already cut off! */
-  if(0 == strlen(uri_path) || uri_path[0] != '/') {
-    free(uri_path);
-    uri_path = strdup("/");
-    if(!uri_path)
-      return FALSE;
-  }
-
-  /* here, RFC6265 5.1.4 says
-     4. Output the characters of the uri-path from the first character up
-        to, but not including, the right-most %x2F ("/").
-     but URL path /hoge?fuga=xxx means /hoge/index.cgi?fuga=xxx in some site
-     without redirect.
-     Ignore this algorithm because /hoge is uri path for this case
-     (uri path is not /).
-   */
-
-  uri_path_len = strlen(uri_path);
-
-  if(uri_path_len < cookie_path_len) {
-    ret = FALSE;
-    goto pathmatched;
-  }
-
-  /* not using checkprefix() because matching should be case-sensitive */
-  if(strncmp(cookie_path, uri_path, cookie_path_len)) {
-    ret = FALSE;
-    goto pathmatched;
-  }
-
-  /* The cookie-path and the uri-path are identical. */
-  if(cookie_path_len == uri_path_len) {
-    ret = TRUE;
-    goto pathmatched;
-  }
-
-  /* here, cookie_path_len < url_path_len */
-  if(uri_path[cookie_path_len] == '/') {
-    ret = TRUE;
-    goto pathmatched;
-  }
-
-  ret = FALSE;
-
-pathmatched:
-  free(uri_path);
-  return ret;
-}
-
-/*
- * cookie path sanitize
- */
-static char *sanitize_cookie_path(const char *cookie_path)
-{
-  size_t len;
-  char *new_path = strdup(cookie_path);
-  if(!new_path)
-    return NULL;
-
-  /* some stupid site sends path attribute with '"'. */
-  if(new_path[0] == '\"') {
-    memmove((void *)new_path, (const void *)(new_path + 1), strlen(new_path));
-  }
-  if(new_path[strlen(new_path) - 1] == '\"') {
-    new_path[strlen(new_path) - 1] = 0x0;
-  }
-
-  /* RFC6265 5.2.4 The Path Attribute */
-  if(new_path[0] != '/') {
-    /* Let cookie-path be the default-path. */
-    free(new_path);
-    new_path = strdup("/");
-    return new_path;
-  }
-
-  /* convert /hoge/ to /hoge */
-  len = strlen(new_path);
-  if(1 < len && new_path[len - 1] == '/') {
-    new_path[len - 1] = 0x0;
-  }
-
-  return new_path;
 }
 
 /*
@@ -296,9 +183,6 @@ static void strstore(char **str, const char *newstr)
  * Curl_cookie_add()
  *
  * Add a single cookie line to the cookie keeping object.
- *
- * Be aware that sometimes we get an IP-only host name, and that might also be
- * a numerical IPv6 address.
  *
  ***************************************************************************/
 
@@ -404,39 +288,72 @@ Curl_cookie_add(struct SessionHandle *data,
             badcookie = TRUE; /* out of memory bad */
             break;
           }
-          co->spath = sanitize_cookie_path(co->path);
-          if(!co->spath) {
-            badcookie = TRUE; /* out of memory bad */
-            break;
-          }
         }
         else if(Curl_raw_equal("domain", name)) {
-          /* Now, we make sure that our host is within the given domain,
-             or the given domain is not valid and thus cannot be set. */
+          /* note that this name may or may not have a preceding dot, but
+             we don't care about that, we treat the names the same anyway */
+
+          const char *domptr=whatptr;
+          const char *nextptr;
+          int dotcount=1;
+
+          /* Count the dots, we need to make sure that there are enough
+             of them. */
 
           if('.' == whatptr[0])
-            whatptr++; /* ignore preceding dot */
+            /* don't count the initial dot, assume it */
+            domptr++;
 
-          if(!domain || tailmatch(whatptr, domain)) {
-            const char *tailptr=whatptr;
-            if(tailptr[0] == '.')
-              tailptr++;
-            strstore(&co->domain, tailptr); /* don't prefix w/dots
-                                               internally */
-            if(!co->domain) {
-              badcookie = TRUE;
-              break;
+          do {
+            nextptr = strchr(domptr, '.');
+            if(nextptr) {
+              if(domptr != nextptr)
+                dotcount++;
+              domptr = nextptr+1;
             }
-            co->tailmatch=TRUE; /* we always do that if the domain name was
-                                   given */
+          } while(nextptr);
+
+          /* The original Netscape cookie spec defined that this domain name
+             MUST have three dots (or two if one of the seven holy TLDs),
+             but it seems that these kinds of cookies are in use "out there"
+             so we cannot be that strict. I've therefore lowered the check
+             to not allow less than two dots. */
+
+          if(dotcount < 2) {
+            /* Received and skipped a cookie with a domain using too few
+               dots. */
+            badcookie=TRUE; /* mark this as a bad cookie */
+            infof(data, "skipped cookie with illegal dotcount domain: %s\n",
+                  whatptr);
           }
           else {
-            /* we did not get a tailmatch and then the attempted set domain
-               is not a domain to which the current host belongs. Mark as
-               bad. */
-            badcookie=TRUE;
-            infof(data, "skipped cookie with bad tailmatch domain: %s\n",
-                  whatptr);
+            /* Now, we make sure that our host is within the given domain,
+               or the given domain is not valid and thus cannot be set. */
+
+            if('.' == whatptr[0])
+              whatptr++; /* ignore preceding dot */
+
+            if(!domain || tailmatch(whatptr, domain)) {
+              const char *tailptr=whatptr;
+              if(tailptr[0] == '.')
+                tailptr++;
+              strstore(&co->domain, tailptr); /* don't prefix w/dots
+                                                 internally */
+              if(!co->domain) {
+                badcookie = TRUE;
+                break;
+              }
+              co->tailmatch=TRUE; /* we always do that if the domain name was
+                                     given */
+            }
+            else {
+              /* we did not get a tailmatch and then the attempted set domain
+                 is not a domain to which the current host belongs. Mark as
+                 bad. */
+              badcookie=TRUE;
+              infof(data, "skipped cookie with bad tailmatch domain: %s\n",
+                    whatptr);
+            }
           }
         }
         else if(Curl_raw_equal("version", name)) {
@@ -544,9 +461,6 @@ Curl_cookie_add(struct SessionHandle *data,
         if(co->path) {
           memcpy(co->path, path, pathlen);
           co->path[pathlen]=0; /* zero terminate */
-          co->spath = sanitize_cookie_path(co->path);
-          if(!co->spath)
-            badcookie = TRUE; /* out of memory bad */
         }
         else
           badcookie = TRUE;
@@ -598,6 +512,12 @@ Curl_cookie_add(struct SessionHandle *data,
 
     firstptr=strtok_r(lineptr, "\t", &tok_buf); /* tokenize it on the TAB */
 
+    /* Here's a quick check to eliminate normal HTTP-headers from this */
+    if(!firstptr || strchr(firstptr, ':')) {
+      free(co);
+      return NULL;
+    }
+
     /* Now loop through the fields and init the struct we already have
        allocated */
     for(ptr=firstptr, fields=0; ptr && !badcookie;
@@ -632,20 +552,11 @@ Curl_cookie_add(struct SessionHandle *data,
           co->path = strdup(ptr);
           if(!co->path)
             badcookie = TRUE;
-          else {
-            co->spath = sanitize_cookie_path(co->path);
-            if(!co->spath) {
-              badcookie = TRUE; /* out of memory bad */
-            }
-          }
           break;
         }
         /* this doesn't look like a path, make one up! */
         co->path = strdup("/");
         if(!co->path)
-          badcookie = TRUE;
-        co->spath = strdup("/");
-        if(!co->spath)
           badcookie = TRUE;
         fields++; /* add a field and fall down to secure */
         /* FALLTHROUGH */
@@ -717,14 +628,14 @@ Curl_cookie_add(struct SessionHandle *data,
       if(replace_old) {
         /* the domains were identical */
 
-        if(clist->spath && co->spath) {
-          if(Curl_raw_equal(clist->spath, co->spath)) {
+        if(clist->path && co->path) {
+          if(Curl_raw_equal(clist->path, co->path)) {
             replace_old = TRUE;
           }
           else
             replace_old = FALSE;
         }
-        else if(!clist->spath && !co->spath)
+        else if(!clist->path && !co->path)
           replace_old = TRUE;
         else
           replace_old = FALSE;
@@ -753,8 +664,6 @@ Curl_cookie_add(struct SessionHandle *data,
           free(clist->domain);
         if(clist->path)
           free(clist->path);
-        if(clist->spath)
-          free(clist->spath);
         if(clist->expirestr)
           free(clist->expirestr);
 
@@ -949,7 +858,10 @@ struct Cookie *Curl_cookie_getlist(struct CookieInfo *c,
 
         /* now check the left part of the path with the cookies path
            requirement */
-        if(!co->spath || pathmatch(co->spath, path) ) {
+        if(!co->path ||
+           /* not using checkprefix() because matching should be
+              case-sensitive */
+           !strncmp(co->path, path, strlen(co->path)) ) {
 
           /* and now, we know this is a match and we should create an
              entry for the return-linked-list */
@@ -1233,9 +1145,9 @@ struct curl_slist *Curl_cookie_list(struct SessionHandle *data)
       curl_slist_free_all(list);
       return NULL;
     }
-    beg = Curl_slist_append_nodup(list, line);
+    beg = curl_slist_append(list, line);
+    free(line);
     if(!beg) {
-      free(line);
       curl_slist_free_all(list);
       return NULL;
     }

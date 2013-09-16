@@ -96,21 +96,6 @@ const NameValue setopt_nv_CURLFTPSSL_CCC[] = {
   NVEND,
 };
 
-const NameValue setopt_nv_CURLUSESSL[] = {
-  NV(CURLUSESSL_NONE),
-  NV(CURLUSESSL_TRY),
-  NV(CURLUSESSL_CONTROL),
-  NV(CURLUSESSL_ALL),
-  NVEND,
-};
-
-const NameValue setopt_nv_CURL_NETRC[] = {
-  NV(CURL_NETRC_IGNORED),
-  NV(CURL_NETRC_OPTIONAL),
-  NV(CURL_NETRC_REQUIRED),
-  NVEND,
-};
-
 /* These mappings essentially triplicated - see
  * tool_libinfo.c and tool_paramhlp.c */
 const NameValue setopt_nv_CURLPROTO[] = {

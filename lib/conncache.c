@@ -38,6 +38,8 @@
 /* The last #include file should be: */
 #include "memdebug.h"
 
+#define CONNECTION_HASH_SIZE 97
+
 static void free_bundle_hash_entry(void *freethis)
 {
   struct connectbundle *b = (struct connectbundle *) freethis;
@@ -45,7 +47,7 @@ static void free_bundle_hash_entry(void *freethis)
   Curl_bundle_destroy(b);
 }
 
-struct conncache *Curl_conncache_init(int size)
+struct conncache *Curl_conncache_init(void)
 {
   struct conncache *connc;
 
@@ -53,7 +55,7 @@ struct conncache *Curl_conncache_init(int size)
   if(!connc)
     return NULL;
 
-  connc->hash = Curl_hash_alloc(size, Curl_hash_str,
+  connc->hash = Curl_hash_alloc(CONNECTION_HASH_SIZE, Curl_hash_str,
                                 Curl_str_key_compare, free_bundle_hash_entry);
 
   if(!connc->hash) {

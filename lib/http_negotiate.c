@@ -68,6 +68,15 @@ get_gss_name(struct connectdata *conn, bool proxy, gss_name_t *server)
   char name[2048];
   const char* service;
 
+  if(conn->bits.service_principal) { 
+	  printf("THE TARGET SPN IS: %s, ", conn->service_principal);
+	  token.value = conn->service_principal;
+      token.length = strlen(conn->service_principal) + 1;
+	  major_status = gss_import_name(&minor_status, &token,
+                        (gss_OID) GSS_C_NT_USER_NAME , server);
+	  return GSS_ERROR(major_status) ? -1 : 0;
+  }
+  
   /* GSSAPI implementation by Globus (known as GSI) requires the name to be
      of form "<service>/<fqdn>" instead of <service>@<fqdn> (ie. slash instead
      of at-sign). Also GSI servers are often identified as 'host' not 'khttp'.
@@ -93,7 +102,7 @@ get_gss_name(struct connectdata *conn, bool proxy, gss_name_t *server)
                                  &token,
                                  GSS_C_NT_HOSTBASED_SERVICE,
                                  server);
-
+		
   return GSS_ERROR(major_status) ? -1 : 0;
 }
 
@@ -135,7 +144,7 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
   struct SessionHandle *data = conn->data;
   struct negotiatedata *neg_ctx = proxy?&data->state.proxyneg:
     &data->state.negotiate;
-  OM_uint32 major_status, minor_status, discard_st;
+  OM_uint32 major_status, minor_status, discard_st, min_stat;
   gss_buffer_desc input_token = GSS_C_EMPTY_BUFFER;
   gss_buffer_desc output_token = GSS_C_EMPTY_BUFFER;
   int ret;
@@ -176,10 +185,10 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
     return -1;
   }
 
-  if(neg_ctx->server_name == NULL &&
-      (ret = get_gss_name(conn, proxy, &neg_ctx->server_name)))
-    return ret;
-
+	if(neg_ctx->server_name == NULL &&
+	  (ret = get_gss_name(conn, proxy, &neg_ctx->server_name)))
+	return ret;
+  	
   header += strlen(neg_ctx->protocol);
   while(*header && ISSPACE(*header))
     header++;
@@ -242,7 +251,7 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
 #endif
   }
 
-  major_status = Curl_gss_init_sec_context(data,
+  major_status = Curl_gss_init_sec_context(conn,
                                            &minor_status,
                                            &neg_ctx->context,
                                            neg_ctx->server_name,
@@ -250,13 +259,17 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
                                            &input_token,
                                            &output_token,
                                            NULL);
+  gss_release_cred(&min_stat, &conn->data->curl_gss_creds);
   Curl_safefree(input_token.value);
+  /*To remove the memory leak issue*/
+  if(neg_ctx->server_name != GSS_C_NO_NAME)
+    gss_release_name(&min_stat, &neg_ctx->server_name);
 
   neg_ctx->status = major_status;
   if(GSS_ERROR(major_status)) {
     if(output_token.value)
       gss_release_buffer(&discard_st, &output_token);
-    log_gss_error(conn, minor_status, "gss_init_sec_context() failed: ");
+    log_gss_error(conn, minor_status, "KRB5_ERROR: gss_init_sec_context() failed: ");
     return -1;
   }
 
@@ -314,7 +327,7 @@ CURLcode Curl_output_negotiate(struct connectdata *conn, bool proxy)
       Curl_safefree(responseToken);
       ASN1_OBJECT_free(object);
       if(spnegoToken.value)
-        gss_release_buffer(&discard_st, &spnegoToken);
+        Curl_safefree(spnegoToken.value);
       infof(conn->data, "Make SPNEGO Initial Token succeeded (NULL token)\n");
     }
     else {
@@ -332,14 +345,22 @@ CURLcode Curl_output_negotiate(struct connectdata *conn, bool proxy)
                              neg_ctx->output_token.length,
                              &encoded, &len);
   if(error) {
-    gss_release_buffer(&discard_st, &neg_ctx->output_token);
+	#ifdef HAVE_SPNEGO
+	  Curl_safefree(neg_ctx->output_token.value);	
+	#else 
+	  gss_release_buffer(&discard_st, &neg_ctx->output_token);
+	#endif
     neg_ctx->output_token.value = NULL;
     neg_ctx->output_token.length = 0;
     return error;
   }
 
   if(!encoded || !len) {
-    gss_release_buffer(&discard_st, &neg_ctx->output_token);
+    #ifdef HAVE_SPNEGO
+	  Curl_safefree(neg_ctx->output_token.value);	
+	#else 
+	  gss_release_buffer(&discard_st, &neg_ctx->output_token);
+	#endif
     neg_ctx->output_token.value = NULL;
     neg_ctx->output_token.length = 0;
     return CURLE_REMOTE_ACCESS_DENIED;
@@ -368,8 +389,12 @@ static void cleanup(struct negotiatedata *neg_ctx)
   if(neg_ctx->context != GSS_C_NO_CONTEXT)
     gss_delete_sec_context(&minor_status, &neg_ctx->context, GSS_C_NO_BUFFER);
 
-  if(neg_ctx->output_token.value)
-    gss_release_buffer(&minor_status, &neg_ctx->output_token);
+	#ifdef HAVE_SPNEGO
+		Curl_safefree(neg_ctx->output_token.value);
+	#else
+		if(neg_ctx->output_token.value)
+			gss_release_buffer(&minor_status, &neg_ctx->output_token);
+	#endif /*HAVE_SPNEGO*/
 
   if(neg_ctx->server_name != GSS_C_NO_NAME)
     gss_release_name(&minor_status, &neg_ctx->server_name);
@@ -379,7 +404,7 @@ static void cleanup(struct negotiatedata *neg_ctx)
 
 void Curl_cleanup_negotiate(struct SessionHandle *data)
 {
-  cleanup(&data->state.negotiate);
+  cleanup(&data->state.negotiate);			
   cleanup(&data->state.proxyneg);
 }
 

@@ -38,54 +38,9 @@
 #include <Security/SecureTransport.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CommonCrypto/CommonDigest.h>
-
-/* The Security framework has changed greatly between iOS and different OS X
-   versions, and we will try to support as many of them as we can (back to
-   Leopard and iOS 5) by using macros and weak-linking.
-
-   IMPORTANT: If TLS 1.1 and 1.2 support are important for you on OS X, then
-   you must build this project against the 10.8 SDK or later. */
 #if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 1050
-#error "The darwinssl back-end requires Leopard or later."
-#endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1050 */
-
-#define CURL_BUILD_IOS 0
-#define CURL_BUILD_MAC 1
-/* This is the maximum API level we are allowed to use when building: */
-#define CURL_BUILD_MAC_10_5 MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
-#define CURL_BUILD_MAC_10_6 MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-#define CURL_BUILD_MAC_10_7 MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-#define CURL_BUILD_MAC_10_8 MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
-/* These macros mean "the following code is present to allow runtime backward
-   compatibility with at least this cat or earlier":
-   (You set this at build-time by setting the MACOSX_DEPLOYMENT_TARGET
-   environmental variable.) */
-#define CURL_SUPPORT_MAC_10_5 MAC_OS_X_VERSION_MIN_REQUIRED <= 1050
-#define CURL_SUPPORT_MAC_10_6 MAC_OS_X_VERSION_MIN_REQUIRED <= 1060
-#define CURL_SUPPORT_MAC_10_7 MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
-#define CURL_SUPPORT_MAC_10_8 MAC_OS_X_VERSION_MIN_REQUIRED <= 1080
-
-#elif TARGET_OS_EMBEDDED || TARGET_OS_IPHONE
-#define CURL_BUILD_IOS 1
-#define CURL_BUILD_MAC 0
-#define CURL_BUILD_MAC_10_5 0
-#define CURL_BUILD_MAC_10_6 0
-#define CURL_BUILD_MAC_10_7 0
-#define CURL_BUILD_MAC_10_8 0
-#define CURL_SUPPORT_MAC_10_5 0
-#define CURL_SUPPORT_MAC_10_6 0
-#define CURL_SUPPORT_MAC_10_7 0
-#define CURL_SUPPORT_MAC_10_8 0
-
-#else
-#error "The darwinssl back-end requires iOS or OS X."
-#endif /* (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) */
-
-#if CURL_BUILD_MAC
 #include <sys/sysctl.h>
-#endif /* CURL_BUILD_MAC */
+#endif
 
 #include "urldata.h"
 #include "sendf.h"
@@ -105,6 +60,16 @@
 /* From MacTypes.h (which we can't include because it isn't present in iOS: */
 #define ioErr -36
 #define paramErr -50
+
+/* In Mountain Lion and iOS 5, Apple made some changes to the API. They
+   added TLS 1.1 and 1.2 support, and deprecated and replaced some
+   functions. You need to build against the Mountain Lion or iOS 5 SDK
+   or later to get TLS 1.1 or 1.2 support working in cURL. We'll weak-link
+   to the newer functions and use them if present in the user's OS.
+
+   Builders: If you want TLS 1.1 and 1.2 but still want to retain support
+   for older cats, don't forget to set the MACOSX_DEPLOYMENT_TARGET
+   environmental variable prior to building cURL. */
 
 /* The following two functions were ripped from Apple sample code,
  * with some modifications: */
@@ -396,7 +361,7 @@ CF_INLINE const char *TLSCipherNameForNumber(SSLCipherSuite cipher) {
     case TLS_DH_anon_WITH_AES_256_CBC_SHA:
       return "TLS_DH_anon_WITH_AES_256_CBC_SHA";
       break;
-#if CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS
+#if defined(__MAC_10_6) || defined(__IPHONE_5_0)
     /* TLS 1.0 with ECDSA (RFC 4492) */
     case TLS_ECDH_ECDSA_WITH_NULL_SHA:
       return "TLS_ECDH_ECDSA_WITH_NULL_SHA";
@@ -473,8 +438,8 @@ CF_INLINE const char *TLSCipherNameForNumber(SSLCipherSuite cipher) {
     case TLS_ECDH_anon_WITH_AES_256_CBC_SHA:
       return "TLS_ECDH_anon_WITH_AES_256_CBC_SHA";
       break;
-#endif /* CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS */
-#if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
+#endif /* defined(__MAC_10_6) || defined(__IPHONE_5_0) */
+#if defined(__MAC_10_8) || defined(__IPHONE_5_0)
     /* TLS 1.2 (RFC 5246) */
     case TLS_RSA_WITH_NULL_MD5:
       return "TLS_RSA_WITH_NULL_MD5";
@@ -659,12 +624,12 @@ CF_INLINE const char *TLSCipherNameForNumber(SSLCipherSuite cipher) {
     case SSL_DH_anon_WITH_3DES_EDE_CBC_SHA:
       return "TLS_DH_anon_WITH_3DES_EDE_CBC_SHA";
       break;
-#endif /* CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS */
+#endif /* defined(__MAC_10_8) || defined(__IPHONE_5_0) */
   }
   return "TLS_NULL_WITH_NULL_NULL";
 }
 
-#if CURL_BUILD_MAC
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
 CF_INLINE void GetDarwinVersionNumber(int *major, int *minor)
 {
   int mib[2];
@@ -693,7 +658,7 @@ CF_INLINE void GetDarwinVersionNumber(int *major, int *minor)
   *minor = atoi(os_version_minor);
   free(os_version);
 }
-#endif /* CURL_BUILD_MAC */
+#endif
 
 /* Apple provides a myriad of ways of getting information about a certificate
    into a string. Some aren't available under iOS or newer cats. So here's
@@ -703,182 +668,27 @@ CF_INLINE CFStringRef CopyCertSubject(SecCertificateRef cert)
 {
   CFStringRef server_cert_summary = CFSTR("(null)");
 
-#if CURL_BUILD_IOS
+#if (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
   /* iOS: There's only one way to do this. */
   server_cert_summary = SecCertificateCopySubjectSummary(cert);
 #else
-#if CURL_BUILD_MAC_10_7
+#if defined(__MAC_10_7)
   /* Lion & later: Get the long description if we can. */
   if(SecCertificateCopyLongDescription != NULL)
     server_cert_summary =
       SecCertificateCopyLongDescription(NULL, cert, NULL);
   else
-#endif /* CURL_BUILD_MAC_10_7 */
-#if CURL_BUILD_MAC_10_6
+#endif /* defined(__MAC_10_7) */
+#if defined(__MAC_10_6)
   /* Snow Leopard: Get the certificate summary. */
   if(SecCertificateCopySubjectSummary != NULL)
     server_cert_summary = SecCertificateCopySubjectSummary(cert);
   else
-#endif /* CURL_BUILD_MAC_10_6 */
+#endif /* defined(__MAC_10_6) */
   /* Leopard is as far back as we go... */
   (void)SecCertificateCopyCommonName(cert, &server_cert_summary);
-#endif /* CURL_BUILD_IOS */
+#endif /* (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE) */
   return server_cert_summary;
-}
-
-#if CURL_SUPPORT_MAC_10_7
-/* The SecKeychainSearch API was deprecated in Lion, and using it will raise
-   deprecation warnings, so let's not compile this unless it's necessary: */
-static OSStatus CopyIdentityWithLabelOldSchool(char *label,
-                                               SecIdentityRef *out_c_a_k)
-{
-  OSStatus status = errSecItemNotFound;
-  SecKeychainAttributeList attr_list;
-  SecKeychainAttribute attr;
-  SecKeychainSearchRef search = NULL;
-  SecCertificateRef cert = NULL;
-
-  /* Set up the attribute list: */
-  attr_list.count = 1L;
-  attr_list.attr = &attr;
-
-  /* Set up our lone search criterion: */
-  attr.tag = kSecLabelItemAttr;
-  attr.data = label;
-  attr.length = (UInt32)strlen(label);
-
-  /* Start searching: */
-  status = SecKeychainSearchCreateFromAttributes(NULL,
-                                                 kSecCertificateItemClass,
-                                                 &attr_list,
-                                                 &search);
-  if(status == noErr) {
-    status = SecKeychainSearchCopyNext(search,
-                                       (SecKeychainItemRef *)&cert);
-    if(status == noErr && cert) {
-      /* If we found a certificate, does it have a private key? */
-      status = SecIdentityCreateWithCertificate(NULL, cert, out_c_a_k);
-      CFRelease(cert);
-    }
-  }
-
-  if(search)
-    CFRelease(search);
-  return status;
-}
-#endif /* CURL_SUPPORT_MAC_10_7 */
-
-static OSStatus CopyIdentityWithLabel(char *label,
-                                      SecIdentityRef *out_cert_and_key)
-{
-  OSStatus status = errSecItemNotFound;
-
-#if CURL_BUILD_MAC_10_7 || CURL_BUILD_IOS
-  /* SecItemCopyMatching() was introduced in iOS and Snow Leopard.
-     kSecClassIdentity was introduced in Lion. If both exist, let's use them
-     to find the certificate. */
-  if(SecItemCopyMatching != NULL && kSecClassIdentity != NULL) {
-    CFTypeRef keys[4];
-    CFTypeRef values[4];
-    CFDictionaryRef query_dict;
-    CFStringRef label_cf = CFStringCreateWithCString(NULL, label,
-      kCFStringEncodingUTF8);
-
-    /* Set up our search criteria and expected results: */
-    values[0] = kSecClassIdentity; /* we want a certificate and a key */
-    keys[0] = kSecClass;
-    values[1] = kCFBooleanTrue;    /* we want a reference */
-    keys[1] = kSecReturnRef;
-    values[2] = kSecMatchLimitOne; /* one is enough, thanks */
-    keys[2] = kSecMatchLimit;
-    /* identity searches need a SecPolicyRef in order to work */
-    values[3] = SecPolicyCreateSSL(false, label_cf);
-    keys[3] = kSecMatchPolicy;
-    query_dict = CFDictionaryCreate(NULL, (const void **)keys,
-                                   (const void **)values, 4L,
-                                   &kCFCopyStringDictionaryKeyCallBacks,
-                                   &kCFTypeDictionaryValueCallBacks);
-    CFRelease(values[3]);
-    CFRelease(label_cf);
-
-    /* Do we have a match? */
-    status = SecItemCopyMatching(query_dict, (CFTypeRef *)out_cert_and_key);
-    CFRelease(query_dict);
-  }
-  else {
-#if CURL_SUPPORT_MAC_10_7
-    /* On Leopard and Snow Leopard, fall back to SecKeychainSearch. */
-    status = CopyIdentityWithLabelOldSchool(label, out_cert_and_key);
-#endif /* CURL_SUPPORT_MAC_10_7 */
-  }
-#elif CURL_SUPPORT_MAC_10_7
-  /* For developers building on older cats, we have no choice but to fall back
-     to SecKeychainSearch. */
-  status = CopyIdentityWithLabelOldSchool(label, out_cert_and_key);
-#endif /* CURL_BUILD_MAC_10_7 || CURL_BUILD_IOS */
-  return status;
-}
-
-static OSStatus CopyIdentityFromPKCS12File(const char *cPath,
-                                           const char *cPassword,
-                                           SecIdentityRef *out_cert_and_key)
-{
-  OSStatus status = errSecItemNotFound;
-  CFURLRef pkcs_url = CFURLCreateFromFileSystemRepresentation(NULL,
-    (const UInt8 *)cPath, strlen(cPath), false);
-  CFStringRef password = cPassword ? CFStringCreateWithCString(NULL,
-    cPassword, kCFStringEncodingUTF8) : NULL;
-  CFDataRef pkcs_data = NULL;
-
-  /* We can import P12 files on iOS or OS X 10.6 or later: */
-#if CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS
-  if(CFURLCreateDataAndPropertiesFromResource(NULL, pkcs_url, &pkcs_data,
-    NULL, NULL, &status)) {
-    const void *cKeys[] = {kSecImportExportPassphrase};
-    const void *cValues[] = {password};
-    CFDictionaryRef options = CFDictionaryCreate(NULL, cKeys, cValues,
-      password ? 1L : 0L, NULL, NULL);
-    CFArrayRef items = NULL;
-
-    /* Here we go: */
-    status = SecPKCS12Import(pkcs_data, options, &items);
-    if(status == noErr) {
-      CFDictionaryRef identity_and_trust = CFArrayGetValueAtIndex(items, 0L);
-      const void *temp_identity = CFDictionaryGetValue(identity_and_trust,
-        kSecImportItemIdentity);
-
-      /* Retain the identity; we don't care about any other data... */
-      CFRetain(temp_identity);
-      *out_cert_and_key = (SecIdentityRef)temp_identity;
-      CFRelease(items);
-    }
-    CFRelease(options);
-    CFRelease(pkcs_data);
-  }
-#endif /* CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS */
-  if(password)
-    CFRelease(password);
-  CFRelease(pkcs_url);
-  return status;
-}
-
-/* This code was borrowed from nss.c, with some modifications:
- * Determine whether the nickname passed in is a filename that needs to
- * be loaded as a PEM or a regular NSS nickname.
- *
- * returns 1 for a file
- * returns 0 for not a file
- */
-CF_INLINE bool is_file(const char *filename)
-{
-  struct_stat st;
-
-  if(filename == NULL)
-    return false;
-
-  if(stat(filename, &st) == 0)
-    return S_ISREG(st.st_mode);
-  return false;
 }
 
 static CURLcode darwinssl_connect_step1(struct connectdata *conn,
@@ -891,19 +701,17 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
   struct in6_addr addr;
 #else
   struct in_addr addr;
-#endif /* ENABLE_IPV6 */
+#endif
   size_t all_ciphers_count = 0UL, allowed_ciphers_count = 0UL, i;
   SSLCipherSuite *all_ciphers = NULL, *allowed_ciphers = NULL;
-  char *ssl_sessionid;
-  size_t ssl_sessionid_len;
   OSStatus err = noErr;
-#if CURL_BUILD_MAC
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
   int darwinver_maj = 0, darwinver_min = 0;
 
   GetDarwinVersionNumber(&darwinver_maj, &darwinver_min);
-#endif /* CURL_BUILD_MAC */
+#endif
 
-#if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
+#if defined(__MAC_10_8) || defined(__IPHONE_5_0)
   if(SSLCreateContext != NULL) {  /* use the newer API if avaialble */
     if(connssl->ssl_ctx)
       CFRelease(connssl->ssl_ctx);
@@ -915,7 +723,7 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
   }
   else {
   /* The old ST API does not exist under iOS, so don't compile it: */
-#if CURL_SUPPORT_MAC_10_8
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
     if(connssl->ssl_ctx)
       (void)SSLDisposeContext(connssl->ssl_ctx);
     err = SSLNewContext(false, &(connssl->ssl_ctx));
@@ -923,7 +731,7 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
       failf(data, "SSL: couldn't create a context: OSStatus %d", err);
       return CURLE_OUT_OF_MEMORY;
     }
-#endif /* CURL_SUPPORT_MAC_10_8 */
+#endif /* (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) */
   }
 #else
   if(connssl->ssl_ctx)
@@ -933,11 +741,11 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
     failf(data, "SSL: couldn't create a context: OSStatus %d", err);
     return CURLE_OUT_OF_MEMORY;
   }
-#endif /* CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS */
+#endif /* defined(__MAC_10_8) || defined(__IPHONE_5_0) */
   connssl->ssl_write_buffered_length = 0UL; /* reset buffered write length */
 
   /* check to see if we've been told to use an explicit SSL/TLS version */
-#if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
+#if defined(__MAC_10_8) || defined(__IPHONE_5_0)
   if(SSLSetProtocolVersionMax != NULL) {
     switch(data->set.ssl.version) {
       case CURL_SSLVERSION_DEFAULT: default:
@@ -953,16 +761,12 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
         (void)SSLSetProtocolVersionMax(connssl->ssl_ctx, kSSLProtocol3);
         break;
       case CURL_SSLVERSION_SSLv2:
-        err = SSLSetProtocolVersionMin(connssl->ssl_ctx, kSSLProtocol2);
-        if(err != noErr) {
-          failf(data, "Your version of the OS does not support SSLv2");
-          return CURLE_SSL_CONNECT_ERROR;
-        }
+        (void)SSLSetProtocolVersionMin(connssl->ssl_ctx, kSSLProtocol2);
         (void)SSLSetProtocolVersionMax(connssl->ssl_ctx, kSSLProtocol2);
     }
   }
   else {
-#if CURL_SUPPORT_MAC_10_8
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
     (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
                                        kSSLProtocolAll,
                                        false);
@@ -998,16 +802,12 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
                                            true);
         break;
       case CURL_SSLVERSION_SSLv2:
-        err = SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
+        (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
                                            kSSLProtocol2,
                                            true);
-        if(err != noErr) {
-          failf(data, "Your version of the OS does not support SSLv2");
-          return CURLE_SSL_CONNECT_ERROR;
-        }
         break;
     }
-#endif  /* CURL_SUPPORT_MAC_10_8 */
+#endif  /* (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) */
   }
 #else
   (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx, kSSLProtocolAll, false);
@@ -1027,13 +827,9 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
                                          true);
       break;
     case CURL_SSLVERSION_SSLv2:
-      err = SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
+      (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
                                          kSSLProtocol2,
                                          true);
-      if(err != noErr) {
-        failf(data, "Your version of the OS does not support SSLv2");
-        return CURLE_SSL_CONNECT_ERROR;
-      }
       break;
     case CURL_SSLVERSION_SSLv3:
       (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
@@ -1041,104 +837,16 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
                                          true);
       break;
   }
-#endif /* CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS */
+#endif /* defined(__MAC_10_8) || defined(__IPHONE_5_0) */
 
-  if(data->set.str[STRING_KEY]) {
-    infof(data, "WARNING: SSL: CURLOPT_SSLKEY is ignored by Secure "
-                "Transport. The private key must be in the Keychain.\n");
-  }
-
-  if(data->set.str[STRING_CERT]) {
-    SecIdentityRef cert_and_key = NULL;
-    bool is_cert_file = is_file(data->set.str[STRING_CERT]);
-
-    /* User wants to authenticate with a client cert. Look for it:
-       If we detect that this is a file on disk, then let's load it.
-       Otherwise, assume that the user wants to use an identity loaded
-       from the Keychain. */
-    if(is_cert_file) {
-      if(!data->set.str[STRING_CERT_TYPE])
-        infof(data, "WARNING: SSL: Certificate type not set, assuming "
-                    "PKCS#12 format.\n");
-      else if(strncmp(data->set.str[STRING_CERT_TYPE], "P12",
-        strlen(data->set.str[STRING_CERT_TYPE])) != 0)
-        infof(data, "WARNING: SSL: The Security framework only supports "
-                    "loading identities that are in PKCS#12 format.\n");
-
-      err = CopyIdentityFromPKCS12File(data->set.str[STRING_CERT],
-        data->set.str[STRING_KEY_PASSWD], &cert_and_key);
-    }
-    else
-      err = CopyIdentityWithLabel(data->set.str[STRING_CERT], &cert_and_key);
-
-    if(err == noErr) {
-      SecCertificateRef cert = NULL;
-      CFTypeRef certs_c[1];
-      CFArrayRef certs;
-
-      /* If we found one, print it out: */
-      err = SecIdentityCopyCertificate(cert_and_key, &cert);
-      if(err == noErr) {
-        CFStringRef cert_summary = CopyCertSubject(cert);
-        char cert_summary_c[128];
-
-        if(cert_summary) {
-          memset(cert_summary_c, 0, 128);
-          if(CFStringGetCString(cert_summary,
-                                cert_summary_c,
-                                128,
-                                kCFStringEncodingUTF8)) {
-            infof(data, "Client certificate: %s\n", cert_summary_c);
-          }
-          CFRelease(cert_summary);
-          CFRelease(cert);
-        }
-      }
-      certs_c[0] = cert_and_key;
-      certs = CFArrayCreate(NULL, (const void **)certs_c, 1L,
-                            &kCFTypeArrayCallBacks);
-      err = SSLSetCertificate(connssl->ssl_ctx, certs);
-      if(certs)
-        CFRelease(certs);
-      if(err != noErr) {
-        failf(data, "SSL: SSLSetCertificate() failed: OSStatus %d", err);
-        return CURLE_SSL_CERTPROBLEM;
-      }
-      CFRelease(cert_and_key);
-    }
-    else {
-      switch(err) {
-        case errSecPkcs12VerifyFailure: case errSecAuthFailed:
-          failf(data, "SSL: Incorrect password for the certificate \"%s\" "
-                      "and its private key.", data->set.str[STRING_CERT]);
-          break;
-        case errSecDecode: case errSecUnknownFormat:
-          failf(data, "SSL: Couldn't make sense of the data in the "
-                      "certificate \"%s\" and its private key.",
-                      data->set.str[STRING_CERT]);
-          break;
-        case errSecPassphraseRequired:
-          failf(data, "SSL The certificate \"%s\" requires a password.",
-                      data->set.str[STRING_CERT]);
-          break;
-        case errSecItemNotFound:
-          failf(data, "SSL: Can't find the certificate \"%s\" and its private "
-                      "key in the Keychain.", data->set.str[STRING_CERT]);
-          break;
-        default:
-          failf(data, "SSL: Can't load the certificate \"%s\" and its private "
-                      "key: OSStatus %d", data->set.str[STRING_CERT], err);
-          break;
-      }
-      return CURLE_SSL_CERTPROBLEM;
-    }
-  }
+  /* No need to load certificates here. SecureTransport uses the Keychain
+   * (which is also part of the Security framework) to evaluate trust. */
 
   /* SSL always tries to verify the peer, this only says whether it should
    * fail to connect if the verification fails, or if it should continue
    * anyway. In the latter case the result of the verification is checked with
    * SSL_get_verify_result() below. */
-#if CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS
+#if defined(__MAC_10_6) || defined(__IPHONE_5_0)
   /* Snow Leopard introduced the SSLSetSessionOption() function, but due to
      a library bug with the way the kSSLSessionOptionBreakOnServerAuth flag
      works, it doesn't work as expected under Snow Leopard or Lion.
@@ -1147,11 +855,11 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
      (SecureTransport will always validate the certificate chain by
      default.) */
   /* (Note: Darwin 12.x.x is Mountain Lion.) */
-#if CURL_BUILD_MAC
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
   if(SSLSetSessionOption != NULL && darwinver_maj >= 12) {
 #else
   if(SSLSetSessionOption != NULL) {
-#endif /* CURL_BUILD_MAC */
+#endif /* (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) */
     err = SSLSetSessionOption(connssl->ssl_ctx,
                               kSSLSessionOptionBreakOnServerAuth,
                               data->set.ssl.verifypeer?false:true);
@@ -1161,14 +869,14 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
     }
   }
   else {
-#if CURL_SUPPORT_MAC_10_8
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
     err = SSLSetEnableCertVerify(connssl->ssl_ctx,
                                  data->set.ssl.verifypeer?true:false);
     if(err != noErr) {
       failf(data, "SSL: SSLSetEnableCertVerify() failed: OSStatus %d", err);
       return CURLE_SSL_CONNECT_ERROR;
     }
-#endif /* CURL_SUPPORT_MAC_10_8 */
+#endif /* (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) */
   }
 #else
   err = SSLSetEnableCertVerify(connssl->ssl_ctx,
@@ -1177,7 +885,7 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
     failf(data, "SSL: SSLSetEnableCertVerify() failed: OSStatus %d", err);
     return CURLE_SSL_CONNECT_ERROR;
   }
-#endif /* CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS */
+#endif /* defined(__MAC_10_6) || defined(__IPHONE_5_0) */
 
   /* If this is a domain name and not an IP address, then configure SNI.
    * Also: the verifyhost setting influences SNI usage */
@@ -1190,7 +898,7 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
     err = SSLSetPeerDomainName(connssl->ssl_ctx, conn->host.name,
                                strlen(conn->host.name));
     if(err != noErr) {
-      infof(data, "WARNING: SSL: SSLSetPeerDomainName() failed: OSStatus %d\n",
+      infof(data, "WARNING: SSL: SSLSetPeerDomainName() failed: OSStatus %d",
             err);
     }
   }
@@ -1207,7 +915,7 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
      SSLGetSupportedCiphers(connssl->ssl_ctx, all_ciphers,
        &all_ciphers_count) == noErr) {
     for(i = 0UL ; i < all_ciphers_count ; i++) {
-#if CURL_BUILD_MAC
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
      /* There's a known bug in early versions of Mountain Lion where ST's ECC
         ciphers (cipher suite 0xC001 through 0xC032) simply do not work.
         Work around the problem here by disabling those ciphers if we are
@@ -1216,7 +924,7 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
          all_ciphers[i] >= 0xC001 && all_ciphers[i] <= 0xC032) {
            continue;
       }
-#endif /* CURL_BUILD_MAC */
+#endif
       switch(all_ciphers[i]) {
         /* Disable NULL ciphersuites: */
         case SSL_NULL_WITH_NULL_NULL:
@@ -1281,38 +989,6 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
   }
   Curl_safefree(all_ciphers);
   Curl_safefree(allowed_ciphers);
-
-  /* Check if there's a cached ID we can/should use here! */
-  if(!Curl_ssl_getsessionid(conn, (void **)&ssl_sessionid,
-    &ssl_sessionid_len)) {
-    /* we got a session id, use it! */
-    err = SSLSetPeerID(connssl->ssl_ctx, ssl_sessionid, ssl_sessionid_len);
-    if(err != noErr) {
-      failf(data, "SSL: SSLSetPeerID() failed: OSStatus %d", err);
-      return CURLE_SSL_CONNECT_ERROR;
-    }
-    /* Informational message */
-    infof(data, "SSL re-using session ID\n");
-  }
-  /* If there isn't one, then let's make one up! This has to be done prior
-     to starting the handshake. */
-  else {
-    CURLcode retcode;
-
-    ssl_sessionid = malloc(256*sizeof(char));
-    ssl_sessionid_len = snprintf(ssl_sessionid, 256, "curl:%s:%hu",
-      conn->host.name, conn->remote_port);
-    err = SSLSetPeerID(connssl->ssl_ctx, ssl_sessionid, ssl_sessionid_len);
-    if(err != noErr) {
-      failf(data, "SSL: SSLSetPeerID() failed: OSStatus %d", err);
-      return CURLE_SSL_CONNECT_ERROR;
-    }
-    retcode = Curl_ssl_addsessionid(conn, ssl_sessionid, ssl_sessionid_len);
-    if(retcode!= CURLE_OK) {
-      failf(data, "failed to store ssl session");
-      return retcode;
-    }
-  }
 
   err = SSLSetIOFuncs(connssl->ssl_ctx, SocketRead, SocketWrite);
   if(err != noErr) {
@@ -1383,20 +1059,6 @@ darwinssl_connect_step2(struct connectdata *conn, int sockindex)
               "certificate format");
         return CURLE_SSL_CONNECT_ERROR;
 
-      /* These are all certificate problems with the client: */
-      case errSecAuthFailed:
-        failf(data, "SSL authentication failed");
-        return CURLE_SSL_CONNECT_ERROR;
-      case errSSLPeerHandshakeFail:
-        failf(data, "SSL peer handshake failed, the server most likely "
-              "requires a client certificate to connect");
-        return CURLE_SSL_CONNECT_ERROR;
-      case errSSLPeerUnknownCA:
-        failf(data, "SSL server rejected the client certificate due to "
-              "the certificate being signed by an unknown certificate "
-              "authority");
-        return CURLE_SSL_CONNECT_ERROR;
-
       /* This error is raised if the server's cert didn't match the server's
          host name: */
       case errSSLHostNameMismatch:
@@ -1449,7 +1111,7 @@ darwinssl_connect_step2(struct connectdata *conn, int sockindex)
         infof(data, "TLS 1.0 connection using %s\n",
               TLSCipherNameForNumber(cipher));
         break;
-#if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
+#if defined(__MAC_10_8) || defined(__IPHONE_5_0)
       case kTLSProtocol11:
         infof(data, "TLS 1.1 connection using %s\n",
               TLSCipherNameForNumber(cipher));
@@ -1476,22 +1138,20 @@ darwinssl_connect_step3(struct connectdata *conn,
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
   CFStringRef server_cert_summary;
   char server_cert_summary_c[128];
-  CFArrayRef server_certs = NULL;
+  CFArrayRef server_certs;
   SecCertificateRef server_cert;
   OSStatus err;
   CFIndex i, count;
-  SecTrustRef trust = NULL;
+  SecTrustRef trust;
 
   /* There is no step 3!
    * Well, okay, if verbose mode is on, let's print the details of the
    * server certificates. */
-#if CURL_BUILD_MAC_10_7 || CURL_BUILD_IOS
-#if CURL_BUILD_IOS
+#if defined(__MAC_10_7) || defined(__IPHONE_5_0)
+#if (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
 #pragma unused(server_certs)
   err = SSLCopyPeerTrust(connssl->ssl_ctx, &trust);
-  /* For some reason, SSLCopyPeerTrust() can return noErr and yet return
-     a null trust, so be on guard for that: */
-  if(err == noErr && trust) {
+  if(err == noErr) {
     count = SecTrustGetCertificateCount(trust);
     for(i = 0L ; i < count ; i++) {
       server_cert = SecTrustGetCertificateAtIndex(trust, i);
@@ -1517,9 +1177,7 @@ darwinssl_connect_step3(struct connectdata *conn,
   if(SecTrustEvaluateAsync != NULL) {
 #pragma unused(server_certs)
     err = SSLCopyPeerTrust(connssl->ssl_ctx, &trust);
-    /* For some reason, SSLCopyPeerTrust() can return noErr and yet return
-       a null trust, so be on guard for that: */
-    if(err == noErr && trust) {
+    if(err == noErr) {
       count = SecTrustGetCertificateCount(trust);
       for(i = 0L ; i < count ; i++) {
         server_cert = SecTrustGetCertificateAtIndex(trust, i);
@@ -1537,10 +1195,8 @@ darwinssl_connect_step3(struct connectdata *conn,
     }
   }
   else {
-#if CURL_SUPPORT_MAC_10_8
     err = SSLCopyPeerCertificates(connssl->ssl_ctx, &server_certs);
-    /* Just in case SSLCopyPeerCertificates() returns null too... */
-    if(err == noErr && server_certs) {
+    if(err == noErr) {
       count = CFArrayGetCount(server_certs);
       for(i = 0L ; i < count ; i++) {
         server_cert = (SecCertificateRef)CFArrayGetValueAtIndex(server_certs,
@@ -1558,9 +1214,8 @@ darwinssl_connect_step3(struct connectdata *conn,
       }
       CFRelease(server_certs);
     }
-#endif /* CURL_SUPPORT_MAC_10_8 */
   }
-#endif /* CURL_BUILD_IOS */
+#endif /* (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE) */
 #else
 #pragma unused(trust)
   err = SSLCopyPeerCertificates(connssl->ssl_ctx, &server_certs);
@@ -1580,7 +1235,7 @@ darwinssl_connect_step3(struct connectdata *conn,
     }
     CFRelease(server_certs);
   }
-#endif /* CURL_BUILD_MAC_10_7 || CURL_BUILD_IOS */
+#endif /* defined(__MAC_10_7) || defined(__IPHONE_5_0) */
 
   connssl->connecting_state = ssl_connect_done;
   return CURLE_OK;
@@ -1732,16 +1387,16 @@ void Curl_darwinssl_close(struct connectdata *conn, int sockindex)
 
   if(connssl->ssl_ctx) {
     (void)SSLClose(connssl->ssl_ctx);
-#if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
+#if defined(__MAC_10_8) || defined(__IPHONE_5_0)
     if(SSLCreateContext != NULL)
       CFRelease(connssl->ssl_ctx);
-#if CURL_SUPPORT_MAC_10_8
+#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE))
     else
       (void)SSLDisposeContext(connssl->ssl_ctx);
-#endif  /* CURL_SUPPORT_MAC_10_8 */
+#endif  /* (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) */
 #else
     (void)SSLDisposeContext(connssl->ssl_ctx);
-#endif /* CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS */
+#endif /* defined(__MAC_10_8) || defined(__IPHONE_5_0) */
     connssl->ssl_ctx = NULL;
   }
   connssl->ssl_sockfd = 0;
@@ -1805,17 +1460,6 @@ int Curl_darwinssl_shutdown(struct connectdata *conn, int sockindex)
   }
 
   return rc;
-}
-
-void Curl_darwinssl_session_free(void *ptr)
-{
-  /* ST, as of iOS 5 and Mountain Lion, has no public method of deleting a
-     cached session ID inside the Security framework. There is a private
-     function that does this, but I don't want to have to explain to you why I
-     got your application rejected from the App Store due to the use of a
-     private API, so the best we can do is free up our own char array that we
-     created way back in darwinssl_connect_step1... */
-  Curl_safefree(ptr);
 }
 
 size_t Curl_darwinssl_version(char *buffer, size_t size)

@@ -2,7 +2,6 @@
 <info>
 <keywords>
 POP3
-LOGIN
 FAILURE
 </keywords>
 </info>
@@ -10,6 +9,9 @@ FAILURE
 #
 # Server-side
 <reply>
+<servercmd>
+REPLY PASS -ERR invalid login
+</servercmd>
 </reply>
 
 #

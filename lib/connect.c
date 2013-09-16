@@ -413,22 +413,23 @@ static CURLcode bindlocal(struct connectdata *conn,
       if(af == AF_INET6) {
 #ifdef HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID
         char *scope_ptr = strchr(myhost, '%');
-        if(scope_ptr)
-          *(scope_ptr++) = 0;
+
+        if(scope_ptr) *(scope_ptr++) = 0;
 #endif
         if(Curl_inet_pton(AF_INET6, myhost, &si6->sin6_addr) > 0) {
           si6->sin6_family = AF_INET6;
           si6->sin6_port = htons(port);
 #ifdef HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID
-          if(scope_ptr)
-            /* The "myhost" string either comes from Curl_if2ip or from
-               Curl_printable_address. The latter returns only numeric scope
-               IDs and the former returns none at all.  So the scope ID, if
-               present, is known to be numeric */
+          if(scope_ptr) {
+            /* The "myhost" string either comes from Curl_if2ip or
+               from Curl_printable_address. The latter returns only
+               numeric scope IDs and the former returns none at all.
+               So the scope ID, if present, is known to be numeric */
             si6->sin6_scope_id = atoi(scope_ptr);
-#endif
+          }
         }
-        sizeof_sa = sizeof(struct sockaddr_in6);
+#endif
+          sizeof_sa = sizeof(struct sockaddr_in6);
       }
       else
 #endif
@@ -1144,7 +1145,7 @@ CURLcode Curl_connecthost(struct connectdata *conn,  /* context */
 
   if(sockfd == CURL_SOCKET_BAD) {
     /* no good connect was made */
-    failf(data, "couldn't connect to %s at %s:%ld",
+    failf(data, "couldn't connect to %s at %s:%d",
           conn->bits.proxy?"proxy":"host",
           conn->bits.proxy?conn->proxy.name:conn->host.name, conn->port);
     return CURLE_COULDNT_CONNECT;
@@ -1239,7 +1240,7 @@ curl_socket_t Curl_getconnectinfo(struct SessionHandle *data,
  * 'conn' can be NULL, beware!
  */
 int Curl_closesocket(struct connectdata *conn,
-                      curl_socket_t sock)
+                     curl_socket_t sock)
 {
   if(conn && conn->fclosesocket) {
     if((sock == conn->sock[SECONDARYSOCKET]) &&
@@ -1251,13 +1252,7 @@ int Curl_closesocket(struct connectdata *conn,
     else
       return conn->fclosesocket(conn->closesocket_client, sock);
   }
-  sclose(sock);
-
-  if(conn)
-    /* tell the multi-socket code about this */
-    Curl_multi_closed(conn, sock);
-
-  return 0;
+  return sclose(sock);
 }
 
 /*

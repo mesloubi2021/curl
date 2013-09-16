@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -53,8 +53,8 @@ struct Configurable {
   char *postfields;
   curl_off_t postfieldsize;
   char *referer;
-  double timeout;
-  double connecttimeout;
+  long timeout;
+  long connecttimeout;
   long maxredirs;
   curl_off_t max_filesize;
   char *headerfile;
@@ -66,10 +66,6 @@ struct Configurable {
   char *range;
   long low_speed_limit;
   long low_speed_time;
-  char *dns_servers;   /* dot notation: 1.1.1.1;2.2.2.2 */
-  char *dns_interface; /* interface name */
-  char *dns_ipv4_addr; /* dot notation */
-  char *dns_ipv6_addr; /* dot notation */
   int showerror; /* -1 == unset, default => show errors
                     0 => -s is used to NOT show errors
                     1 => -S has been used to show errors */
@@ -84,7 +80,6 @@ struct Configurable {
   char *mail_from;
   struct curl_slist *mail_rcpt;
   char *mail_auth;
-  bool sasl_ir;             /* Enable/disable SASL initial response */
   bool proxytunnel;
   bool ftp_append;          /* APPE on ftp */
   bool mute;                /* don't show messages, --silent given */
@@ -209,12 +204,9 @@ struct Configurable {
   bool use_metalink;        /* process given URLs as metalink XML file */
   metalinkfile *metalinkfile_list; /* point to the first node */
   metalinkfile *metalinkfile_last; /* point to the last/current node */
-#ifdef CURLDEBUG
-  bool test_event_based;
-#endif
-  char *xoauth2_bearer;     /* XOAUTH2 bearer token */
 }; /* struct Configurable */
 
 void free_config_fields(struct Configurable *config);
 
 #endif /* HEADER_CURL_TOOL_CFGABLE_H */
+
