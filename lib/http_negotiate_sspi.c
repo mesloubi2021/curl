@@ -35,11 +35,33 @@
 #include "curl_memory.h"
 #include "curl_multibyte.h"
 
+#include <windows.h>
+
 #define _MPRINTF_REPLACE /* use our functions only */
 #include <curl/mprintf.h>
 
 /* The last #include file should be: */
 #include "memdebug.h"
+
+/*
+* Print appropriate error message in curl for SSPI related failures
+*/
+
+void sspiFailureMessage(struct connectdata *conn,
+						DWORD status_code)
+{
+  LPWSTR errString = NULL;
+  FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				 FORMAT_MESSAGE_FROM_SYSTEM, // use windows internal message table
+				 0,       // 0 since source is internal message table
+				 status_code, 
+                 0,
+				 (LPSTR)&errString, // this is WHERE we want FormatMessage
+                 0,                 // min size for buffer
+	             0 );               // 0, since getting message from system tables
+  infof(conn->data, "KRB5_ERROR: SSPI Error : %s.", errString);
+  LocalFree(errString);
+}
 
 static int
 get_gss_name(struct connectdata *conn, bool proxy,
@@ -66,8 +88,9 @@ get_gss_name(struct connectdata *conn, bool proxy,
   else
     service = "HTTP";
 
-  if(conn->bits.service_principal) { 
-	 infof(conn->data, "KRB5_DATA: Curl SSPI build is being used \n"); 
+  if (conn->bits.service_principal) 
+  { 
+	 infof(conn->data, "KRB5_DATA: Curl SSPI Authentication. \n"); 
 	 length = strlen(conn->service_principal);
 	 if(length + 1 > sizeof(neg_ctx->server_name))
 		return EMSGSIZE;
@@ -107,6 +130,7 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
   bool gss = FALSE;
   const char* protocol;
   CURLcode error;
+  DWORD req_flags = ISC_REQ_CONFIDENTIALITY | ISC_REQ_MUTUAL_AUTH | ISC_REQ_INTEGRITY;
 
   while(*header && ISSPACE(*header))
     header++;
@@ -140,11 +164,12 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
     return -1;
   }
 
-  if(0 == strlen(neg_ctx->server_name)) {
-    ret = get_gss_name(conn, proxy, neg_ctx);
-    if(ret)
+   /* Change to allow comm to multiple hosts, earlier one conn object 
+   could connect to only one service principal name */
+
+   ret = get_gss_name(conn, proxy, neg_ctx);
+   if(ret)
       return ret;
-  }
 
   if(!neg_ctx->output_token) {
     PSecPkgInfo SecurityPackage;
@@ -221,11 +246,21 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
   if(!sname)
     return CURLE_OUT_OF_MEMORY;
 
+  if (conn->data->set.gssapi_delegation & CURLGSSAPI_DELEGATION_POLICY_FLAG) 
+  {
+		#ifdef GSS_C_DELEG_POLICY_FLAG
+			req_flags |= ISC_REQ_DELEGATE;
+		#else
+		    infof(conn->data, "warning: support for CURLGSSAPI_DELEGATION_POLICY_FLAG not "
+		        "compiled in\n");
+		#endif
+  }
+
   neg_ctx->status = s_pSecFn->InitializeSecurityContext(
     neg_ctx->credentials,
     input_token ? neg_ctx->context : 0,
     sname,
-    ISC_REQ_CONFIDENTIALITY,
+    req_flags, 
     0,
     SECURITY_NATIVE_DREP,
     input_token ? &in_buff_desc : 0,
@@ -238,7 +273,7 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
   Curl_unicodefree(sname);
 
   if(GSS_ERROR(neg_ctx->status)) {
-	  infof(conn->data, "KRB5_ERROR: SSPI intialize context failed, error code : %lu \n", neg_ctx->status);	   
+	  sspiFailureMessage(conn, neg_ctx->status);
 	  return -1;
   }
 
@@ -246,8 +281,10 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
      neg_ctx->status == SEC_I_COMPLETE_AND_CONTINUE) {
     neg_ctx->status = s_pSecFn->CompleteAuthToken(neg_ctx->context,
                                                   &out_buff_desc);
-    if(GSS_ERROR(neg_ctx->status))
+	if(GSS_ERROR(neg_ctx->status)) {
+	  sspiFailureMessage(conn, neg_ctx->status);
       return -1;
+	}
   }
 
   neg_ctx->output_token_length = out_sec_buff.cbBuffer;

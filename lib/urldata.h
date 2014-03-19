@@ -1146,9 +1146,9 @@ typedef enum {
 #define MAX_CURL_PASSWORD_LENGTH 256
 #define MAX_CURL_USER_LENGTH_TXT "255"
 #define MAX_CURL_PASSWORD_LENGTH_TXT "255"
-#define MAX_CURL_KEYTAB_LOCATION_LENGTH 256				
+#define MAX_CURL_KEYTAB_LOCATION_LENGTH 1024				
 #define MAX_CURL_SERVICE_PRINCIPAL_LENGTH 256
-#define MAX_CURL_CREDENTIAL_CACHE_LENGTH 256
+#define MAX_CURL_CREDENTIAL_CACHE_LENGTH 1024
 
 struct auth {
   unsigned long want;  /* Bitmask set to the authentication methods wanted by

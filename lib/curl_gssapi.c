@@ -36,6 +36,7 @@
 void curl_krb5_print_error_message(krb5_context krb_context, int error_code, struct SessionHandle *data) {
 	const char *errormsg = krb5_get_error_message(krb_context, error_code);
 	infof(data, "KRB5_ERROR: %s \n" , errormsg);
+	infof(data, "KRB5_ERROR_CODE: %d", error_code);		//for debugging certain scenarios
 	infof(data, "\n Freeing all krb5 related data structures \n");
 	krb5_free_error_message(krb_context, errormsg);
 }
@@ -129,7 +130,6 @@ OM_uint32 Curl_gss_init_sec_context(
 		 return CURLE_KERBEROS_AUTH_FAILED;
 	}
   
-	printf("\n The principal used in this is %s", conn->user);
 	if ((ret = krb5_parse_name(krb_context, conn->user, &principal)) != 0) {
 		 curl_krb5_print_error_message(krb_context, ret, data);
 		 curl_krb5_free_local_data(krb_context, ccache, &creds, principal, opts, ktab);
@@ -144,7 +144,6 @@ OM_uint32 Curl_gss_init_sec_context(
 
 	if (conn->bits.user_keytab) {
 		 infof(data, "KRB5_DATA: Keytab location is %s \n", conn->keytab_location);
-		 printf("\n The keytab used in this is %s", conn->keytab_location); 
 		 if ((ret = krb5_kt_resolve(krb_context, conn->keytab_location, &ktab)) != 0) {
 			curl_krb5_print_error_message(krb_context, ret, data);
 			curl_krb5_free_local_data(krb_context, ccache, &creds, principal, opts, ktab);
@@ -171,10 +170,9 @@ OM_uint32 Curl_gss_init_sec_context(
 			   return CURLE_KERBEROS_AUTH_FAILED;
 		}
 	} else if(conn->data->isIntermediateServer) {
-		infof(data, "KRB5_DATA: Curl is acting as intermediate server \n");
-		conn->data->curl_gss_creds = conn->data->deleg_gss_creds;
+		infof(data, "KRB5_DATA: Curl is carrying a gss credential \n");
 		major_status = gss_init_sec_context(minor_status,
-                              conn->data->curl_gss_creds, /* cred_handle */
+                              conn->data->deleg_gss_creds, /* cred_handle */
                               context,
                               target_name,
                               GSS_C_NO_OID, /* mech_type */
@@ -245,7 +243,6 @@ OM_uint32 Curl_gss_init_sec_context(
 	infof(data, "Able to convert the credential \n");
 	infof(data, "Attempting init sec context \n");
 
-	printf("\n It is running gss init context\ n");
 	major_status = gss_init_sec_context(minor_status,
                               conn->data->curl_gss_creds, /* cred_handle */
                               context,

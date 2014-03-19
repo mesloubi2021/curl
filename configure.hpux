@@ -14075,7 +14075,7 @@ hpux9* | hpux10* | hpux11*)
   need_version=no
   case $host_cpu in
   ia64*)
-    shrext_cmds='.so'
+    shrext_cmds='.sl'
     hardcode_into_libs=yes
     dynamic_linker="$host_os dld.so"
     shlibpath_var=LD_LIBRARY_PATH

@@ -67,16 +67,15 @@ get_gss_name(struct connectdata *conn, bool proxy, gss_name_t *server)
   gss_buffer_desc token = GSS_C_EMPTY_BUFFER;
   char name[2048];
   const char* service;
-
+  
   if(conn->bits.service_principal) { 
-	  printf("THE TARGET SPN IS: %s, ", conn->service_principal);
 	  token.value = conn->service_principal;
       token.length = strlen(conn->service_principal) + 1;
 	  major_status = gss_import_name(&minor_status, &token,
                         (gss_OID) GSS_C_NT_USER_NAME , server);
 	  return GSS_ERROR(major_status) ? -1 : 0;
   }
-  
+
   /* GSSAPI implementation by Globus (known as GSI) requires the name to be
      of form "<service>/<fqdn>" instead of <service>@<fqdn> (ie. slash instead
      of at-sign). Also GSI servers are often identified as 'host' not 'khttp'.
@@ -270,6 +269,7 @@ int Curl_input_negotiate(struct connectdata *conn, bool proxy,
     if(output_token.value)
       gss_release_buffer(&discard_st, &output_token);
     log_gss_error(conn, minor_status, "KRB5_ERROR: gss_init_sec_context() failed: ");
+	printf("\n KRB5_ERROR: gss_init_sec_context() failed error code : %d", minor_status);
     return -1;
   }
 

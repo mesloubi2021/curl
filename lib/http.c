@@ -744,6 +744,7 @@ CURLcode Curl_http_input_auth(struct connectdata *conn,
           /* if we sent GSS authentication in the outgoing request and we get
              this back, we're in trouble */
           infof(data, "Authentication problem. Ignoring this.\n");
+		  printf(" \n KERBEROS Authentication problem. Ignoring this. Probable cause is server side fault");
           data->state.authproblem = TRUE;
         }
         else {

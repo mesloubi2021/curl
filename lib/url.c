@@ -4853,6 +4853,13 @@ static CURLcode create_conn(struct SessionHandle *data,
    * Check input data
    *************************************************************/
 
+  /*************************************************************
+   * Initialize kerberos parameters to NULL to avoid garbage copy
+   *************************************************************/
+  keytab[0] = 0;					
+  service_principal[0] = 0;
+  credential_cache[0] = 0;
+
   if(!data->change.url)
     return CURLE_URL_MALFORMAT;
 
@@ -5110,22 +5117,25 @@ static CURLcode create_conn(struct SessionHandle *data,
     return result;
 
   /* updating curl connection structure with keytab*/
-  if(data->set.str[STRING_KEYTAB_LOCATION] != NULL) {
+  if (data->set.str[STRING_KEYTAB_LOCATION] != NULL) {
 	  strncpy(keytab, data->set.str[STRING_KEYTAB_LOCATION], MAX_CURL_KEYTAB_LOCATION_LENGTH);
-    }
-   conn->keytab_location = strdup(keytab);
+	  keytab[MAX_CURL_KEYTAB_LOCATION_LENGTH-1] = '\0';   /*To be on safe side*/
+  }
+  conn->keytab_location = strdup(keytab);
    
   /*updating curl connection structure with SPN */
-  if(data->set.str[STRING_SERVICE_PRINCIPAL] != NULL) {
+  if (data->set.str[STRING_SERVICE_PRINCIPAL] != NULL) {
 	  strncpy(service_principal, data->set.str[STRING_SERVICE_PRINCIPAL], MAX_CURL_SERVICE_PRINCIPAL_LENGTH); 
-   }
-    conn->service_principal = strdup(service_principal);
+	  service_principal[MAX_CURL_SERVICE_PRINCIPAL_LENGTH-1] = '\0';   /*To be on safe side*/
+  }
+  conn->service_principal = strdup(service_principal);
 	
   /*updating curl structure with credential cache */
-  if(data->set.str[STRING_CREDENTIAL_CACHE] != NULL) {
+  if (data->set.str[STRING_CREDENTIAL_CACHE] != NULL) {
       strncpy(credential_cache, data->set.str[STRING_CREDENTIAL_CACHE], MAX_CURL_CREDENTIAL_CACHE_LENGTH);
-   }
-    conn->credential_cache = strdup(credential_cache);
+	  credential_cache[MAX_CURL_CREDENTIAL_CACHE_LENGTH-1] = '\0';   /*To be on safe side*/
+  }
+  conn->credential_cache = strdup(credential_cache);
 
   /* Get a cloned copy of the SSL config situation stored in the
      connection struct. But to get this going nicely, we must first make
