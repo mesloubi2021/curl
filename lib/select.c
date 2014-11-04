@@ -71,7 +71,7 @@ int Curl_ack_eintr = 0;
  */
 int Curl_wait_ms(int timeout_ms)
 {
-#if !defined(MSDOS) && !defined(USE_WINSOCK)
+#if !defined(MSDOS) && !defined(USE_WINSOCK) || defined(WINRT)
 #ifndef HAVE_POLL_FINE
   struct timeval pending_tv;
 #endif
@@ -89,7 +89,7 @@ int Curl_wait_ms(int timeout_ms)
   }
 #if defined(MSDOS)
   delay(timeout_ms);
-#elif defined(USE_WINSOCK)
+#elif defined(USE_WINSOCK) && !defined(WINRT)
   Sleep(timeout_ms);
 #else
   pending_ms = timeout_ms;

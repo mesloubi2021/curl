@@ -44,6 +44,8 @@
 
 #ifdef _WIN32_WCE
 #  include "config-win32ce.h"
+#elif defined(WINAPI_FAMILY) && ((WINAPI_FAMILY == 2) || (WINAPI_FAMILY == 3))
+#  include "config-winrt.h"
 #else
 #  ifdef WIN32
 #    include "config-win32.h"
@@ -243,6 +245,9 @@
 #    define WIN32_LEAN_AND_MEAN
 #  endif
 #  include <windows.h>
+#  if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+#    define WINRT
+#  endif
 #  ifdef HAVE_WINSOCK2_H
 #    include <winsock2.h>
 #    ifdef HAVE_WS2TCPIP_H
@@ -514,6 +519,15 @@
  */
 
 #if defined(_MSC_VER) && !defined(__POCC__) && !defined(_MT)
+#  undef USE_THREADS_POSIX
+#  undef USE_THREADS_WIN32
+#endif
+
+/*
+ * Thread support is not implemented on WinRT.
+ */
+
+#if defined(WINRT)
 #  undef USE_THREADS_POSIX
 #  undef USE_THREADS_WIN32
 #endif

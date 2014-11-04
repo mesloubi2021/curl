@@ -61,12 +61,29 @@ LFLAGS     = /nologo /machine:$(MACHINE)
 LNKDLL     = link.exe /DLL
 LNKLIB     = link.exe /lib
 
+!IF "$(PLATFORM)"=="wp80" || "$(PLATFORM)"=="wp81"
+CFLAGS = $(CFLAGS) /DWINAPI_FAMILY=3
+WINRT = true
+!ELSEIF "$(PLATFORM)"=="wsa81"
+CFLAGS = $(CFLAGS) /DWINAPI_FAMILY=2
+WINRT = true
+!ELSE
+WINRT = false
+!ENDIF
+
+!IF "$(WINRT)"=="true"
+LFLAGS = $(LFLAGS) /LTCG
+!ENDIF
+
 CFLAGS_PDB = /Zi
 LFLAGS_PDB = /incremental:no /opt:ref,icf
 
 CFLAGS_LIBCURL_STATIC  = /DCURL_STATICLIB
 
-WIN_LIBS    = ws2_32.lib wldap32.lib advapi32.lib
+WIN_LIBS    = ws2_32.lib
+!IF "$(WINRT)"=="false"
+WIN_LIBS    = $(WIN_LIBS) wldap32.lib advapi32.lib
+!ENDIF
 
 BASE_NAME              = libcurl
 BASE_NAME_DEBUG        = $(BASE_NAME)_debug
@@ -112,7 +129,10 @@ SSL_LIBS     = libeay32.lib ssleay32.lib
 USE_SSL      = true
 SSL          = dll
 !ELSEIF "$(WITH_SSL)"=="static"
-SSL_LIBS     = libeay32.lib ssleay32.lib gdi32.lib user32.lib crypt32.lib
+SSL_LIBS     = libeay32.lib ssleay32.lib
+!IF "$(WINRT)"=="false"
+SSL_LIBS     = $(SSL_LIBS) gdi32.lib user32.lib crypt32.lib
+!ENDIF
 USE_SSL      = true
 SSL          = static
 !ENDIF
@@ -367,7 +387,10 @@ LIB_OBJS = $(LIBCURL_OBJS)
 
 EXE_OBJS = $(CURL_OBJS) $(CURL_DIROBJ)\curl.res
 
-all : $(TARGET) $(PROGRAM_NAME)
+all :: $(TARGET)
+!IF "$(WINRT)"=="false"
+all :: $(PROGRAM_NAME)
+!ENDIF
 
 package: $(TARGET)
 	@cd $(DIRDIST)

@@ -496,7 +496,7 @@ static bool verifyconnect(curl_socket_t sockfd, int *error)
 
 #ifdef _WIN32_WCE
   Sleep(0);
-#else
+#elif !defined(WINRT)
   SleepEx(0, FALSE);
 #endif
 
@@ -928,7 +928,9 @@ void Curl_sndbufset(curl_socket_t sockfd)
   static int detectOsState = DETECT_OS_NONE;
 
   if(detectOsState == DETECT_OS_NONE) {
-#if !defined(_WIN32_WINNT) || !defined(_WIN32_WINNT_WIN2K) || \
+#ifdef WINRT
+    detectOsState = DETECT_OS_VISTA_OR_LATER;
+#elif !defined(_WIN32_WINNT) || !defined(_WIN32_WINNT_WIN2K) || \
     (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
     OSVERSIONINFO osver;
 
