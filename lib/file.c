@@ -196,6 +196,10 @@ static CURLcode file_connect(struct connectdata *conn, bool *done)
   int i;
   char *actual_path;
 #endif
+#if defined(_WIN32) || defined(__WIN32__)
+  int wlen;
+  wchar_t* wactual_path;
+#endif
 
   real_path = curl_easy_unescape(data, data->state.path, 0, NULL);
   if(!real_path)
@@ -229,7 +233,15 @@ static CURLcode file_connect(struct connectdata *conn, bool *done)
     if(actual_path[i] == '/')
       actual_path[i] = '\\';
 
+#if defined(_WIN32) || defined(__WIN32__)
+  wlen = MultiByteToWideChar(CP_UTF8, 0, actual_path, -1, NULL, 0);
+  wactual_path = malloc(wlen*sizeof(wchar_t));
+  MultiByteToWideChar(CP_UTF8, 0, actual_path, -1, wactual_path, wlen);
+  fd = _wopen(wactual_path, O_RDONLY|O_BINARY);
+  free(wactual_path);
+#else
   fd = open_readonly(actual_path, O_RDONLY|O_BINARY);
+#endif
   file->path = actual_path;
 #else
   fd = open_readonly(real_path, O_RDONLY);
