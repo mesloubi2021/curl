@@ -57,6 +57,8 @@ CC_DEBUG    = cl.exe /Od /D_DEBUG /RTC1 /Z7 /LDd /W3
 CFLAGS      = /I. /I ../lib /I../include /nologo /W3 /EHsc /DWIN32 /FD /c /DBUILDING_LIBCURL
 !ENDIF
 
+CFLAGS     = $(CFLAGS) /DCURL_DISABLE_LDAP /DCURL_DISABLE_TELNET /DCURL_DISABLE_DICT /DCURL_DISABLE_GOPHER
+
 LFLAGS     = /nologo /machine:$(MACHINE)
 LNKDLL     = link.exe /DLL
 LNKLIB     = link.exe /lib
