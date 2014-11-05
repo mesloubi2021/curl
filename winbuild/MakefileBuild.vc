@@ -385,10 +385,7 @@ LIB_OBJS = $(LIBCURL_OBJS)
 
 EXE_OBJS = $(CURL_OBJS) $(CURL_DIROBJ)\curl.res
 
-all :: $(TARGET)
-!IF "$(WINRT)"=="false"
-all :: $(PROGRAM_NAME)
-!ENDIF
+all : $(TARGET)
 
 package: $(TARGET)
 	@cd $(DIRDIST)
