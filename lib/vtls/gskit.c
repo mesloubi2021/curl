@@ -848,8 +848,10 @@ static CURLcode gskit_connect_step3(struct connectdata *conn, int sockindex)
      However the server certificate may be available, thus we can return
      info about it. */
   if(data->set.ssl.certinfo) {
-    if(Curl_ssl_init_certinfo(data, 1))
-      return CURLE_OUT_OF_MEMORY;
+    result = Curl_ssl_init_certinfo(data, 1);
+    if(result)
+      return result;
+
     if(cert) {
       cc = Curl_extract_certinfo(conn, 0, cert, certend);
       if(cc != CURLE_OK)
