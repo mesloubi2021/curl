@@ -1346,6 +1346,31 @@ static CURLcode verifystatus(struct connectdata *conn,
   ch = SSL_get_peer_cert_chain(connssl->handle);
   st = SSL_CTX_get_cert_store(connssl->ctx);
 
+  /* The authorized responder certs in the OCSP response MUST by signed by the
+     peer cert's issuer. (https://tools.ietf.org/html/rfc6960#section-4.2.2.2)
+     If that's a root cert, no problem, but if it's an intermediate OpenSSL has
+     a bug where it expects this issuer to be present in the chain. So add it
+     if necessary. */
+
+  /* First make sure the peer cert chain includes both a peer and an issuer,
+     and the OCSP response contains a responder cert. */
+  if (sk_X509_num(ch) >= 2 && sk_X509_num(br->certs) >= 1) {
+    X509 *peer = sk_X509_value(ch, 0);
+    X509 *issuer = sk_X509_value(ch, 1);
+    X509 *responder = sk_X509_value(br->certs, sk_X509_num(br->certs) - 1);
+
+    /* Make sure the responder is expecting the same issuer as the peer */    
+    if(X509_name_cmp(X509_get_subject_name(issuer),
+                     X509_get_issuer_name(responder)) == 0) {
+      int rc = OCSP_basic_add1_cert(br, issuer);
+      if(!rc) {
+        failf(data, "Failure adding intermediate cert to OCSP response\n");
+        result = CURLE_SSL_INVALIDCERTSTATUS;
+        goto end;
+      }
+    }
+  }
+
   if(OCSP_basic_verify(br, ch, st, 0) <= 0) {
     failf(data, "OCSP response verification failed");
     result = CURLE_SSL_INVALIDCERTSTATUS;
