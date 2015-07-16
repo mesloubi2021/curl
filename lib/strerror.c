@@ -645,10 +645,14 @@ const char *Curl_strerror(struct connectdata *conn, int err)
   if(err >= 0 && err < sys_nerr)
     strncpy(buf, strerror(err), max);
   else {
-    if(!get_winsock_error(err, buf, max) &&
-       !FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err,
-                       LANG_NEUTRAL, buf, (DWORD)max, NULL))
-      snprintf(buf, max, "Unknown error %d (%#x)", err, err);
+    wchar_t wbuf[sizeof(conn->syserr_buf)-1] = {0};
+    if(!get_winsock_error(err, buf, max)) {
+      if(!FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err,
+                       LANG_NEUTRAL, wbuf, (DWORD)max, NULL))
+        snprintf(buf, max, "Unknown error %d (%#x)", err, err);
+      else
+        wcstombs(buf, wbuf, max);
+    }
   }
 #endif
 
@@ -1084,11 +1088,15 @@ const char *Curl_sspi_strerror (struct connectdata *conn, int err)
       }
     }
 #else
-    if(FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
-                      FORMAT_MESSAGE_IGNORE_INSERTS,
-                      NULL, err, LANG_NEUTRAL,
-                      msgbuf, sizeof(msgbuf)-1, NULL)) {
-      msg_formatted = TRUE;
+    {
+      wchar_t wbuf[sizeof(msgbuf)] = {0};
+      if(FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM |
+                        FORMAT_MESSAGE_IGNORE_INSERTS,
+                        NULL, err, LANG_NEUTRAL,
+                        wbuf, sizeof(msgbuf)-1, NULL)) {
+        wcstombs(msgbuf, wbuf, sizeof(msgbuf)-1);
+        msg_formatted = TRUE;
+      }
     }
 #endif
     if(msg_formatted) {
