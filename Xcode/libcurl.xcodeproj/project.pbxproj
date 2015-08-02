@@ -855,7 +855,6 @@
 		1AFB30491B6DB65400EE8D2A /* liblber.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = liblber.tbd; path = usr/lib/liblber.tbd; sourceTree = SDKROOT; };
 		1AFB304B1B6DB6A200EE8D2A /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		1AFCAD551B6DB9450054F1C5 /* cURL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = cURL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1AFCAD561B6DB9460054F1C5 /* libcurl OS X copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "libcurl OS X copy-Info.plist"; path = "/Users/alseycolemanmiller/Developer/curl/Xcode/libcurl OS X copy-Info.plist"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1272,7 +1271,6 @@
 				1A1C56051B6DAC3E00AF9A97 /* Source */,
 				1A7560261B6DA44B00CBA288 /* Headers */,
 				1AABD33A1B6D8FFC00E237AA /* Products */,
-				1AFCAD561B6DB9460054F1C5 /* libcurl OS X copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -2026,7 +2024,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "libcurl OS X copy-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
@@ -2046,7 +2044,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "libcurl OS X copy-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
