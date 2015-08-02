@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A755F321B6D9AD100CBA288 /* curl.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F231B6D9AD100CBA288 /* curl.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F361B6D9AD100CBA288 /* curlrules.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F271B6D9AD100CBA288 /* curlrules.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F371B6D9AD100CBA288 /* curlver.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F281B6D9AD100CBA288 /* curlver.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F381B6D9AD100CBA288 /* easy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F291B6D9AD100CBA288 /* easy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F3A1B6D9AD100CBA288 /* mprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F2B1B6D9AD100CBA288 /* mprintf.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F3B1B6D9AD100CBA288 /* multi.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F2C1B6D9AD100CBA288 /* multi.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F3C1B6D9AD100CBA288 /* stdcheaders.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F2D1B6D9AD100CBA288 /* stdcheaders.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F3D1B6D9AD100CBA288 /* typecheck-gcc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F2E1B6D9AD100CBA288 /* typecheck-gcc.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A755F411B6D9C1D00CBA288 /* curlbuild.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F401B6D9C1D00CBA288 /* curlbuild.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AABD5171B6D926200E237AA /* amigaos.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AABD40F1B6D926200E237AA /* amigaos.c */; };
 		1AABD5181B6D926200E237AA /* amigaos.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AABD4101B6D926200E237AA /* amigaos.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AABD5191B6D926200E237AA /* arpa_telnet.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AABD4111B6D926200E237AA /* arpa_telnet.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -248,6 +257,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A755F231B6D9AD100CBA288 /* curl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curl.h; sourceTree = "<group>"; };
+		1A755F271B6D9AD100CBA288 /* curlrules.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curlrules.h; sourceTree = "<group>"; };
+		1A755F281B6D9AD100CBA288 /* curlver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curlver.h; sourceTree = "<group>"; };
+		1A755F291B6D9AD100CBA288 /* easy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = easy.h; sourceTree = "<group>"; };
+		1A755F2B1B6D9AD100CBA288 /* mprintf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mprintf.h; sourceTree = "<group>"; };
+		1A755F2C1B6D9AD100CBA288 /* multi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = multi.h; sourceTree = "<group>"; };
+		1A755F2D1B6D9AD100CBA288 /* stdcheaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdcheaders.h; sourceTree = "<group>"; };
+		1A755F2E1B6D9AD100CBA288 /* typecheck-gcc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "typecheck-gcc.h"; sourceTree = "<group>"; };
+		1A755F301B6D9AD100CBA288 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		1A755F401B6D9C1D00CBA288 /* curlbuild.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = curlbuild.h; sourceTree = "<group>"; };
 		1AABD3391B6D8FFC00E237AA /* curl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = curl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AABD40F1B6D926200E237AA /* amigaos.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amigaos.c; sourceTree = "<group>"; };
 		1AABD4101B6D926200E237AA /* amigaos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = amigaos.h; sourceTree = "<group>"; };
@@ -501,9 +520,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1A755F201B6D9AD100CBA288 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				1A755F211B6D9AD100CBA288 /* curl */,
+				1A755F301B6D9AD100CBA288 /* README */,
+			);
+			name = include;
+			path = ../include;
+			sourceTree = "<group>";
+		};
+		1A755F211B6D9AD100CBA288 /* curl */ = {
+			isa = PBXGroup;
+			children = (
+				1A755F401B6D9C1D00CBA288 /* curlbuild.h */,
+				1A755F231B6D9AD100CBA288 /* curl.h */,
+				1A755F271B6D9AD100CBA288 /* curlrules.h */,
+				1A755F281B6D9AD100CBA288 /* curlver.h */,
+				1A755F291B6D9AD100CBA288 /* easy.h */,
+				1A755F2B1B6D9AD100CBA288 /* mprintf.h */,
+				1A755F2C1B6D9AD100CBA288 /* multi.h */,
+				1A755F2D1B6D9AD100CBA288 /* stdcheaders.h */,
+				1A755F2E1B6D9AD100CBA288 /* typecheck-gcc.h */,
+			);
+			path = curl;
+			sourceTree = "<group>";
+		};
 		1AABD32F1B6D8FFC00E237AA = {
 			isa = PBXGroup;
 			children = (
+				1A755F201B6D9AD100CBA288 /* include */,
 				1AABD40D1B6D926200E237AA /* Source */,
 				1AABD33A1B6D8FFC00E237AA /* Products */,
 			);
@@ -779,6 +825,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A755F321B6D9AD100CBA288 /* curl.h in Headers */,
 				1AABD5F81B6D926200E237AA /* tftp.h in Headers */,
 				1AABD52E1B6D926200E237AA /* connect.h in Headers */,
 				1AABD5441B6D926200E237AA /* curl_md5.h in Headers */,
@@ -791,6 +838,7 @@
 				1AABD6141B6D926200E237AA /* schannel.h in Headers */,
 				1AABD5EE1B6D926200E237AA /* strequal.h in Headers */,
 				1AABD5561B6D926200E237AA /* curl_sasl.h in Headers */,
+				1A755F411B6D9C1D00CBA288 /* curlbuild.h in Headers */,
 				1AABD5541B6D926200E237AA /* curl_rtmp.h in Headers */,
 				1AABD5F61B6D926200E237AA /* telnet.h in Headers */,
 				1AABD5951B6D926200E237AA /* imap.h in Headers */,
@@ -892,6 +940,13 @@
 				1AABD5C71B6D926200E237AA /* pipeline.h in Headers */,
 				1AABD5891B6D926200E237AA /* http_chunks.h in Headers */,
 				1AABD5191B6D926200E237AA /* arpa_telnet.h in Headers */,
+				1A755F3B1B6D9AD100CBA288 /* multi.h in Headers */,
+				1A755F3C1B6D9AD100CBA288 /* stdcheaders.h in Headers */,
+				1A755F371B6D9AD100CBA288 /* curlver.h in Headers */,
+				1A755F381B6D9AD100CBA288 /* easy.h in Headers */,
+				1A755F3A1B6D9AD100CBA288 /* mprintf.h in Headers */,
+				1A755F361B6D9AD100CBA288 /* curlrules.h in Headers */,
+				1A755F3D1B6D9AD100CBA288 /* typecheck-gcc.h in Headers */,
 				1AABD5301B6D926200E237AA /* content_encoding.h in Headers */,
 				1AABD5D51B6D926200E237AA /* setup-os400.h in Headers */,
 				1AABD51C1B6D926200E237AA /* asyn.h in Headers */,
