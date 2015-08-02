@@ -49,3 +49,5 @@ CHANGES.dist
 test-driver
 /build/
 /builds/
+
+Xcode/libcurl.xcodeproj/xcuserdata/*

@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1AABD3381B6D8FFC00E237AA"
-               BuildableName = "cURL.framework"
-               BlueprintName = "cURL"
+               BuildableName = "curl.framework"
+               BlueprintName = "curl"
                ReferencedContainer = "container:cURL.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,8 +46,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1AABD3381B6D8FFC00E237AA"
-            BuildableName = "cURL.framework"
-            BlueprintName = "cURL"
+            BuildableName = "curl.framework"
+            BlueprintName = "curl"
             ReferencedContainer = "container:cURL.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -64,8 +64,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1AABD3381B6D8FFC00E237AA"
-            BuildableName = "cURL.framework"
-            BlueprintName = "cURL"
+            BuildableName = "curl.framework"
+            BlueprintName = "curl"
             ReferencedContainer = "container:cURL.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
