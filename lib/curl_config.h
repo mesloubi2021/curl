@@ -909,6 +909,9 @@
 /* if OpenSSL is in use */
 // #define USE_OPENSSL 1
 
+/* Darwin SSL */
+#define USE_DARWINSSL 1
+
 /* if Unix domain sockets are enabled  */
 #define USE_UNIX_SOCKETS
 

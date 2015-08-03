@@ -364,9 +364,6 @@
 		1AFCACD11B6DB9450054F1C5 /* curl_threads.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A1C564E1B6DAC4C00AF9A97 /* curl_threads.c */; };
 		1AFCACD21B6DB9450054F1C5 /* speedcheck.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A1C583C1B6DAC4F00AF9A97 /* speedcheck.c */; };
 		1AFCACD31B6DB9450054F1C5 /* getinfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A1C57CB1B6DAC4E00AF9A97 /* getinfo.c */; };
-		1AFCACD51B6DB9450054F1C5 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AFB304B1B6DB6A200EE8D2A /* libz.tbd */; };
-		1AFCACD61B6DB9450054F1C5 /* liblber.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AFB30491B6DB65400EE8D2A /* liblber.tbd */; };
-		1AFCACD71B6DB9450054F1C5 /* libldap.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AFB30471B6DB64700EE8D2A /* libldap.tbd */; };
 		1AFCACD91B6DB9450054F1C5 /* splay.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F9B1B6DA43F00CBA288 /* splay.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AFCACDA1B6DB9450054F1C5 /* share.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F931B6DA43F00CBA288 /* share.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AFCACDB1B6DB9450054F1C5 /* cookie.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F4D1B6DA43F00CBA288 /* cookie.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -486,7 +483,7 @@
 		1AFCAD4D1B6DB9450054F1C5 /* inet_ntop.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F801B6DA43F00CBA288 /* inet_ntop.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AFCAD4E1B6DB9450054F1C5 /* speedcheck.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F9A1B6DA43F00CBA288 /* speedcheck.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AFCAD4F1B6DB9450054F1C5 /* http2.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F791B6DA43F00CBA288 /* http2.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1AFCAD511B6DB9450054F1C5 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A7561241B6DA8F200CBA288 /* Info.plist */; };
+		1AFCAD5A1B6E21AE0054F1C5 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AFCAD591B6E21AE0054F1C5 /* libz.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -855,6 +852,7 @@
 		1AFB30491B6DB65400EE8D2A /* liblber.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = liblber.tbd; path = usr/lib/liblber.tbd; sourceTree = SDKROOT; };
 		1AFB304B1B6DB6A200EE8D2A /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		1AFCAD551B6DB9450054F1C5 /* cURL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = cURL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AFCAD591B6E21AE0054F1C5 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -872,9 +870,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AFCACD51B6DB9450054F1C5 /* libz.tbd in Frameworks */,
-				1AFCACD61B6DB9450054F1C5 /* liblber.tbd in Frameworks */,
-				1AFCACD71B6DB9450054F1C5 /* libldap.tbd in Frameworks */,
+				1AFCAD5A1B6E21AE0054F1C5 /* libz.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1286,11 +1282,28 @@
 		1AFCAC5C1B6DB8590054F1C5 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
+				1AFCAD5B1B6E21B80054F1C5 /* OS X */,
+				1AFCAD5C1B6E21BE0054F1C5 /* iOS */,
+			);
+			name = Dependencies;
+			sourceTree = "<group>";
+		};
+		1AFCAD5B1B6E21B80054F1C5 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
 				1AFB304B1B6DB6A200EE8D2A /* libz.tbd */,
 				1AFB30491B6DB65400EE8D2A /* liblber.tbd */,
 				1AFB30471B6DB64700EE8D2A /* libldap.tbd */,
 			);
-			name = Dependencies;
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		1AFCAD5C1B6E21BE0054F1C5 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				1AFCAD591B6E21AE0054F1C5 /* libz.tbd */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1593,6 +1606,7 @@
 		1AABD3301B6D8FFC00E237AA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = cURL;
 				TargetAttributes = {
@@ -1632,7 +1646,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AFCAD511B6DB9450054F1C5 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1910,6 +1923,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1930,6 +1944,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "";
 				SDKROOT = macosx;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -1957,6 +1972,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1970,6 +1986,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CFLAGS = "";
 				SDKROOT = macosx;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -1980,6 +1997,7 @@
 		1AABD3421B6D8FFC00E237AA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1989,16 +2007,27 @@
 				INFOPLIST_FILE = info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/sshcrypto",
+				);
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_LDFLAGS = (
+					"-llber",
+					"-lldap",
+					"-ldl",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				PRODUCT_NAME = cURL;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		1AABD3431B6D8FFC00E237AA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -2008,7 +2037,16 @@
 				INFOPLIST_FILE = info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/sshcrypto",
+				);
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_LDFLAGS = (
+					"-llber",
+					"-lldap",
+					"-ldl",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				PRODUCT_NAME = cURL;
 				SKIP_INSTALL = YES;
@@ -2018,6 +2056,7 @@
 		1AFCAD531B6DB9450054F1C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -2028,16 +2067,23 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_LDFLAGS = (
+					"-llber",
+					"-lldap",
+					"-ldl",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				PRODUCT_NAME = cURL;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		1AFCAD541B6DB9450054F1C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -2048,6 +2094,11 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_LDFLAGS = (
+					"-llber",
+					"-lldap",
+					"-ldl",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				PRODUCT_NAME = cURL;
 				SDKROOT = iphoneos;
