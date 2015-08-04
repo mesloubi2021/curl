@@ -1495,10 +1495,29 @@ if test "$curl_ssl_msg" = "$init_ssl_msg" && test X"$OPT_SSL" != Xno; then
     AC_CHECK_LIB(ssl, SSL_connect)
 
     if test "$ac_cv_lib_ssl_SSL_connect" != yes; then
+      dnl did not find SSL lib, perhaps using static libs and need to link agains dl
+      AC_MSG_CHECKING(for ssl with dl lib in use);
+      OLIBS=$LIBS
+      LIBS="-ldl $LIBS"
+      dnl unset this variable, as otherwise check will simply use cache
+      unset ac_cv_lib_ssl_SSL_connect
+      AC_CHECK_LIB(ssl, SSL_connect)
+      if test "$ac_cv_lib_ssl_SSL_connect" != yes; then
+        dnl still no SSL_connect with dl
+        AC_MSG_RESULT(no)
+        LIBS=$OLIBS
+      else
+        AC_MSG_RESULT(yes)
+      fi
+    fi
+
+    if test "$ac_cv_lib_ssl_SSL_connect" != yes; then
         dnl we didn't find the SSL lib, try the RSAglue/rsaref stuff
         AC_MSG_CHECKING(for ssl with RSAglue/rsaref libs in use);
         OLIBS=$LIBS
         LIBS="-lRSAglue -lrsaref $LIBS"
+        dnl unset this variable, as otherwise check will simply use cache
+        unset ac_cv_lib_ssl_SSL_connect
         AC_CHECK_LIB(ssl, SSL_connect)
         if test "$ac_cv_lib_ssl_SSL_connect" != yes; then
             dnl still no SSL_connect
