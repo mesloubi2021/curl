@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "1AFCAC5D1B6DB9450054F1C5"
-               BuildableName = "cURL.framework"
-               BlueprintName = "libcurl iOS"
+               BlueprintIdentifier = "1AE78E081B966A5600CDEF17"
+               BuildableName = "libcurl WatchOS.framework"
+               BlueprintName = "libcurl WatchOS"
                ReferencedContainer = "container:libcurl.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1AFCAC5D1B6DB9450054F1C5"
-            BuildableName = "cURL.framework"
-            BlueprintName = "libcurl iOS"
+            BlueprintIdentifier = "1AE78E081B966A5600CDEF17"
+            BuildableName = "libcurl WatchOS.framework"
+            BlueprintName = "libcurl WatchOS"
             ReferencedContainer = "container:libcurl.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1AFCAC5D1B6DB9450054F1C5"
-            BuildableName = "cURL.framework"
-            BlueprintName = "libcurl iOS"
+            BlueprintIdentifier = "1AE78E081B966A5600CDEF17"
+            BuildableName = "libcurl WatchOS.framework"
+            BlueprintName = "libcurl WatchOS"
             ReferencedContainer = "container:libcurl.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

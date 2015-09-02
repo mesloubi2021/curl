@@ -28,10 +28,10 @@
 /* #undef CURL_DISABLE_HTTP */
 
 /* to disable LDAP */
-#define CURL_DISABLE_LDAP
+/* #define CURL_DISABLE_LDAP */
 
 /* to disable LDAPS */
-#define CURL_DISABLE_LDAPS
+/* #undef CURL_DISABLE_LDAPS */
 
 /* to disable proxies */
 /* #undef CURL_DISABLE_PROXY */
@@ -519,7 +519,7 @@
 #define HAVE_SGTTY_H 1
 
 /* Define to 1 if you have the sigaction function. */
-// #undef HAVE_SIGACTION
+#define HAVE_SIGACTION 1
 
 /* Define to 1 if you have the siginterrupt function. */
 #define HAVE_SIGINTERRUPT 1
