@@ -161,8 +161,6 @@
 /* The size of `long', as computed by sizeof. */
 #ifdef __arm64__
 #define CURL_SIZEOF_LONG 8
-#elseif defined(__LP64__) && __LP64__
-#define CURL_SIZEOF_LONG 8
 #else
 #define CURL_SIZEOF_LONG 4
 #endif
