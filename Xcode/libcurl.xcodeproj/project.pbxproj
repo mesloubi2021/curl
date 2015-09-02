@@ -2582,7 +2582,10 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wambiguous-macro",
+				);
 				OTHER_LDFLAGS = (
 					"-llber",
 					"-lldap",
@@ -2608,7 +2611,10 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wambiguous-macro",
+				);
 				OTHER_LDFLAGS = (
 					"-llber",
 					"-lldap",
@@ -2633,7 +2639,10 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wambiguous-macro",
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				SDKROOT = watchos;
@@ -2657,7 +2666,10 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wambiguous-macro",
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				SDKROOT = watchos;
@@ -2681,7 +2693,10 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wambiguous-macro",
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				SDKROOT = iphoneos;
@@ -2706,7 +2721,10 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wambiguous-macro",
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = se.haxx.cURL;
 				SDKROOT = iphoneos;
