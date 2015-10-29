@@ -107,6 +107,12 @@ const NameValue setopt_nv_CURLUSESSL[] = {
   NVEND,
 };
 
+const NameValueUnsigned setopt_nv_CURLSSLOPT[] = {
+  NV(CURLSSLOPT_ALLOW_BEAST),
+  NV(CURLSSLOPT_NO_REVOKE),
+  NVEND,
+};
+
 const NameValue setopt_nv_CURL_NETRC[] = {
   NV(CURL_NETRC_IGNORED),
   NV(CURL_NETRC_OPTIONAL),
@@ -134,6 +140,8 @@ const NameValue setopt_nv_CURLPROTO[] = {
   NV(CURLPROTO_RTSP),
   NV(CURLPROTO_SCP),
   NV(CURLPROTO_SFTP),
+  NV(CURLPROTO_SMB),
+  NV(CURLPROTO_SMBS),
   NV(CURLPROTO_SMTP),
   NV(CURLPROTO_SMTPS),
   NV(CURLPROTO_TELNET),
@@ -219,7 +227,7 @@ static char *c_escape(const char *str)
       e += 2;
     }
     else if(! isprint(c)) {
-      snprintf(e, 4, "\\%03o", c);
+      snprintf(e, 5, "\\%03o", (unsigned)c);
       e += 4;
     }
     else

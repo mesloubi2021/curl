@@ -15,23 +15,24 @@ CFGSET=true
 
 !MESSAGE Usage: nmake /f Makefile.vc mode=<static or dll> <options>
 !MESSAGE where <options> is one or many of:
-!MESSAGE   VC=<6,7,8,9,10,11,12>            - VC versions
-!MESSAGE   WITH_DEVEL=<path>                - Paths for the development files (SSL, zlib, etc.)
-!MESSAGE                                      Defaults to sibbling directory deps: ../deps
-!MESSAGE                                      Libraries can be fetched at http://pecl2.php.net/downloads/php-windows-builds/
-!MESSAGE                                      Uncompress them into the deps folder.
-!MESSAGE   WITH_SSL=<dll or static>         - Enable OpenSSL support, DLL or static
-!MESSAGE   WITH_ZLIB=<dll or static>        - Enable zlib support, DLL or static
-!MESSAGE   WITH_SSH2=<dll or static>        - Enable libSSH2 support, DLL or static
-!MESSAGE   ENABLE_IDN=<yes or no>           - Enable use of Windows IDN APIs, defaults to yes
-!MESSAGE                                      Requires Windows Vista or later, or installation from:
-!MESSAGE                                      http://www.microsoft.com/downloads/details.aspx?FamilyID=AD6158D7-DDBA-416A-9109-07607425A815
-!MESSAGE   ENABLE_IPV6=<yes or no>          - Enable IPv6, defaults to yes
-!MESSAGE   ENABLE_SSPI=<yes or no>          - Enable SSPI support, defaults to yes
-!MESSAGE   ENABLE_WINSSL=<yes or no>        - Enable native Windows SSL support, defaults to yes
-!MESSAGE   GEN_PDB=<yes or no>              - Generate Program Database (debug symbols for release build)
-!MESSAGE   DEBUG=<yes or no>                - Debug builds
-!MESSAGE   MACHINE=<x86 or x64 or ARM>      - Target architecture (default x64 on AMD64, x86 on others)
+!MESSAGE   VC=<6,7,8,9,10,11,12,14>     - VC versions
+!MESSAGE   WITH_DEVEL=<path>            - Paths for the development files (SSL, zlib, etc.)
+!MESSAGE                                  Defaults to sibbling directory deps: ../deps
+!MESSAGE                                  Libraries can be fetched at http://pecl2.php.net/downloads/php-windows-builds/
+!MESSAGE                                  Uncompress them into the deps folder.
+!MESSAGE   WITH_SSL=<dll or static>     - Enable OpenSSL support, DLL or static
+!MESSAGE   WITH_CARES=<dll or static>   - Enable c-ares support, DLL or static
+!MESSAGE   WITH_ZLIB=<dll or static>    - Enable zlib support, DLL or static
+!MESSAGE   WITH_SSH2=<dll or static>    - Enable libSSH2 support, DLL or static
+!MESSAGE   ENABLE_IDN=<yes or no>       - Enable use of Windows IDN APIs, defaults to yes
+!MESSAGE                                  Requires Windows Vista or later, or installation from:
+!MESSAGE                                  http://www.microsoft.com/downloads/details.aspx?FamilyID=AD6158D7-DDBA-416A-9109-07607425A815
+!MESSAGE   ENABLE_IPV6=<yes or no>      - Enable IPv6, defaults to yes
+!MESSAGE   ENABLE_SSPI=<yes or no>      - Enable SSPI support, defaults to yes
+!MESSAGE   ENABLE_WINSSL=<yes or no>    - Enable native Windows SSL support, defaults to yes
+!MESSAGE   GEN_PDB=<yes or no>          - Generate Program Database (debug symbols for release build)
+!MESSAGE   DEBUG=<yes or no>            - Debug builds
+!MESSAGE   MACHINE=<x86 or x64>         - Target architecture (default x64 on AMD64, x86 on others)
 !MESSAGE   PLATFORM=<wp80 or wp81 or wsa81> - WinRT platform (x64 also sets this value)
 !ERROR please choose a valid mode
 
@@ -108,6 +109,14 @@ USE_SSL = true
 SSL     = static
 !ENDIF
 
+!IF "$(WITH_CARES)"=="dll"
+USE_CARES = true
+CARES     = dll
+!ELSEIF "$(WITH_CARES)"=="static"
+USE_CARES = true
+CARES     = static
+!ENDIF
+
 !IF "$(WITH_ZLIB)"=="dll"
 USE_ZLIB = true
 ZLIB     = dll
@@ -152,6 +161,10 @@ CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-static
 CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-ssl-$(SSL)
 !ENDIF
 
+!IF "$(USE_CARES)"=="true"
+CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-cares-$(CARES)
+!ENDIF
+
 !IF "$(USE_ZLIB)"=="true"
 CONFIG_NAME_LIB = $(CONFIG_NAME_LIB)-zlib-$(ZLIB)
 !ENDIF
@@ -180,6 +193,9 @@ CURL_DIROBJ = ..\builds\$(CONFIG_NAME_LIB)-obj-curl
 DIRDIST = ..\builds\$(CONFIG_NAME_LIB)\
 
 $(MODE):
+	@IF NOT EXIST ..\include\curl\curlbuild.h ( \
+	   CALL ..\buildconf.bat \
+	)
 	@SET DIROBJ=$(LIBCURL_DIROBJ)
 	@SET MACRO_NAME=LIBCURL_OBJS
 	@SET OUTFILE=LIBCURL_OBJS.inc
