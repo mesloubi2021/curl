@@ -30,7 +30,10 @@
 
 #define BUILDING_CURL_SMB_C
 
-#ifdef HAVE_PROCESS_H
+#ifdef WINRT
+#include <Processthreadsapi.h>
+#define getpid GetCurrentProcessId
+#elif defined(HAVE_PROCESS_H)
 #include <process.h>
 #define getpid _getpid
 #endif
