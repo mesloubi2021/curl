@@ -65,7 +65,7 @@ LNKLIB     = link.exe /lib
 
 !IF "$(PLATFORM)"=="wp80" || "$(PLATFORM)"=="wp81"
 CFLAGS = $(CFLAGS) /DWINAPI_FAMILY=3
-!ELSEIF "$(PLATFORM)"=="wsa81"
+!ELSEIF "$(PLATFORM)"=="wsa81" || "$(PLATFORM)"=="uwp"
 CFLAGS = $(CFLAGS) /DWINAPI_FAMILY=2
 !ENDIF
 
