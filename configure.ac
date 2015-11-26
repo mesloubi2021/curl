@@ -1650,7 +1650,6 @@ if test "$curl_ssl_msg" = "$init_ssl_msg" && test X"$OPT_SSL" != Xno; then
                     ENGINE_cleanup \
                     CRYPTO_cleanup_all_ex_data \
                     SSL_get_shutdown \
-                    SSLv2_client_method \
                     DES_set_odd_parity )
 
     AC_MSG_CHECKING([for BoringSSL])
