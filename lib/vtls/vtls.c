@@ -59,6 +59,7 @@
 #include "urldata.h"
 
 #include "vtls.h" /* generic SSL protos etc */
+#include "mbedtls.h" /* mbedTLS versions */
 #include "slist.h"
 #include "sendf.h"
 #include "rawstr.h"

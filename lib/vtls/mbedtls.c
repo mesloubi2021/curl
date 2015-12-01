@@ -6,7 +6,7 @@
  *                             \___|\___/|_| \_\_____|
  *
  * Copyright (C) 2010 - 2011, Hoi-Ho Chan, <hoiho.chan@gmail.com>
- * Copyright (C) 2012 - 2015, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2012 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -36,6 +36,10 @@
 #include <mbedtls/certs.h>
 #include <mbedtls/x509.h>
 #include <mbedtls/version.h>
+
+#if MBEDTLS_VERSION_NUMBER < 0x02010200
+#error too old mbedTLS
+#endif
 
 #include <mbedtls/error.h>
 #include <mbedtls/entropy.h>
@@ -84,13 +88,13 @@ static void entropy_init_mutex(mbedtls_entropy_context *ctx)
 /* start of entropy_func_mutex() */
 static int entropy_func_mutex(void *data, unsigned char *output, size_t len)
 {
-  int ret;
-  /* lock 1 = entropy_func_mutex() */
-  polarsslthreadlock_lock_function(1);
-  ret = mbedtls_entropy_func(data, output, len);
-  polarsslthreadlock_unlock_function(1);
+    int ret;
+    /* lock 1 = entropy_func_mutex() */
+    polarsslthreadlock_lock_function(1);
+    ret = mbedtls_entropy_func(data, output, len);
+    polarsslthreadlock_unlock_function(1);
 
-  return ret;
+    return ret;
 }
 /* end of entropy_func_mutex() */
 
@@ -125,6 +129,7 @@ static void mbedtls_debug(void *context, int level, const char *line)
 
 static Curl_recv mbedtls_recv;
 static Curl_send mbedtls_send;
+
 
 static CURLcode
 mbedtls_connect_step1(struct connectdata *conn,
@@ -169,15 +174,14 @@ mbedtls_connect_step1(struct connectdata *conn,
   mbedtls_entropy_init(&connssl->entropy);
   mbedtls_ctr_drbg_init(&connssl->ctr_drbg);
 
-  ret = mbedtls_ctr_drbg_seed(&connssl->ctr_drbg, mbedtls_entropy_func,
-                              &connssl->entropy, connssl->ssn.id,
-                              connssl->ssn.id_len);
-  if(ret) {
+  if((ret = mbedtls_ctr_drbg_seed(&connssl->ctr_drbg, mbedtls_entropy_func,
+                                  &connssl->entropy, connssl->ssn.id,
+                                  connssl->ssn.id_len)) != 0) {
 #ifdef MBEDTLS_ERROR_C
-    mbedtls_strerror(ret, errorbuf, sizeof(errorbuf));
+     mbedtls_strerror(ret, errorbuf, sizeof(errorbuf));
 #endif /* MBEDTLS_ERROR_C */
-    failf(data, "Failed - mbedTLS: ctr_drbg_init returned (-0x%04X) %s\n",
-          -ret, errorbuf);
+     failf(data, "Failed - mbedTLS: ctr_drbg_init returned (-0x%04X) %s\n",
+                                                            -ret, errorbuf);
   }
 #endif /* THREADING_SUPPORT */
 
@@ -186,7 +190,7 @@ mbedtls_connect_step1(struct connectdata *conn,
 
   if(data->set.str[STRING_SSL_CAFILE]) {
     ret = mbedtls_x509_crt_parse_file(&connssl->cacert,
-                                      data->set.str[STRING_SSL_CAFILE]);
+                              data->set.str[STRING_SSL_CAFILE]);
 
     if(ret<0) {
 #ifdef MBEDTLS_ERROR_C
@@ -202,7 +206,7 @@ mbedtls_connect_step1(struct connectdata *conn,
 
   if(data->set.str[STRING_SSL_CAPATH]) {
     ret = mbedtls_x509_crt_parse_path(&connssl->cacert,
-                                      data->set.str[STRING_SSL_CAPATH]);
+                              data->set.str[STRING_SSL_CAPATH]);
 
     if(ret<0) {
 #ifdef MBEDTLS_ERROR_C
@@ -221,7 +225,7 @@ mbedtls_connect_step1(struct connectdata *conn,
 
   if(data->set.str[STRING_CERT]) {
     ret = mbedtls_x509_crt_parse_file(&connssl->clicert,
-                                      data->set.str[STRING_CERT]);
+                              data->set.str[STRING_CERT]);
 
     if(ret) {
 #ifdef MBEDTLS_ERROR_C
@@ -238,7 +242,7 @@ mbedtls_connect_step1(struct connectdata *conn,
   if(data->set.str[STRING_KEY]) {
     mbedtls_pk_init(&connssl->pk);
     ret = mbedtls_pk_parse_keyfile(&connssl->pk, data->set.str[STRING_KEY],
-                                   data->set.str[STRING_KEY_PASSWD]);
+                           data->set.str[STRING_KEY_PASSWD]);
     if(ret == 0 && !mbedtls_pk_can_do(&connssl->pk, MBEDTLS_PK_RSA))
       ret = MBEDTLS_ERR_PK_TYPE_MISMATCH;
 
@@ -282,11 +286,10 @@ mbedtls_connect_step1(struct connectdata *conn,
     failf(data, "mbedTLS: ssl_init failed");
     return CURLE_SSL_CONNECT_ERROR;
   }
-  ret = mbedtls_ssl_config_defaults(&connssl->config,
-                                    MBEDTLS_SSL_IS_CLIENT,
-                                    MBEDTLS_SSL_TRANSPORT_STREAM,
-                                    MBEDTLS_SSL_PRESET_DEFAULT);
-  if(ret) {
+  if((ret = mbedtls_ssl_config_defaults(&connssl->config,
+                                        MBEDTLS_SSL_IS_CLIENT,
+                                        MBEDTLS_SSL_TRANSPORT_STREAM,
+                                        MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
     failf(data, "mbedTLS: ssl_config failed");
     return CURLE_SSL_CONNECT_ERROR;
   }
@@ -294,22 +297,22 @@ mbedtls_connect_step1(struct connectdata *conn,
   switch(data->set.ssl.version) {
   case CURL_SSLVERSION_SSLv3:
     mbedtls_ssl_conf_min_version(&connssl->config, MBEDTLS_SSL_MAJOR_VERSION_3,
-                                 MBEDTLS_SSL_MINOR_VERSION_0);
+                        MBEDTLS_SSL_MINOR_VERSION_0);
     infof(data, "mbedTLS: Forced min. SSL Version to be SSLv3\n");
     break;
   case CURL_SSLVERSION_TLSv1_0:
     mbedtls_ssl_conf_min_version(&connssl->config, MBEDTLS_SSL_MAJOR_VERSION_3,
-                                 MBEDTLS_SSL_MINOR_VERSION_1);
+                        MBEDTLS_SSL_MINOR_VERSION_1);
     infof(data, "mbedTLS: Forced min. SSL Version to be TLS 1.0\n");
     break;
   case CURL_SSLVERSION_TLSv1_1:
     mbedtls_ssl_conf_min_version(&connssl->config, MBEDTLS_SSL_MAJOR_VERSION_3,
-                                 MBEDTLS_SSL_MINOR_VERSION_2);
+                        MBEDTLS_SSL_MINOR_VERSION_2);
     infof(data, "mbedTLS: Forced min. SSL Version to be TLS 1.1\n");
     break;
   case CURL_SSLVERSION_TLSv1_2:
     mbedtls_ssl_conf_min_version(&connssl->config, MBEDTLS_SSL_MAJOR_VERSION_3,
-                                 MBEDTLS_SSL_MINOR_VERSION_3);
+                        MBEDTLS_SSL_MINOR_VERSION_3);
     infof(data, "mbedTLS: Forced min. SSL Version to be TLS 1.2\n");
     break;
   }
@@ -364,7 +367,7 @@ mbedtls_connect_step1(struct connectdata *conn,
 #endif
 
 #ifdef MBEDTLS_DEBUG
-  mbedtls_ssl_conf_dbg(&connssl->ssl, mbedtls_debug, data);
+  mbedtls_ssl_conf_dbg(&connssl->config, mbedtls_debug, data);
 #endif
 
   connssl->connecting_state = ssl_connect_2;
