@@ -53,3 +53,5 @@ test-driver
 /builds/
 Xcode/libcurl.xcodeproj/xcuserdata/*
 scripts/_curl
+
+Xcode/libcurl.xcodeproj/project.xcworkspace/xcuserdata/
