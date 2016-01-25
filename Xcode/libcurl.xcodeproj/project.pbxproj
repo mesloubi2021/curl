@@ -242,7 +242,6 @@
 		1A7561211B6DA82B00CBA288 /* multi.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A7561171B6DA82B00CBA288 /* multi.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A7561221B6DA82B00CBA288 /* stdcheaders.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A7561181B6DA82B00CBA288 /* stdcheaders.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A7561231B6DA82B00CBA288 /* typecheck-gcc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A7561191B6DA82B00CBA288 /* typecheck-gcc.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1A7561251B6DA8F200CBA288 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A7561241B6DA8F200CBA288 /* Info.plist */; };
 		1AFB30481B6DB64700EE8D2A /* libldap.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AFB30471B6DB64700EE8D2A /* libldap.tbd */; };
 		1AFB304A1B6DB65400EE8D2A /* liblber.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AFB30491B6DB65400EE8D2A /* liblber.tbd */; };
 		1AFB304C1B6DB6A200EE8D2A /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AFB304B1B6DB6A200EE8D2A /* libz.tbd */; };
@@ -482,7 +481,6 @@
 		1AFCAD4D1B6DB9450054F1C5 /* inet_ntop.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F801B6DA43F00CBA288 /* inet_ntop.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AFCAD4E1B6DB9450054F1C5 /* speedcheck.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F9A1B6DA43F00CBA288 /* speedcheck.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AFCAD4F1B6DB9450054F1C5 /* http2.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A755F791B6DA43F00CBA288 /* http2.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1AFCAD511B6DB9450054F1C5 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A7561241B6DA8F200CBA288 /* Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -1618,7 +1616,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A7561251B6DA8F200CBA288 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1626,7 +1623,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AFCAD511B6DB9450054F1C5 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1925,6 +1921,7 @@
 				SDKROOT = macosx;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+				WARNING_CFLAGS = "-Wno-ambiguous-macro";
 				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
@@ -1965,6 +1962,7 @@
 				SDKROOT = macosx;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+				WARNING_CFLAGS = "-Wno-ambiguous-macro";
 				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
