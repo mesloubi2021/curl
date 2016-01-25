@@ -83,6 +83,7 @@ static const char *const helptext[] = {
 #ifdef USE_ENVIRONMENT
   "     --environment   Write results to environment variables (RISC OS)",
 #endif
+  "     --expect100-timeout SECONDS How long to wait for 100-continue (H)",
   " -f, --fail          Fail silently (no output at all) on HTTP errors (H)",
   "     --false-start   Enable TLS False Start.",
   " -F, --form CONTENT  Specify HTTP multipart POST data (H)",
@@ -165,7 +166,8 @@ static const char *const helptext[] = {
   "Do not switch to GET after following a 303 redirect (H)",
   " -#, --progress-bar  Display transfer progress as a progress bar",
   "     --proto PROTOCOLS  Enable/disable PROTOCOLS",
-  "     --proto-redir PROTOCOLS  Enable/disable PROTOCOLS on redirect",
+  "     --proto-default PROTOCOL  Use PROTOCOL for any URL missing a scheme",
+  "     --proto-redir PROTOCOLS   Enable/disable PROTOCOLS on redirect",
   " -x, --proxy [PROTOCOL://]HOST[:PORT]  Use proxy on given port",
   "     --proxy-anyauth  Pick \"any\" proxy authentication method (H)",
   "     --proxy-basic   Use Basic authentication on the proxy (H)",
@@ -315,6 +317,9 @@ void tool_version_info(void)
     }
 #ifdef USE_METALINK
     printf("Metalink ");
+#endif
+#ifdef USE_LIBPSL
+    printf("PSL ");
 #endif
     puts(""); /* newline */
   }

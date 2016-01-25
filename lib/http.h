@@ -163,6 +163,7 @@ struct HTTP {
   Curl_send_buffer *header_recvbuf;
   size_t nread_header_recvbuf; /* number of bytes in header_recvbuf fed into
                                   upper layer */
+  Curl_send_buffer *trailer_recvbuf;
   int status_code; /* HTTP status code */
   const uint8_t *pausedata; /* pointer to data received in on_data_chunk */
   size_t pauselen; /* the number of bytes left in data */
@@ -215,7 +216,6 @@ struct http_conn {
                               nghttp2_session_mem_recv */
 
   /* this is a hash of all individual streams (SessionHandle structs) */
-  struct curl_hash streamsh;
   struct h2settings settings;
 #else
   int unused; /* prevent a compiler warning */

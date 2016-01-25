@@ -24,15 +24,14 @@ rem ***************************************************************************
 :begin
   rem Check we are running on a Windows NT derived OS
   if not "%OS%" == "Windows_NT" goto nodos
+
+  rem Set our variables
   setlocal
   set VC_VER=
   set BUILD_PLATFORM=
-  
-  rem Display the help
+
+  rem Ensure we have the required arguments
   if /i "%~1" == "" goto syntax
-  if /i "%~1" == "-?" goto syntax
-  if /i "%~1" == "-h" goto syntax
-  if /i "%~1" == "-help" goto syntax
 
 :parseArgs
   if "%~1" == "" goto prerequisites
@@ -81,6 +80,12 @@ rem ***************************************************************************
     set BUILD_CONFIG=debug
   ) else if /i "%~1%" == "release" (
     set BUILD_CONFIG=release
+  ) else if /i "%~1" == "-?" (
+    goto syntax
+  ) else if /i "%~1" == "-h" (
+    goto syntax
+  ) else if /i "%~1" == "-help" (
+    goto syntax
   ) else (
     if not defined START_DIR (
       set START_DIR=%~1%

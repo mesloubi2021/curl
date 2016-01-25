@@ -51,6 +51,7 @@ struct OperationConfig {
   bool proto_present;
   long proto_redir;
   bool proto_redir_present;
+  char *proto_default;
   curl_off_t resume_from;
   char *postfields;
   curl_off_t postfieldsize;
@@ -207,12 +208,13 @@ struct OperationConfig {
 #ifdef CURLDEBUG
   bool test_event_based;
 #endif
-  char *xoauth2_bearer;           /* XOAUTH2 bearer token */
+  char *oauth_bearer;             /* OAuth 2.0 bearer token */
   bool nonpn;                     /* enable/disable TLS NPN extension */
   bool noalpn;                    /* enable/disable TLS ALPN extension */
   char *unix_socket_path;         /* path to Unix domain socket */
   bool falsestart;
   bool path_as_is;
+  double expect100timeout;
   struct GlobalConfig *global;
   struct OperationConfig *prev;
   struct OperationConfig *next;   /* Always last in the struct */

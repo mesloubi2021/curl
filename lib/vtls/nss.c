@@ -211,16 +211,22 @@ static SECStatus set_ciphers(struct SessionHandle *data, PRFileDesc * model,
   PRBool found;
   char *cipher;
 
+  /* use accessors to avoid dynamic linking issues after an update of NSS */
+  const PRUint16 num_implemented_ciphers = SSL_GetNumImplementedCiphers();
+  const PRUint16 *implemented_ciphers = SSL_GetImplementedCiphers();
+  if(!implemented_ciphers)
+    return SECFailure;
+
   /* First disable all ciphers. This uses a different max value in case
    * NSS adds more ciphers later we don't want them available by
    * accident
    */
-  for(i=0; i<SSL_NumImplementedCiphers; i++) {
-    SSL_CipherPrefSet(model, SSL_ImplementedCiphers[i], PR_FALSE);
+  for(i = 0; i < num_implemented_ciphers; i++) {
+    SSL_CipherPrefSet(model, implemented_ciphers[i], PR_FALSE);
   }
 
   /* Set every entry in our list to false */
-  for(i=0; i<NUM_OF_CIPHERS; i++) {
+  for(i = 0; i < NUM_OF_CIPHERS; i++) {
     cipher_state[i] = PR_FALSE;
   }
 
@@ -714,7 +720,7 @@ static void HandshakeCallback(PRFileDesc *sock, void *arg)
 #ifdef USE_NGHTTP2
     if(buflen == NGHTTP2_PROTO_VERSION_ID_LEN &&
        !memcmp(NGHTTP2_PROTO_VERSION_ID, buf, NGHTTP2_PROTO_VERSION_ID_LEN)) {
-      conn->negnpn = CURL_HTTP_VERSION_2_0;
+      conn->negnpn = CURL_HTTP_VERSION_2;
     }
     else
 #endif
@@ -967,8 +973,7 @@ static CURLcode cmp_peer_pubkey(struct ssl_connect_data *connssl,
       SECItem *cert_der = PK11_DEREncodePublicKey(pubkey);
       if(cert_der) {
         /* compare the public key with the pinned public key */
-        result = Curl_pin_peer_pubkey(pinnedpubkey,
-                                      cert_der->data,
+        result = Curl_pin_peer_pubkey(data, pinnedpubkey, cert_der->data,
                                       cert_der->len);
         SECITEM_FreeItem(cert_der, PR_TRUE);
       }
@@ -1774,7 +1779,7 @@ static CURLcode nss_setup_connect(struct connectdata *conn, int sockindex)
     unsigned char protocols[128];
 
 #ifdef USE_NGHTTP2
-    if(data->set.httpversion == CURL_HTTP_VERSION_2_0) {
+    if(data->set.httpversion >= CURL_HTTP_VERSION_2) {
       protocols[cur++] = NGHTTP2_PROTO_VERSION_ID_LEN;
       memcpy(&protocols[cur], NGHTTP2_PROTO_VERSION_ID,
           NGHTTP2_PROTO_VERSION_ID_LEN);
@@ -1792,9 +1797,17 @@ static CURLcode nss_setup_connect(struct connectdata *conn, int sockindex)
 
 
   /* Force handshake on next I/O */
-  SSL_ResetHandshake(connssl->handle, /* asServer */ PR_FALSE);
+  if(SSL_ResetHandshake(connssl->handle, /* asServer */ PR_FALSE)
+      != SECSuccess)
+    goto error;
 
-  SSL_SetURL(connssl->handle, conn->host.name);
+  /* propagate hostname to the TLS layer */
+  if(SSL_SetURL(connssl->handle, conn->host.name) != SECSuccess)
+    goto error;
+
+  /* prevent NSS from re-using the session for a different hostname */
+  if(SSL_SetSockPeerID(connssl->handle, conn->host.name) != SECSuccess)
+    goto error;
 
   return CURLE_OK;
 
