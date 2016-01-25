@@ -160,8 +160,6 @@ static const struct LongShort aliases[]= {
   {"$5", "noproxy",                  TRUE},
   {"$6", "socks5-gssapi-service",    TRUE},
   {"$7", "socks5-gssapi-nec",        FALSE},
-  {"$O", "proxy-service-name",       TRUE},
-  {"$P", "service-name",             TRUE},
   {"$8", "proxy1.0",                 TRUE},
   {"$9", "tftp-blksize",             TRUE},
   {"$A", "mail-from",                TRUE},
@@ -178,6 +176,10 @@ static const struct LongShort aliases[]= {
   {"$L", "test-event",               FALSE},
   {"$M", "unix-socket",              TRUE},
   {"$N", "path-as-is",               FALSE},
+  {"$O", "proxy-service-name",       TRUE},
+  {"$P", "service-name",             TRUE},
+  {"$Q", "proto-default",            TRUE},
+  {"$R", "expect100-timeout",        TRUE},
   {"0",   "http1.0",                 FALSE},
   {"01",  "http1.1",                 FALSE},
   {"02",  "http2",                   FALSE},
@@ -494,8 +496,8 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       case 'b': /* egd-file */
         GetStr(&config->egd_file, nextarg);
         break;
-      case 'B': /* XOAUTH2 Bearer */
-        GetStr(&config->xoauth2_bearer, nextarg);
+      case 'B': /* OAuth 2.0 bearer token */
+        GetStr(&config->oauth_bearer, nextarg);
         break;
       case 'c': /* connect-timeout */
         err = str2udouble(&config->connecttimeout, nextarg);
@@ -903,12 +905,6 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       case '7': /* --socks5-gssapi-nec*/
         config->socks5_gssapi_nec = toggle;
         break;
-      case 'O': /* --proxy-service-name */
-        GetStr(&config->proxy_service_name, nextarg);
-        break;
-      case 'P': /* --service-name */
-        GetStr(&config->service_name, nextarg);
-        break;
       case '8': /* --proxy1.0 */
         /* http 1.0 proxy */
         GetStr(&config->proxy, nextarg);
@@ -991,6 +987,23 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
         break;
       case 'N': /* --path-as-is */
         config->path_as_is = toggle;
+        break;
+      case 'O': /* --proxy-service-name */
+        GetStr(&config->proxy_service_name, nextarg);
+        break;
+      case 'P': /* --service-name */
+        GetStr(&config->service_name, nextarg);
+        break;
+      case 'Q': /* --proto-default */
+        GetStr(&config->proto_default, nextarg);
+        err = check_protocol(config->proto_default);
+        if(err)
+          return err;
+        break;
+      case 'R': /* --expect100-timeout */
+        err = str2udouble(&config->expect100timeout, nextarg);
+        if(err)
+          return err;
         break;
       }
       break;
@@ -1415,7 +1428,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
                    &config->last_post,
                    (subletter=='s')?TRUE:FALSE)) /* 's' means literal string */
         return PARAM_BAD_USE;
-      if(SetHTTPrequest(config, HTTPREQ_POST, &config->httpreq))
+      if(SetHTTPrequest(config, HTTPREQ_FORMPOST, &config->httpreq))
         return PARAM_BAD_USE;
       break;
 

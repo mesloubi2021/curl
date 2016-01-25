@@ -679,6 +679,7 @@ curl_easy_getinfo_ccsid(CURL * curl, CURLINFO info, ...)
         break;
 
       case CURLINFO_TLS_SESSION:
+      case CURLINFO_SOCKET:
         break;
 
       default:
@@ -932,6 +933,14 @@ curl_formadd_ccsid(struct curl_httppost * * httppost,
 
       break;
 
+    case CURLFORM_CONTENTLEN:
+      lengthx = nargs;
+
+      if(!forms)
+        value = (char *) va_arg(arg, curl_off_t);
+
+      break;
+
     case CURLFORM_NAMELENGTH:
       namelengthx = nargs;
 
@@ -1133,6 +1142,7 @@ curl_easy_setopt_ccsid(CURL * curl, CURLoption tag, ...)
   case CURLOPT_COOKIELIST:
   case CURLOPT_CRLFILE:
   case CURLOPT_CUSTOMREQUEST:
+  case CURLOPT_DEFAULT_PROTOCOL:
   case CURLOPT_DNS_SERVERS:
   case CURLOPT_EGDSOCKET:
   case CURLOPT_ENCODING:

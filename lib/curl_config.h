@@ -321,13 +321,13 @@
 /* #undef HAVE_KRB_H */
 
 /* Define to 1 if you have the lber.h header file. */
-#define HAVE_LBER_H 1
+#undef HAVE_LBER_H
 
 /* Define to 1 if you have the ldapssl.h header file. */
 /* #undef HAVE_LDAPSSL_H */
 
 /* Define to 1 if you have the ldap.h header file. */
-#define HAVE_LDAP_H 1
+#undef HAVE_LDAP_H
 
 /* Use LDAPS implementation */
 /* #undef HAVE_LDAP_SSL */

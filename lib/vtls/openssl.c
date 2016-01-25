@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2015, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -83,7 +83,7 @@
 #error "OPENSSL_VERSION_NUMBER not defined"
 #endif
 
-#if OPENSSL_VERSION_NUMBER >= 0x00907001L && !defined(OPENSSL_IS_BORINGSSL)
+#if !defined(OPENSSL_IS_BORINGSSL)
 /* ENGINE_load_private_key() takes four arguments */
 #define HAVE_ENGINE_LOAD_FOUR_ARGS
 #include <openssl/ui.h>
@@ -92,9 +92,7 @@
 #undef HAVE_ENGINE_LOAD_FOUR_ARGS
 #endif
 
-#if (OPENSSL_VERSION_NUMBER >= 0x00903001L) && \
-    defined(HAVE_OPENSSL_PKCS12_H) && \
-    !defined(OPENSSL_IS_BORINGSSL)
+#if defined(HAVE_OPENSSL_PKCS12_H) && !defined(OPENSSL_IS_BORINGSSL)
 /* OpenSSL has PKCS 12 support, BoringSSL does not */
 #define HAVE_PKCS12_SUPPORT
 #else
@@ -106,13 +104,6 @@
 #define SSL_METHOD_QUAL const
 #else
 #define SSL_METHOD_QUAL
-#endif
-
-#if OPENSSL_VERSION_NUMBER >= 0x00907000L
-/* 0.9.6 didn't have X509_STORE_set_flags() */
-#define HAVE_X509_STORE_SET_FLAGS 1
-#else
-#define X509_STORE_set_flags(x,y) Curl_nop_stmt
 #endif
 
 #ifdef OPENSSL_IS_BORINGSSL
@@ -128,12 +119,25 @@
 #define OPENSSL_NO_SSL2
 #endif
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && /* OpenSSL 1.1.0+ */ \
+  !defined(LIBRESSL_VERSION_NUMBER)
+#define SSLeay_add_ssl_algorithms() SSL_library_init()
+#define SSLEAY_VERSION_NUMBER OPENSSL_VERSION_NUMBER
+#define HAVE_X509_GET0_EXTENSIONS 1 /* added in 1.1.0 -pre1 */
+#endif
+
+#if (OPENSSL_VERSION_NUMBER >= 0x1000200fL) && /* 1.0.2 or later */ \
+  !defined(LIBRESSL_VERSION_NUMBER)
+#define HAVE_X509_GET0_SIGNATURE 1
+#endif
+
 #if defined(OPENSSL_IS_BORINGSSL)
 #define NO_RAND_SEED 1
 /* In BoringSSL OpenSSL_add_all_algorithms does nothing */
 #define OpenSSL_add_all_algorithms()
-/* BoringSSL does not have CONF_modules_load_file */
+/* BoringSSL does not have CONF_modules_load_file, CONF_modules_free */
 #define CONF_modules_load_file(a,b,c)
+#define CONF_modules_free()
 #endif
 
 #if (OPENSSL_VERSION_NUMBER < 0x0090808fL) || defined(OPENSSL_IS_BORINGSSL)
@@ -450,7 +454,6 @@ int cert_stuff(struct connectdata *conn,
       PKCS12 *p12;
       EVP_PKEY *pri;
       STACK_OF(X509) *ca = NULL;
-      int i;
 
       f = fopen(cert_file, "rb");
       if(!f) {
@@ -497,8 +500,8 @@ int cert_stuff(struct connectdata *conn,
         goto fail;
       }
       /* Set Certificate Verification chain */
-      if(ca && sk_X509_num(ca)) {
-        for(i = 0; i < sk_X509_num(ca); i++) {
+      if(ca) {
+        while(sk_X509_num(ca)) {
           /*
            * Note that sk_X509_pop() is used below to make sure the cert is
            * removed from the stack properly before getting passed to
@@ -508,6 +511,7 @@ int cert_stuff(struct connectdata *conn,
            */
           X509 *x = sk_X509_pop(ca);
           if(!SSL_CTX_add_extra_chain_cert(ctx, x)) {
+            X509_free(x);
             failf(data, "cannot add certificate to certificate chain");
             goto fail;
           }
@@ -702,16 +706,6 @@ int Curl_ossl_init(void)
   ENGINE_load_builtin_engines();
 #endif
 
-  /* Lets get nice error messages */
-  SSL_load_error_strings();
-
-  /* Init the global ciphers and digests */
-  if(!SSLeay_add_ssl_algorithms())
-    return 0;
-
-  OpenSSL_add_all_algorithms();
-
-
   /* OPENSSL_config(NULL); is "strongly recommended" to use but unfortunately
      that function makes an exit() call on wrongly formatted config files
      which makes it hard to use in some situations. OPENSSL_config() itself
@@ -727,6 +721,15 @@ int Curl_ossl_init(void)
   CONF_modules_load_file(NULL, NULL,
                          CONF_MFLAGS_DEFAULT_SECTION|
                          CONF_MFLAGS_IGNORE_MISSING_FILE);
+
+  /* Lets get nice error messages */
+  SSL_load_error_strings();
+
+  /* Init the global ciphers and digests */
+  if(!SSLeay_add_ssl_algorithms())
+    return 0;
+
+  OpenSSL_add_all_algorithms();
 
   return 1;
 }
@@ -756,6 +759,9 @@ void Curl_ossl_cleanup(void)
 #else
   ERR_remove_state(0);
 #endif
+
+  /* Free all memory allocated by all configuration modules */
+  CONF_modules_free();
 }
 
 /*
@@ -1013,49 +1019,6 @@ void Curl_ossl_close_all(struct SessionHandle *data)
 #else
   (void)data;
 #endif
-}
-
-static int asn1_output(const ASN1_UTCTIME *tm,
-                       char *buf,
-                       size_t sizeofbuf)
-{
-  const char *asn1_string;
-  int gmt=FALSE;
-  int i;
-  int year=0, month=0, day=0, hour=0, minute=0, second=0;
-
-  i=tm->length;
-  asn1_string=(const char *)tm->data;
-
-  if(i < 10)
-    return 1;
-  if(asn1_string[i-1] == 'Z')
-    gmt=TRUE;
-  for(i=0; i<10; i++)
-    if((asn1_string[i] > '9') || (asn1_string[i] < '0'))
-      return 2;
-
-  year= (asn1_string[0]-'0')*10+(asn1_string[1]-'0');
-  if(year < 50)
-    year+=100;
-
-  month= (asn1_string[2]-'0')*10+(asn1_string[3]-'0');
-  if((month > 12) || (month < 1))
-    return 3;
-
-  day= (asn1_string[4]-'0')*10+(asn1_string[5]-'0');
-  hour= (asn1_string[6]-'0')*10+(asn1_string[7]-'0');
-  minute=  (asn1_string[8]-'0')*10+(asn1_string[9]-'0');
-
-  if((asn1_string[10] >= '0') && (asn1_string[10] <= '9') &&
-     (asn1_string[11] >= '0') && (asn1_string[11] <= '9'))
-    second= (asn1_string[10]-'0')*10+(asn1_string[11]-'0');
-
-  snprintf(buf, sizeofbuf,
-           "%04d-%02d-%02d %02d:%02d:%02d %s",
-           year+1900, month, day, hour, minute, second, (gmt?"GMT":""));
-
-  return 0;
 }
 
 /* ====================================================== */
@@ -1620,12 +1583,12 @@ select_next_proto_cb(SSL *ssl,
   (void)ssl;
 
 #ifdef USE_NGHTTP2
-  if(conn->data->set.httpversion == CURL_HTTP_VERSION_2_0 &&
+  if(conn->data->set.httpversion >= CURL_HTTP_VERSION_2 &&
      !select_next_protocol(out, outlen, in, inlen, NGHTTP2_PROTO_VERSION_ID,
                            NGHTTP2_PROTO_VERSION_ID_LEN)) {
     infof(conn->data, "NPN, negotiated HTTP2 (%s)\n",
           NGHTTP2_PROTO_VERSION_ID);
-    conn->negnpn = CURL_HTTP_VERSION_2_0;
+    conn->negnpn = CURL_HTTP_VERSION_2;
     return SSL_TLSEXT_ERR_OK;
   }
 #endif
@@ -1897,7 +1860,7 @@ static CURLcode ossl_connect_step1(struct connectdata *conn, int sockindex)
     unsigned char protocols[128];
 
 #ifdef USE_NGHTTP2
-    if(data->set.httpversion == CURL_HTTP_VERSION_2_0) {
+    if(data->set.httpversion >= CURL_HTTP_VERSION_2) {
       protocols[cur++] = NGHTTP2_PROTO_VERSION_ID_LEN;
 
       memcpy(&protocols[cur], NGHTTP2_PROTO_VERSION_ID,
@@ -2141,27 +2104,22 @@ static CURLcode ossl_connect_step2(struct connectdata *conn, int sockindex)
                                     least 256 bytes long. */
       CURLcode result;
       long lerr;
+      int lib;
+      int reason;
 
-      connssl->connecting_state = ssl_connect_2; /* the connection failed,
-                                                    we're not waiting for
-                                                    anything else. */
+      /* the connection failed, we're not waiting for anything else. */
+      connssl->connecting_state = ssl_connect_2;
 
-      errdetail = ERR_get_error(); /* Gets the earliest error code from the
-                                      thread's error queue and removes the
-                                      entry. */
+      /* Get the earliest error code from the thread's error queue and removes
+         the entry. */
+      errdetail = ERR_get_error();
 
-      switch(errdetail) {
-      case 0x1407E086:
-        /* 1407E086:
-           SSL routines:
-           SSL2_SET_CERTIFICATE:
-           certificate verify failed */
-        /* fall-through */
-      case 0x14090086:
-        /* 14090086:
-           SSL routines:
-           SSL3_GET_SERVER_CERTIFICATE:
-           certificate verify failed */
+      /* Extract which lib and reason */
+      lib = ERR_GET_LIB(errdetail);
+      reason = ERR_GET_REASON(errdetail);
+
+      if((lib == ERR_LIB_SSL) &&
+         (reason == SSL_R_CERTIFICATE_VERIFY_FAILED)) {
         result = CURLE_SSL_CACERT;
 
         lerr = SSL_get_verify_result(connssl->handle);
@@ -2173,13 +2131,11 @@ static CURLcode ossl_connect_step2(struct connectdata *conn, int sockindex)
         else
           /* strcpy() is fine here as long as the string fits within
              error_buffer */
-          strcpy(error_buffer,
-                 "SSL certificate problem, check your CA cert");
-        break;
-      default:
+          strcpy(error_buffer, "SSL certificate verification failed");
+      }
+      else {
         result = CURLE_SSL_CONNECT_ERROR;
         SSL_strerror(errdetail, error_buffer, sizeof(error_buffer));
-        break;
       }
 
       /* detail is already set to the SSL error above */
@@ -2223,7 +2179,7 @@ static CURLcode ossl_connect_step2(struct connectdata *conn, int sockindex)
 #ifdef USE_NGHTTP2
         if(len == NGHTTP2_PROTO_VERSION_ID_LEN &&
            !memcmp(NGHTTP2_PROTO_VERSION_ID, neg_protocol, len)) {
-          conn->negnpn = CURL_HTTP_VERSION_2_0;
+          conn->negnpn = CURL_HTTP_VERSION_2;
         }
         else
 #endif
@@ -2256,43 +2212,34 @@ static int asn1_object_dump(ASN1_OBJECT *a, char *buf, size_t len)
   return 0;
 }
 
+#define push_certinfo(_label, _num) \
+do {                              \
+  long info_len = BIO_get_mem_data(mem, &ptr); \
+  Curl_ssl_push_certinfo_len(data, _num, _label, ptr, info_len); \
+  if(1!=BIO_reset(mem))                                          \
+    break;                                                       \
+} WHILE_FALSE
+
 static void pubkey_show(struct SessionHandle *data,
+                        BIO *mem,
                         int num,
                         const char *type,
                         const char *name,
-                        unsigned char *raw,
-                        int len)
+                        BIGNUM *bn)
 {
-  size_t left;
-  int i;
+  char *ptr;
   char namebuf[32];
-  char *buffer;
 
-  left = len*3 + 1;
-  buffer = malloc(left);
-  if(buffer) {
-    char *ptr=buffer;
-    snprintf(namebuf, sizeof(namebuf), "%s(%s)", type, name);
-    for(i=0; i< len; i++) {
-      snprintf(ptr, left, "%02x:", raw[i]);
-      ptr += 3;
-      left -= 3;
-    }
-    infof(data, "   %s: %s\n", namebuf, buffer);
-    Curl_ssl_push_certinfo(data, num, namebuf, buffer);
-    free(buffer);
-  }
+  snprintf(namebuf, sizeof(namebuf), "%s(%s)", type, name);
+
+  BN_print(mem, bn);
+  push_certinfo(namebuf, num);
 }
 
 #define print_pubkey_BN(_type, _name, _num)    \
 do {                              \
   if(pubkey->pkey._type->_name) { \
-    int len = BN_num_bytes(pubkey->pkey._type->_name);  \
-    if(len < CERTBUFFERSIZE) {                                    \
-      BN_bn2bin(pubkey->pkey._type->_name, (unsigned char*)bufp); \
-      bufp[len] = 0;                                                    \
-      pubkey_show(data, _num, #_type, #_name, (unsigned char*)bufp, len); \
-    } \
+    pubkey_show(data, mem, _num, #_type, #_name, pubkey->pkey._type->_name); \
   } \
 } WHILE_FALSE
 
@@ -2323,18 +2270,12 @@ static int X509V3_ext(struct SessionHandle *data,
 
     asn1_object_dump(obj, namebuf, sizeof(namebuf));
 
-    infof(data, "%s: %s\n", namebuf,
-          X509_EXTENSION_get_critical(ext)?"(critical)":"");
-
     if(!X509V3_EXT_print(bio_out, ext, 0, 0))
       ASN1_STRING_print(bio_out, (ASN1_STRING *)X509_EXTENSION_get_data(ext));
 
     BIO_get_mem_ptr(bio_out, &biomem);
 
-    /* biomem->length bytes at biomem->data, this little loop here is only
-       done for the infof() call, we send the "raw" data to the certinfo
-       function */
-    for(j=0; j<(size_t)biomem->length; j++) {
+    for(j = 0; j < (size_t)biomem->length; j++) {
       const char *sep="";
       if(biomem->data[j] == '\n') {
         sep=", ";
@@ -2346,7 +2287,6 @@ static int X509V3_ext(struct SessionHandle *data,
         ptr+=snprintf(ptr, sizeof(buf)-(ptr-buf), "%s%c", sep,
                       biomem->data[j]);
     }
-    infof(data, "  %s\n", buf);
 
     Curl_ssl_push_certinfo(data, certnum, namebuf, buf);
 
@@ -2356,46 +2296,6 @@ static int X509V3_ext(struct SessionHandle *data,
   return 0; /* all is fine */
 }
 
-
-static void X509_signature(struct SessionHandle *data,
-                           int numcert,
-                           ASN1_STRING *sig)
-{
-  char buf[1024];
-  char *ptr = buf;
-  int i;
-
-  for(i=0; i<sig->length; i++)
-    ptr+=snprintf(ptr, sizeof(buf)-(ptr-buf), "%02x:", sig->data[i]);
-
-  infof(data, " Signature: %s\n", buf);
-  Curl_ssl_push_certinfo(data, numcert, "Signature", buf);
-}
-
-static void dumpcert(struct SessionHandle *data, X509 *x, int numcert)
-{
-  BIO *bio_out = BIO_new(BIO_s_mem());
-  BUF_MEM *biomem;
-
-  /* this outputs the cert in this 64 column wide style with newlines and
-     -----BEGIN CERTIFICATE----- texts and more */
-  PEM_write_bio_X509(bio_out, x);
-
-  BIO_get_mem_ptr(bio_out, &biomem);
-
-  Curl_ssl_push_certinfo_len(data, numcert,
-                             "Cert", biomem->data, biomem->length);
-
-  BIO_free(bio_out);
-}
-
-/*
- * This size was previously 512 which has been reported "too small" without
- * any specifics, so it was enlarged to allow more data to get shown uncut.
- * The "perfect" size is yet to figure out.
- */
-#define CERTBUFFERSIZE 8192
-
 static CURLcode get_cert_chain(struct connectdata *conn,
                                struct ssl_connect_data *connssl)
 
@@ -2403,17 +2303,12 @@ static CURLcode get_cert_chain(struct connectdata *conn,
   CURLcode result;
   STACK_OF(X509) *sk;
   int i;
-  char *bufp;
   struct SessionHandle *data = conn->data;
   int numcerts;
-
-  bufp = malloc(CERTBUFFERSIZE);
-  if(!bufp)
-    return CURLE_OUT_OF_MEMORY;
+  BIO *mem;
 
   sk = SSL_get_peer_cert_chain(connssl->handle);
   if(!sk) {
-    free(bufp);
     return CURLE_OUT_OF_MEMORY;
   }
 
@@ -2421,87 +2316,71 @@ static CURLcode get_cert_chain(struct connectdata *conn,
 
   result = Curl_ssl_init_certinfo(data, numcerts);
   if(result) {
-    free(bufp);
     return result;
   }
 
-  infof(data, "--- Certificate chain\n");
-  for(i=0; i<numcerts; i++) {
-    long value;
+  mem = BIO_new(BIO_s_mem());
+
+  for(i = 0; i < numcerts; i++) {
     ASN1_INTEGER *num;
-    ASN1_TIME *certdate;
-
-    /* get the certs in "importance order" */
-#if 0
-    X509 *x = sk_X509_value(sk, numcerts - i - 1);
-#else
     X509 *x = sk_X509_value(sk, i);
-#endif
-
-    X509_CINF *cinf;
     EVP_PKEY *pubkey=NULL;
     int j;
     char *ptr;
+    ASN1_BIT_STRING *psig;
 
-    (void)x509_name_oneline(X509_get_subject_name(x), bufp, CERTBUFFERSIZE);
-    infof(data, "%2d Subject: %s\n", i, bufp);
-    Curl_ssl_push_certinfo(data, i, "Subject", bufp);
+    X509_NAME_print_ex(mem, X509_get_subject_name(x), 0, XN_FLAG_ONELINE);
+    push_certinfo("Subject", i);
 
-    (void)x509_name_oneline(X509_get_issuer_name(x), bufp, CERTBUFFERSIZE);
-    infof(data, "   Issuer: %s\n", bufp);
-    Curl_ssl_push_certinfo(data, i, "Issuer", bufp);
+    X509_NAME_print_ex(mem, X509_get_issuer_name(x), 0, XN_FLAG_ONELINE);
+    push_certinfo("Issuer", i);
 
-    value = X509_get_version(x);
-    infof(data, "   Version: %lu (0x%lx)\n", value+1, value);
-    snprintf(bufp, CERTBUFFERSIZE, "%lx", value);
-    Curl_ssl_push_certinfo(data, i, "Version", bufp); /* hex */
+    BIO_printf(mem, "%lx", X509_get_version(x));
+    push_certinfo("Version", i);
 
-    num=X509_get_serialNumber(x);
+    num = X509_get_serialNumber(x);
+    if(num->type == V_ASN1_NEG_INTEGER)
+      BIO_puts(mem, "-");
+    for(j = 0; j < num->length; j++)
+      BIO_printf(mem, "%02x", num->data[j]);
+    push_certinfo("Serial Number", i);
+
+#if defined(HAVE_X509_GET0_SIGNATURE) && defined(HAVE_X509_GET0_EXTENSIONS)
     {
-      int left = CERTBUFFERSIZE;
-
-      ptr = bufp;
-      if(num->type == V_ASN1_NEG_INTEGER) {
-        *ptr++='-';
-        left--;
+      X509_ALGOR *palg;
+      ASN1_STRING *a = ASN1_STRING_new();
+      if(a) {
+        X509_get0_signature(&psig, &palg, x);
+        X509_signature_print(mem, palg, a);
+        ASN1_STRING_free(a);
       }
+      i2a_ASN1_OBJECT(mem, palg->algorithm);
+      push_certinfo("Public Key Algorithm", i);
 
-      for(j=0; (j<num->length) && (left>=3); j++) {
-        snprintf(ptr, left, "%02x", num->data[j]);
-        ptr += 2;
-        left -= 2;
-      }
-      if(num->length)
-        infof(data, "   Serial Number: %s\n", bufp);
-      else
-        bufp[0]=0;
+      X509V3_ext(data, i, X509_get0_extensions(x));
     }
-    if(bufp[0])
-      Curl_ssl_push_certinfo(data, i, "Serial Number", bufp); /* hex */
+#else
+    {
+      /* before OpenSSL 1.0.2 */
+      X509_CINF *cinf = x->cert_info;
 
-    cinf = x->cert_info;
+      i2a_ASN1_OBJECT(mem, cinf->signature->algorithm);
+      push_certinfo("Signature Algorithm", i);
 
-    j = asn1_object_dump(cinf->signature->algorithm, bufp, CERTBUFFERSIZE);
-    if(!j) {
-      infof(data, "   Signature Algorithm: %s\n", bufp);
-      Curl_ssl_push_certinfo(data, i, "Signature Algorithm", bufp);
+      i2a_ASN1_OBJECT(mem, cinf->key->algor->algorithm);
+      push_certinfo("Public Key Algorithm", i);
+
+      X509V3_ext(data, i, cinf->extensions);
+
+      psig = x->signature;
     }
+#endif
 
-    certdate = X509_get_notBefore(x);
-    asn1_output(certdate, bufp, CERTBUFFERSIZE);
-    infof(data, "   Start date: %s\n", bufp);
-    Curl_ssl_push_certinfo(data, i, "Start date", bufp);
+    ASN1_TIME_print(mem, X509_get_notBefore(x));
+    push_certinfo("Start date", i);
 
-    certdate = X509_get_notAfter(x);
-    asn1_output(certdate, bufp, CERTBUFFERSIZE);
-    infof(data, "   Expire date: %s\n", bufp);
-    Curl_ssl_push_certinfo(data, i, "Expire date", bufp);
-
-    j = asn1_object_dump(cinf->key->algor->algorithm, bufp, CERTBUFFERSIZE);
-    if(!j) {
-      infof(data, "   Public Key Algorithm: %s\n", bufp);
-      Curl_ssl_push_certinfo(data, i, "Public Key Algorithm", bufp);
-    }
+    ASN1_TIME_print(mem, X509_get_notAfter(x));
+    push_certinfo("Expire date", i);
 
     pubkey = X509_get_pubkey(x);
     if(!pubkey)
@@ -2509,10 +2388,8 @@ static CURLcode get_cert_chain(struct connectdata *conn,
     else {
       switch(pubkey->type) {
       case EVP_PKEY_RSA:
-        infof(data,  "   RSA Public Key (%d bits)\n",
-              BN_num_bits(pubkey->pkey.rsa->n));
-        snprintf(bufp, CERTBUFFERSIZE, "%d", BN_num_bits(pubkey->pkey.rsa->n));
-        Curl_ssl_push_certinfo(data, i, "RSA Public Key", bufp);
+        BIO_printf(mem, "%d", BN_num_bits(pubkey->pkey.rsa->n));
+        push_certinfo("RSA Public Key", i);
 
         print_pubkey_BN(rsa, n, i);
         print_pubkey_BN(rsa, e, i);
@@ -2545,14 +2422,15 @@ static CURLcode get_cert_chain(struct connectdata *conn,
       EVP_PKEY_free(pubkey);
     }
 
-    X509V3_ext(data, i, cinf->extensions);
+    for(j = 0; j < psig->length; j++)
+      BIO_printf(mem, "%02x:", psig->data[j]);
+    push_certinfo("Signature", i);
 
-    X509_signature(data, i, x->signature);
-
-    dumpcert(data, x, i);
+    PEM_write_bio_X509(mem, x);
+    push_certinfo("Cert", i);
   }
 
-  free(bufp);
+  BIO_free(mem);
 
   return CURLE_OK;
 }
@@ -2561,7 +2439,8 @@ static CURLcode get_cert_chain(struct connectdata *conn,
  * Heavily modified from:
  * https://www.owasp.org/index.php/Certificate_and_Public_Key_Pinning#OpenSSL
  */
-static CURLcode pkp_pin_peer_pubkey(X509* cert, const char *pinnedpubkey)
+static CURLcode pkp_pin_peer_pubkey(struct SessionHandle *data, X509* cert,
+                                    const char *pinnedpubkey)
 {
   /* Scratch */
   int len1 = 0, len2 = 0;
@@ -2606,7 +2485,7 @@ static CURLcode pkp_pin_peer_pubkey(X509* cert, const char *pinnedpubkey)
     /* End Gyrations */
 
     /* The one good exit point */
-    result = Curl_pin_peer_pubkey(pinnedpubkey, buff1, len1);
+    result = Curl_pin_peer_pubkey(data, pinnedpubkey, buff1, len1);
   } while(0);
 
   /* https://www.openssl.org/docs/crypto/buffer.html */
@@ -2630,13 +2509,13 @@ static CURLcode servercert(struct connectdata *conn,
 {
   CURLcode result = CURLE_OK;
   int rc;
-  long lerr;
-  ASN1_TIME *certdate;
+  long lerr, len;
   struct SessionHandle *data = conn->data;
   X509 *issuer;
   FILE *fp;
   char *buffer = data->state.buffer;
   const char *ptr;
+  BIO *mem = BIO_new(BIO_s_mem());
 
   if(data->set.ssl.certinfo)
     /* we've been asked to gather certificate info! */
@@ -2644,8 +2523,10 @@ static CURLcode servercert(struct connectdata *conn,
 
   connssl->server_cert = SSL_get_peer_certificate(connssl->handle);
   if(!connssl->server_cert) {
-    if(strict)
-      failf(data, "SSL: couldn't get peer certificate!");
+    if(!strict)
+      return CURLE_OK;
+
+    failf(data, "SSL: couldn't get peer certificate!");
     return CURLE_PEER_FAILED_VERIFICATION;
   }
 
@@ -2655,13 +2536,17 @@ static CURLcode servercert(struct connectdata *conn,
                          buffer, BUFSIZE);
   infof(data, "\t subject: %s\n", rc?"[NONE]":buffer);
 
-  certdate = X509_get_notBefore(connssl->server_cert);
-  asn1_output(certdate, buffer, BUFSIZE);
-  infof(data, "\t start date: %s\n", buffer);
+  ASN1_TIME_print(mem, X509_get_notBefore(connssl->server_cert));
+  len = BIO_get_mem_data(mem, (char **) &ptr);
+  infof(data, "\t start date: %.*s\n", len, ptr);
+  rc = BIO_reset(mem);
 
-  certdate = X509_get_notAfter(connssl->server_cert);
-  asn1_output(certdate, buffer, BUFSIZE);
-  infof(data, "\t expire date: %s\n", buffer);
+  ASN1_TIME_print(mem, X509_get_notAfter(connssl->server_cert));
+  len = BIO_get_mem_data(mem, (char **) &ptr);
+  infof(data, "\t expire date: %.*s\n", len, ptr);
+  rc = BIO_reset(mem);
+
+  BIO_free(mem);
 
   if(data->set.ssl.verifyhost) {
     result = verifyhost(conn, connssl->server_cert);
@@ -2764,7 +2649,7 @@ static CURLcode servercert(struct connectdata *conn,
 
   ptr = data->set.str[STRING_SSL_PINNEDPUBLICKEY];
   if(!result && ptr) {
-    result = pkp_pin_peer_pubkey(connssl->server_cert, ptr);
+    result = pkp_pin_peer_pubkey(data, connssl->server_cert, ptr);
     if(result)
       failf(data, "SSL: public key does not match pinned public key!");
   }
@@ -3082,82 +2967,45 @@ static ssize_t ossl_recv(struct connectdata *conn, /* connection data */
 
 size_t Curl_ossl_version(char *buffer, size_t size)
 {
-#ifdef YASSL_VERSION
-  /* yassl provides an OpenSSL API compatibility layer so it looks identical
-     to OpenSSL in all other aspects */
-  return snprintf(buffer, size, "yassl/%s", YASSL_VERSION);
-#else /* YASSL_VERSION */
 #ifdef OPENSSL_IS_BORINGSSL
   return snprintf(buffer, size, "BoringSSL");
 #else /* OPENSSL_IS_BORINGSSL */
-
-#if(OPENSSL_VERSION_NUMBER >= 0x905000)
-  {
-    char sub[3];
-    unsigned long ssleay_value;
-    sub[2]='\0';
-    sub[1]='\0';
-    ssleay_value=SSLeay();
-    if(ssleay_value < 0x906000) {
-      ssleay_value=SSLEAY_VERSION_NUMBER;
-      sub[0]='\0';
-    }
-    else {
-      if(ssleay_value&0xff0) {
-        int minor_ver = (ssleay_value >> 4) & 0xff;
-        if(minor_ver > 26) {
-          /* handle extended version introduced for 0.9.8za */
-          sub[1] = (char) ((minor_ver - 1) % 26 + 'a' + 1);
-          sub[0] = 'z';
-        }
-        else {
-          sub[0]=(char)(((ssleay_value>>4)&0xff) + 'a' -1);
-        }
-      }
-      else
-        sub[0]='\0';
-    }
-
-    return snprintf(buffer, size, "%s/%lx.%lx.%lx%s",
-#ifdef LIBRESSL_VERSION_NUMBER
-                    "LibreSSL"
-#else
-                    "OpenSSL"
-#endif
-                    , (ssleay_value>>28)&0xf,
-                    (ssleay_value>>20)&0xff,
-                    (ssleay_value>>12)&0xff,
-                    sub);
+  char sub[3];
+  unsigned long ssleay_value;
+  sub[2]='\0';
+  sub[1]='\0';
+  ssleay_value=SSLeay();
+  if(ssleay_value < 0x906000) {
+    ssleay_value=SSLEAY_VERSION_NUMBER;
+    sub[0]='\0';
   }
-
-#else /* OPENSSL_VERSION_NUMBER is less than 0.9.5 */
-
-#if(OPENSSL_VERSION_NUMBER >= 0x900000)
-  return snprintf(buffer, size, "OpenSSL/%lx.%lx.%lx",
-                  (OPENSSL_VERSION_NUMBER>>28)&0xff,
-                  (OPENSSL_VERSION_NUMBER>>20)&0xff,
-                  (OPENSSL_VERSION_NUMBER>>12)&0xf);
-
-#else /* (OPENSSL_VERSION_NUMBER >= 0x900000) */
-  {
-    char sub[2];
-    sub[1]='\0';
-    if(OPENSSL_VERSION_NUMBER&0x0f) {
-      sub[0]=(OPENSSL_VERSION_NUMBER&0x0f) + 'a' -1;
+  else {
+    if(ssleay_value&0xff0) {
+      int minor_ver = (ssleay_value >> 4) & 0xff;
+      if(minor_ver > 26) {
+        /* handle extended version introduced for 0.9.8za */
+        sub[1] = (char) ((minor_ver - 1) % 26 + 'a' + 1);
+        sub[0] = 'z';
+      }
+      else {
+        sub[0]=(char)(((ssleay_value>>4)&0xff) + 'a' -1);
+      }
     }
     else
       sub[0]='\0';
-
-    return snprintf(buffer, size, "SSL/%x.%x.%x%s",
-                    (OPENSSL_VERSION_NUMBER>>12)&0xff,
-                    (OPENSSL_VERSION_NUMBER>>8)&0xf,
-                    (OPENSSL_VERSION_NUMBER>>4)&0xf, sub);
   }
-#endif /* (OPENSSL_VERSION_NUMBER >= 0x900000) */
-#endif /* OPENSSL_VERSION_NUMBER is less than 0.9.5 */
 
+  return snprintf(buffer, size, "%s/%lx.%lx.%lx%s",
+#ifdef LIBRESSL_VERSION_NUMBER
+                  "LibreSSL"
+#else
+                  "OpenSSL"
+#endif
+                  , (ssleay_value>>28)&0xf,
+                  (ssleay_value>>20)&0xff,
+                  (ssleay_value>>12)&0xff,
+                  sub);
 #endif /* OPENSSL_IS_BORINGSSL */
-#endif /* YASSL_VERSION */
 }
 
 /* can be called with data == NULL */
@@ -3183,7 +3031,7 @@ void Curl_ossl_md5sum(unsigned char *tmp, /* input */
   MD5_Final(md5sum, &MD5pw);
 }
 
-#ifndef OPENSSL_NO_SHA256
+#if (OPENSSL_VERSION_NUMBER >= 0x0090800fL) && !defined(OPENSSL_NO_SHA256)
 void Curl_ossl_sha256sum(const unsigned char *tmp, /* input */
                       size_t tmplen,
                       unsigned char *sha256sum /* output */,
