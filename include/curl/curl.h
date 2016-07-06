@@ -96,10 +96,10 @@ typedef void CURL;
  * libcurl external API function linkage decorations.
  */
 
-#ifdef CURL_STATICLIB
-#  define CURL_EXTERN
-#elif defined(WIN32) || defined(_WIN32) || defined(__SYMBIAN32__)
-#  if defined(BUILDING_LIBCURL)
+#if defined(WIN32) || defined(_WIN32) || defined(__SYMBIAN32__)
+#  if defined(CURL_STATICLIB)
+#    define CURL_EXTERN
+#  elif defined(BUILDING_LIBCURL)
 #    define CURL_EXTERN  __declspec(dllexport)
 #  else
 #    define CURL_EXTERN  __declspec(dllimport)
