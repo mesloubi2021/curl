@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2015, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.haxx.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -21,7 +21,7 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-#include "rawstr.h"
+#include "strcase.h"
 
 #define ENABLE_CURLX_PRINTF
 /* use our own printf() functions */
@@ -64,9 +64,9 @@ struct LongShort {
 };
 
 static const struct LongShort aliases[]= {
-  /* all these ones, starting with "*" or "$" as a short-option have *no*
-     short option to mention. */
-  {"*",  "url",                      TRUE},
+  /* 'letter' strings with more than one character have *no* short option to
+     mention. */
+  {"*@", "url",                      TRUE},
   {"*4", "dns-ipv4-addr",            TRUE},
   {"*6", "dns-ipv6-addr",            TRUE},
   {"*a", "random-file",              TRUE},
@@ -106,23 +106,21 @@ static const struct LongShort aliases[]= {
   {"*u", "crlf",                     FALSE},
   {"*v", "stderr",                   TRUE},
   {"*w", "interface",                TRUE},
-  {"*x", "krb" ,                     TRUE},
-  {"*x", "krb4" ,                    TRUE},
+  {"*x", "krb",                      TRUE},
+  {"*x", "krb4",                     TRUE},
          /* 'krb4' is the previous name */
   {"*y", "max-filesize",             TRUE},
   {"*z", "disable-eprt",             FALSE},
   {"*Z", "eprt",                     FALSE},
          /* 'eprt' made like this to make --no-eprt and --eprt to work
              although --disable-eprt is the documented option */
+  {"*~", "xattr",                    FALSE},
   {"$a", "ftp-ssl",                  FALSE},
          /* 'ftp-ssl' deprecated name since 7.20.0 */
   {"$a", "ssl",                      FALSE},
          /* 'ssl' new option name in 7.20.0, previously this was ftp-ssl */
   {"$b", "ftp-pasv",                 FALSE},
   {"$c", "socks5",                   TRUE},
-  {"$c", "socks",                    TRUE},
-         /* 'socks' is how the option once was documented but we prefer
-            the --socks5 version for explicit version */
   {"$d", "tcp-nodelay",              FALSE},
   {"$e", "proxy-digest",             FALSE},
   {"$f", "proxy-basic",              FALSE},
@@ -158,7 +156,6 @@ static const struct LongShort aliases[]= {
   {"$3", "keepalive-time",           TRUE},
   {"$4", "post302",                  FALSE},
   {"$5", "noproxy",                  TRUE},
-  {"$6", "socks5-gssapi-service",    TRUE},
   {"$7", "socks5-gssapi-nec",        FALSE},
   {"$8", "proxy1.0",                 TRUE},
   {"$9", "tftp-blksize",             TRUE},
@@ -176,12 +173,19 @@ static const struct LongShort aliases[]= {
   {"$L", "test-event",               FALSE},
   {"$M", "unix-socket",              TRUE},
   {"$N", "path-as-is",               FALSE},
+  {"$O", "socks5-gssapi-service",    TRUE},
+         /* 'socks5-gssapi-service' merged with'proxy-service-name' and
+            deprecated since 7.49.0 */
   {"$O", "proxy-service-name",       TRUE},
   {"$P", "service-name",             TRUE},
   {"$Q", "proto-default",            TRUE},
+  {"$R", "expect100-timeout",        TRUE},
+  {"$S", "tftp-no-options",          FALSE},
+  {"$U", "connect-to",               TRUE},
   {"0",   "http1.0",                 FALSE},
   {"01",  "http1.1",                 FALSE},
   {"02",  "http2",                   FALSE},
+  {"03",  "http2-prior-knowledge",   FALSE},
   {"1",  "tlsv1",                    FALSE},
   {"10",  "tlsv1.0",                 FALSE},
   {"11",  "tlsv1.1",                 FALSE},
@@ -210,7 +214,7 @@ static const struct LongShort aliases[]= {
   {"Ed", "key-type",                 TRUE},
   {"Ee", "pass",                     TRUE},
   {"Ef", "engine",                   TRUE},
-  {"Eg", "capath ",                  TRUE},
+  {"Eg", "capath",                   TRUE},
   {"Eh", "pubkey",                   TRUE},
   {"Ei", "hostpubmd5",               TRUE},
   {"Ej", "crlfile",                  TRUE},
@@ -223,6 +227,7 @@ static const struct LongShort aliases[]= {
   {"Eq", "cert-status",              FALSE},
   {"Er", "false-start",              FALSE},
   {"Es", "ssl-no-revoke",            FALSE},
+  {"Et", "tcp-fastopen",             FALSE},
   {"f",  "fail",                     FALSE},
   {"F",  "form",                     TRUE},
   {"Fs", "form-string",              TRUE},
@@ -251,8 +256,6 @@ static const struct LongShort aliases[]= {
   {"O",  "remote-name",              FALSE},
   {"Oa", "remote-name-all",          FALSE},
   {"p",  "proxytunnel",              FALSE},
-  {"P",  "ftpport",                  TRUE},
-         /* 'ftpport' old version */
   {"P",  "ftp-port",                 TRUE},
   {"q",  "disable",                  FALSE},
   {"Q",  "quote",                    TRUE},
@@ -260,8 +263,7 @@ static const struct LongShort aliases[]= {
   {"R",  "remote-time",              FALSE},
   {"s",  "silent",                   FALSE},
   {"S",  "show-error",               FALSE},
-  {"t",  "telnet-options",           TRUE},
-         /* 'telnet-options' documented as telnet-option */
+  {"t",  "telnet-option",            TRUE},
   {"T",  "upload-file",              TRUE},
   {"u",  "user",                     TRUE},
   {"U",  "proxy-user",               TRUE},
@@ -270,14 +272,11 @@ static const struct LongShort aliases[]= {
   {"w",  "write-out",                TRUE},
   {"x",  "proxy",                    TRUE},
   {"X",  "request",                  TRUE},
-  {"X",  "http-request",             TRUE},
-         /* 'http-request' OBSOLETE VERSION */
   {"Y",  "speed-limit",              TRUE},
   {"y",  "speed-time",               TRUE},
   {"z",  "time-cond",                TRUE},
   {"#",  "progress-bar",             FALSE},
   {":",  "next",                     FALSE},
-  {"~",  "xattr",                    FALSE},
 };
 
 /* Split the argument of -E to 'certname' and 'passphrase' separated by colon.
@@ -302,9 +301,12 @@ void parse_cert_parameter(const char *cert_parameter,
   if(param_length == 0)
     return;
 
-  /* next less trivial: cert_parameter contains no colon nor backslash; this
+  /* next less trivial: cert_parameter starts 'pkcs11:' and thus
+   * looks like a RFC7512 PKCS#11 URI which can be used as-is.
+   * Also if cert_parameter contains no colon nor backslash, this
    * means no passphrase was given and no characters escaped */
-  if(!strpbrk(cert_parameter, ":\\")) {
+  if(!strncmp(cert_parameter, "pkcs11:", 7) ||
+     !strpbrk(cert_parameter, ":\\")) {
     *certname = strdup(cert_parameter);
     return;
   }
@@ -414,10 +416,10 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
     }
 
     for(j = 0; j < sizeof(aliases)/sizeof(aliases[0]); j++) {
-      if(curlx_strnequal(aliases[j].lname, word, fnam)) {
+      if(curl_strnequal(aliases[j].lname, word, fnam)) {
         longopt = TRUE;
         numhits++;
-        if(curlx_raw_equal(aliases[j].lname, word)) {
+        if(curl_strequal(aliases[j].lname, word)) {
           parse = aliases[j].letter;
           hit = j;
           numhits = 1; /* a single unique hit */
@@ -495,8 +497,8 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       case 'b': /* egd-file */
         GetStr(&config->egd_file, nextarg);
         break;
-      case 'B': /* XOAUTH2 Bearer */
-        GetStr(&config->xoauth2_bearer, nextarg);
+      case 'B': /* OAuth 2.0 bearer token */
+        GetStr(&config->oauth_bearer, nextarg);
         break;
       case 'c': /* connect-timeout */
         err = str2udouble(&config->connecttimeout, nextarg);
@@ -716,8 +718,10 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       case 'Z': /* --eprt */
         config->disable_eprt = (!toggle)?TRUE:FALSE;
         break;
-
-      default: /* the URL! */
+      case '~': /* --xattr */
+        config->xattr = toggle;
+        break;
+      case '@': /* the URL! */
       {
         struct getout *url;
         if(config->url_get || ((config->url_get = config->url_list) != NULL)) {
@@ -898,10 +902,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
         /* This specifies the noproxy list */
         GetStr(&config->noproxy, nextarg);
         break;
-      case '6': /* --socks5-gssapi-service */
-        GetStr(&config->socks5_gssapi_service, nextarg);
-        break;
-      case '7': /* --socks5-gssapi-nec*/
+       case '7': /* --socks5-gssapi-nec*/
         config->socks5_gssapi_nec = toggle;
         break;
       case '8': /* --proxy1.0 */
@@ -999,6 +1000,19 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
         if(err)
           return err;
         break;
+      case 'R': /* --expect100-timeout */
+        err = str2udouble(&config->expect100timeout, nextarg);
+        if(err)
+          return err;
+        break;
+      case 'S': /* --tftp-no-options */
+        config->tftp_no_options = toggle;
+        break;
+      case 'U': /* --connect-to */
+        err = add2list(&config->connect_to, nextarg);
+        if(err)
+          return err;
+        break;
       }
       break;
     case '#': /* --progress-bar */
@@ -1009,9 +1023,6 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       break;
     case ':': /* --next */
       return PARAM_NEXT_OPERATION;
-    case '~': /* --xattr */
-      config->xattr = toggle;
-      break;
     case '0': /* --http* options */
       switch(subletter) {
       case '\0':
@@ -1025,6 +1036,10 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       case '2':
         /* HTTP version 2.0 */
         config->httpversion = CURL_HTTP_VERSION_2_0;
+        break;
+      case '3':
+        /* HTTP version 2.0 over clean TCP*/
+        config->httpversion = CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE;
         break;
       }
       break;
@@ -1094,7 +1109,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       break;
     case 'C':
       /* This makes us continue an ftp transfer at given position */
-      if(!curlx_strequal(nextarg, "-")) {
+      if(strcmp(nextarg, "-")) {
         err = str2offset(&config->resume_from, nextarg);
         if(err)
           return err;
@@ -1138,7 +1153,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
         }
         if('@' == is_file) {
           /* a '@' letter, it means that a file name or - (stdin) follows */
-          if(curlx_strequal("-", p)) {
+          if(!strcmp("-", p)) {
             file = stdin;
             set_binmode(stdin);
           }
@@ -1203,7 +1218,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
            or - (stdin) follows */
         nextarg++; /* pass the @ */
 
-        if(curlx_strequal("-", nextarg)) {
+        if(!strcmp("-", nextarg)) {
           file = stdin;
           if(subletter == 'b') /* forced data-binary */
             set_binmode(stdin);
@@ -1328,7 +1343,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
         break;
       case 'f': /* crypto engine */
         GetStr(&config->engine, nextarg);
-        if(config->engine && curlx_raw_equal(config->engine, "list"))
+        if(config->engine && curl_strequal(config->engine, "list"))
           return PARAM_ENGINES_REQUESTED;
         break;
       case 'g': /* CA info PEM file */
@@ -1362,7 +1377,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       case 'm': /* TLS authentication type */
         if(curlinfo->features & CURL_VERSION_TLSAUTH_SRP) {
           GetStr(&config->tls_authtype, nextarg);
-          if(!strequal(config->tls_authtype, "SRP"))
+          if(!curl_strequal(config->tls_authtype, "SRP"))
             return PARAM_LIBCURL_DOESNT_SUPPORT; /* only support TLS-SRP */
         }
         else
@@ -1393,6 +1408,10 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
       case 's': /* --ssl-no-revoke */
         if(curlinfo->features & CURL_VERSION_SSL)
           config->ssl_no_revoke = TRUE;
+        break;
+
+      case 't': /* --tcp-fastopen */
+        config->tcp_fastopen = TRUE;
         break;
 
       default: /* certificate file */
@@ -1751,7 +1770,7 @@ ParameterError getparameter(char *flag,    /* f or -long-flag */
         FILE *file;
         const char *fname;
         nextarg++; /* pass the @ */
-        if(curlx_strequal("-", nextarg)) {
+        if(!strcmp("-", nextarg)) {
           fname = "<stdin>";
           file = stdin;
         }
@@ -1861,7 +1880,7 @@ ParameterError parse_args(struct GlobalConfig *config, int argc,
       bool passarg;
       char *flag = argv[i];
 
-      if(curlx_strequal("--", argv[i]))
+      if(!strcmp("--", argv[i]))
         /* This indicates the end of the flags and thus enables the
            following (URL) argument to start with -. */
         stillflags = FALSE;
@@ -1917,7 +1936,7 @@ ParameterError parse_args(struct GlobalConfig *config, int argc,
      result != PARAM_ENGINES_REQUESTED) {
     const char *reason = param2text(result);
 
-    if(orig_opt && !curlx_strequal(":", orig_opt))
+    if(orig_opt && strcmp(":", orig_opt))
       helpf(config->errors, "option %s: %s\n", orig_opt, reason);
     else
       helpf(config->errors, "%s\n", reason);
