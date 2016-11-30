@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2015, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.haxx.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -30,16 +30,24 @@
 
 #include "memdebug.h"
 
-static int progressKiller(void *arg)
+static int progressKiller(void *arg,
+                          double dltotal,
+                          double dlnow,
+                          double ultotal,
+                          double ulnow)
 {
   (void)arg;
+  (void)dltotal;
+  (void)dlnow;
+  (void)ultotal;
+  (void)ulnow;
+  printf("PROGRESSFUNCTION called\n");
   return 1;
 }
 
 int test(char *URL)
 {
   CURL *curl;
-  CURLcode result;
   int res=0;
 
   global_init(CURL_GLOBAL_ALL);
@@ -53,7 +61,7 @@ int test(char *URL)
   easy_setopt(curl, CURLOPT_PROGRESSDATA, NULL);
   easy_setopt(curl, CURLOPT_NOPROGRESS, (long)0);
 
-  result = curl_easy_perform(curl);
+  res = curl_easy_perform(curl);
 
 test_cleanup:
 
@@ -62,5 +70,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)result;
+  return res;
 }

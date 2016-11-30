@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2015, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.haxx.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -44,8 +44,7 @@ static const char *unslashquote(const char *line, char *param);
 static char *my_get_line(FILE *fp);
 
 /* return 0 on everything-is-fine, and non-zero otherwise */
-int parseconfig(const char *filename,
-                struct Configurable *config)
+int parseconfig(const char *filename, struct GlobalConfig *global)
 {
   int res;
   FILE *file;
@@ -53,6 +52,7 @@ int parseconfig(const char *filename,
   bool usedarg;
   char *home;
   int rc = 0;
+  struct OperationConfig *operation = global->first;
 
   if(!filename || !*filename) {
     /* NULL or no file name attempts to load .curlrc from the homedir! */
@@ -69,7 +69,7 @@ int parseconfig(const char *filename,
         /* Check if the file exists - if not, try CURLRC in the same
          * directory as our executable
          */
-        file = fopen(filebuffer, "r");
+        file = fopen(filebuffer, FOPEN_READTEXT);
         if(file != NULL) {
           fclose(file);
           filename = filebuffer;
@@ -114,8 +114,8 @@ int parseconfig(const char *filename,
 #endif
   }
 
-  if(strcmp(filename,"-"))
-    file = fopen(filename, "r");
+  if(strcmp(filename, "-"))
+    file = fopen(filename, FOPEN_READTEXT);
   else
     file = stdin;
 
@@ -187,28 +187,31 @@ int parseconfig(const char *filename,
         param = line; /* parameter starts here */
         while(*line && !ISSPACE(*line))
           line++;
-        *line = '\0'; /* zero terminate */
 
-        /* to detect mistakes better, see if there's data following */
-        line++;
-        /* pass all spaces */
-        while(*line && ISSPACE(*line))
+        if(*line) {
+          *line = '\0'; /* zero terminate */
+
+          /* to detect mistakes better, see if there's data following */
           line++;
+          /* pass all spaces */
+          while(*line && ISSPACE(*line))
+            line++;
 
-        switch(*line) {
-        case '\0':
-        case '\r':
-        case '\n':
-        case '#': /* comment */
-          break;
-        default:
-          warnf(config, "%s:%d: warning: '%s' uses unquoted white space in the"
-                " line that may cause side-effects!\n",
-                filename, lineno, option);
+          switch(*line) {
+          case '\0':
+          case '\r':
+          case '\n':
+          case '#': /* comment */
+            break;
+          default:
+            warnf(operation->global, "%s:%d: warning: '%s' uses unquoted "
+                  "white space in the line that may cause side-effects!\n",
+                  filename, lineno, option);
+          }
         }
       }
 
-      if(param && !*param) {
+      if(!*param) {
         /* do this so getparameter can check for required parameters.
            Otherwise it always thinks there's a parameter. */
         if(alloced_param)
@@ -219,20 +222,49 @@ int parseconfig(const char *filename,
 #ifdef DEBUG_CONFIG
       fprintf(stderr, "PARAM: \"%s\"\n",(param ? param : "(null)"));
 #endif
-      res = getparameter(option, param, &usedarg, config);
+      res = getparameter(option, param, &usedarg, global, operation);
 
       if(param && *param && !usedarg)
         /* we passed in a parameter that wasn't used! */
         res = PARAM_GOT_EXTRA_PARAMETER;
 
-      if(res != PARAM_OK) {
+      if(res == PARAM_NEXT_OPERATION) {
+        if(operation->url_list && operation->url_list->url) {
+          /* Allocate the next config */
+          operation->next = malloc(sizeof(struct OperationConfig));
+          if(operation->next) {
+            /* Initialise the newly created config */
+            config_init(operation->next);
+
+            /* Copy the easy handle */
+            operation->next->easy = global->easy;
+
+            /* Set the global config pointer */
+            operation->next->global = global;
+
+            /* Update the last operation pointer */
+            global->last = operation->next;
+
+            /* Move onto the new config */
+            operation->next->prev = operation;
+            operation = operation->next;
+          }
+          else
+            res = PARAM_NO_MEM;
+        }
+      }
+
+      if(res != PARAM_OK && res != PARAM_NEXT_OPERATION) {
         /* the help request isn't really an error */
         if(!strcmp(filename, "-")) {
           filename = (char *)"<stdin>";
         }
-        if(PARAM_HELP_REQUESTED != res) {
+        if(res != PARAM_HELP_REQUESTED &&
+           res != PARAM_MANUAL_REQUESTED &&
+           res != PARAM_VERSION_INFO_REQUESTED &&
+           res != PARAM_ENGINES_REQUESTED) {
           const char *reason = param2text(res);
-          warnf(config, "%s:%d: warning: '%s' %s\n",
+          warnf(operation->global, "%s:%d: warning: '%s' %s\n",
                 filename, lineno, option, reason);
         }
       }

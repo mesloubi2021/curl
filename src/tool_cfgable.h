@@ -7,11 +7,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.haxx.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -27,8 +27,10 @@
 
 #include "tool_metalink.h"
 
-struct Configurable {
-  CURL *easy;               /* once we have one, we keep it here */
+struct GlobalConfig;
+
+struct OperationConfig {
+  CURL *easy;               /* A copy of the handle from GlobalConfig */
   bool remote_time;
   char *random_file;
   char *egd_file;
@@ -49,6 +51,7 @@ struct Configurable {
   bool proto_present;
   long proto_redir;
   bool proto_redir_present;
+  char *proto_default;
   curl_off_t resume_from;
   char *postfields;
   curl_off_t postfieldsize;
@@ -70,14 +73,14 @@ struct Configurable {
   char *dns_interface; /* interface name */
   char *dns_ipv4_addr; /* dot notation */
   char *dns_ipv6_addr; /* dot notation */
-  int showerror; /* -1 == unset, default => show errors
-                    0 => -s is used to NOT show errors
-                    1 => -S has been used to show errors */
   char *userpwd;
   char *login_options;
   char *tls_username;
   char *tls_password;
   char *tls_authtype;
+  char *proxy_tls_username;
+  char *proxy_tls_password;
+  char *proxy_tls_authtype;
   char *proxyuserpwd;
   char *proxy;
   int proxyver;             /* set to CURLPROXY_HTTP* define */
@@ -88,7 +91,6 @@ struct Configurable {
   bool sasl_ir;             /* Enable/disable SASL initial response */
   bool proxytunnel;
   bool ftp_append;          /* APPE on ftp */
-  bool mute;                /* don't show messages, --silent given */
   bool use_ascii;           /* select ascii or text transfer */
   bool autoreferer;         /* automatically set referer */
   bool failonerror;         /* fail on (HTTP) errors */
@@ -102,40 +104,44 @@ struct Configurable {
   bool netrc_opt;
   bool netrc;
   char *netrc_file;
-  bool noprogress;          /* don't show progress meter, --silent given */
-  bool isatty;              /* updated internally only if output is a tty */
   struct getout *url_list;  /* point to the first node */
   struct getout *url_last;  /* point to the last/current node */
   struct getout *url_get;   /* point to the node to fill in URL */
   struct getout *url_out;   /* point to the node to fill in outfile */
   char *cipher_list;
+  char *proxy_cipher_list;
   char *cert;
+  char *proxy_cert;
   char *cert_type;
+  char *proxy_cert_type;
   char *cacert;
+  char *proxy_cacert;
   char *capath;
+  char *proxy_capath;
   char *crlfile;
+  char *proxy_crlfile;
+  char *pinnedpubkey;
   char *key;
+  char *proxy_key;
   char *key_type;
+  char *proxy_key_type;
   char *key_passwd;
+  char *proxy_key_passwd;
   char *pubkey;
   char *hostpubmd5;
   char *engine;
-  bool list_engines;
   bool crlf;
   char *customrequest;
   char *krblevel;
-  char *trace_dump;         /* file to dump the network trace to, or NULL */
-  FILE *trace_stream;
-  bool trace_fopened;
-  trace tracetype;
-  bool tracetime;           /* include timestamp? */
   long httpversion;
-  int progressmode;         /* CURL_PROGRESS_BAR or CURL_PROGRESS_STATS */
   bool nobuffer;
   bool readbusy;            /* set when reading input returns EAGAIN */
   bool globoff;
   bool use_httpget;
   bool insecure_ok;         /* set TRUE to allow insecure SSL connects */
+  bool proxy_insecure_ok;   /* set TRUE to allow insecure SSL connects
+                               for proxy */
+  bool verifystatus;
   bool create_dirs;
   bool ftp_create_dirs;
   bool ftp_skip_ip;
@@ -146,20 +152,21 @@ struct Configurable {
   bool proxyanyauth;
   char *writeout;           /* %-styled format string to output */
   bool writeenv;            /* write results to environment, if available */
-  FILE *errors;             /* errors stream, defaults to stderr */
-  bool errors_fopened;      /* whether errors stream isn't stderr */
   struct curl_slist *quote;
   struct curl_slist *postquote;
   struct curl_slist *prequote;
   long ssl_version;
+  long proxy_ssl_version;
   long ip_version;
   curl_TimeCond timecond;
   time_t condtime;
   struct curl_slist *headers;
+  struct curl_slist *proxyheaders;
   struct curl_httppost *httppost;
   struct curl_httppost *last_post;
   struct curl_slist *telnet_options;
   struct curl_slist *resolve;
+  struct curl_slist *connect_to;
   HttpReq httpreq;
 
   /* for bandwidth limiting features: */
@@ -174,13 +181,17 @@ struct Configurable {
 
   char *socksproxy;         /* set to server string */
   int socksver;             /* set to CURLPROXY_SOCKS* define */
-  char *socks5_gssapi_service;  /* set service name for gssapi principal
-                                 * default rcmd */
-  int socks5_gssapi_nec ;   /* The NEC reference server does not protect
-                             * the encryption type exchange */
+  int socks5_gssapi_nec;    /* The NEC reference server does not protect the
+                               encryption type exchange */
+  char *proxy_service_name; /* set authentication service name for HTTP and
+                               SOCKS5 proxies */
+  char *service_name;       /* set authentication service name for DIGEST-MD5,
+                               Kerberos 5 and SPNEGO */
 
   bool tcp_nodelay;
+  bool tcp_fastopen;
   long req_retry;           /* number of retries */
+  bool retry_connrefused;   /* set connection refused as a transient error */
   long retry_delay;         /* delay between retries (in seconds) */
   long retry_maxtime;       /* maximum time to keep retrying */
 
@@ -188,10 +199,10 @@ struct Configurable {
   char *ftp_alternative_to_user;  /* send command if USER/PASS fails */
   int ftp_filemethod;
   long tftp_blksize;        /* TFTP BLKSIZE option */
+  bool tftp_no_options;     /* do not send TFTP options requests */
   bool ignorecl;            /* --ignore-content-length */
   bool disable_sessionid;
 
-  char *libcurl;            /* output libcurl code to this file name */
   bool raw;
   bool post301;
   bool post302;
@@ -206,6 +217,10 @@ struct Configurable {
   bool xattr;               /* store metadata in extended attributes */
   long gssapi_delegation;
   bool ssl_allow_beast;     /* allow this SSL vulnerability */
+  bool proxy_ssl_allow_beast; /* allow this SSL vulnerability for proxy*/
+
+  bool ssl_no_revoke;       /* disable SSL certificate revocation checks */
+  /*bool proxy_ssl_no_revoke; */
 
   bool use_metalink;        /* process given URLs as metalink XML file */
   metalinkfile *metalinkfile_list; /* point to the first node */
@@ -213,10 +228,42 @@ struct Configurable {
 #ifdef CURLDEBUG
   bool test_event_based;
 #endif
-  char *xoauth2_bearer;     /* XOAUTH2 bearer token */
-}; /* struct Configurable */
+  char *oauth_bearer;             /* OAuth 2.0 bearer token */
+  bool nonpn;                     /* enable/disable TLS NPN extension */
+  bool noalpn;                    /* enable/disable TLS ALPN extension */
+  char *unix_socket_path;         /* path to Unix domain socket */
+  bool falsestart;
+  bool path_as_is;
+  double expect100timeout;
+  struct GlobalConfig *global;
+  struct OperationConfig *prev;
+  struct OperationConfig *next;   /* Always last in the struct */
+};
 
-void init_config(struct Configurable* config);
-void free_config_fields(struct Configurable *config);
+struct GlobalConfig {
+  CURL *easy;                     /* Once we have one, we keep it here */
+  int showerror;                  /* -1 == unset, default => show errors
+                                      0 => -s is used to NOT show errors
+                                      1 => -S has been used to show errors */
+  bool mute;                      /* don't show messages, --silent given */
+  bool noprogress;                /* don't show progress bar --silent given */
+  bool isatty;                    /* Updated internally if output is a tty */
+  FILE *errors;                   /* Error stream, defaults to stderr */
+  bool errors_fopened;            /* Whether error stream isn't stderr */
+  char *trace_dump;               /* file to dump the network trace to */
+  FILE *trace_stream;
+  bool trace_fopened;
+  trace tracetype;
+  bool tracetime;                 /* include timestamp? */
+  int progressmode;               /* CURL_PROGRESS_BAR / CURL_PROGRESS_STATS */
+  char *libcurl;                  /* Output libcurl code to this file name */
+  bool fail_early;                /* exit on first transfer error */
+  struct OperationConfig *first;
+  struct OperationConfig *current;
+  struct OperationConfig *last;   /* Always last in the struct */
+};
+
+void config_init(struct OperationConfig *config);
+void config_free(struct OperationConfig *config);
 
 #endif /* HEADER_CURL_TOOL_CFGABLE_H */

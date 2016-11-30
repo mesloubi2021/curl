@@ -2,7 +2,9 @@
 <info>
 <keywords>
 IMAP
-IMAP AUTH NTLM SASL CANCELLATION
+SASL
+SASL AUTH NTLM
+SASL CANCELLATION
 </keywords>
 </info>
 

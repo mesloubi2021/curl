@@ -11,7 +11,7 @@
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.haxx.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -72,11 +72,12 @@ typedef enum {
   CHUNKE_ILLEGAL_HEX,
   CHUNKE_BAD_CHUNK,
   CHUNKE_WRITE_ERROR,
-  CHUNKE_STATE_ERROR,
   CHUNKE_BAD_ENCODING,
   CHUNKE_OUT_OF_MEMORY,
   CHUNKE_LAST
 } CHUNKcode;
+
+const char *Curl_chunked_strerror(CHUNKcode code);
 
 struct Curl_chunker {
   char hexbuffer[ MAXNUM_SIZE + 1];

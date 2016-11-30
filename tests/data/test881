@@ -2,7 +2,10 @@
 <info>
 <keywords>
 POP3
-POP3 AUTH DIGEST-MD5 SASL DOWNGRADE
+SASL
+SASL AUTH DIGEST-MD5
+SASL AUTH PLAIN
+SASL DOWNGRADE
 RFC1734
 RFC2831
 RFC5034
@@ -37,6 +40,7 @@ body
 pop3
 </server>
 <features>
+!SSPI
 debug
 crypto
 </features>

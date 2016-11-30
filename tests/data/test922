@@ -2,7 +2,9 @@
 <info>
 <keywords>
 SMTP
-SMTP AUTH OAUTH2 SASL-IR
+SASL
+SASL AUTH OAUTH2
+SASL-IR
 RFC4954
 RFC6749
 </keywords>
@@ -24,7 +26,7 @@ REPLY AUTH 235 Authenticated
 smtp
 </server>
  <name>
-SMTP OAuth 2.0 authentication with initial response
+SMTP OAuth 2.0 (XOAUTH2) authentication with initial response
  </name>
 <stdin>
 mail body

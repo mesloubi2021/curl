@@ -9,7 +9,7 @@
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.haxx.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -101,7 +101,7 @@ int tool_progress_cb(void *clientp,
 }
 
 void progressbarinit(struct ProgressData *bar,
-                     struct Configurable *config)
+                     struct OperationConfig *config)
 {
 #ifdef __EMX__
   /* 20000318 mgs */
@@ -146,6 +146,5 @@ void progressbarinit(struct ProgressData *bar,
   bar->width = scr_size[0] - 1;
 #endif
 
-  bar->out = config->errors;
+  bar->out = config->global->errors;
 }
-
