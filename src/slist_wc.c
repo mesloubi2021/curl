@@ -9,7 +9,7 @@
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.haxx.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -45,7 +45,7 @@ struct slist_wc *slist_wc_append(struct slist_wc *list,
     list = malloc(sizeof(struct slist_wc));
 
     if(!list) {
-      free(new_item);
+      curl_slist_free_all(new_item);
       return NULL;
     }
 
