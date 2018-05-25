@@ -248,7 +248,7 @@ bool Curl_ssl_false_start(void);
 
 #define SSL_SHUTDOWN_TIMEOUT 10000 /* ms */
 
-#else
+#else /* if not USE_SSL */
 
 /* When SSL support is not present, just define away these function calls */
 #define Curl_ssl_init() 1
@@ -272,6 +272,7 @@ bool Curl_ssl_false_start(void);
 #define Curl_ssl_random(x,y,z) ((void)x, CURLE_NOT_BUILT_IN)
 #define Curl_ssl_cert_status_request() FALSE
 #define Curl_ssl_false_start() FALSE
+#define Curl_ssl_tls13_ciphersuites() FALSE
 #endif
 
 #endif /* HEADER_CURL_VTLS_H */
