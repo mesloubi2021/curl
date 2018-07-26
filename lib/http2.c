@@ -21,6 +21,9 @@
  ***************************************************************************/
 
 #include "curl_setup.h"
+#ifndef USE_NGHTTP2
+#define USE_NGHTTP2
+#endif
 
 #ifdef USE_NGHTTP2
 #include <nghttp2/nghttp2.h>
@@ -66,6 +69,7 @@
 
 #define HTTP2_HUGE_WINDOW_SIZE (1 << 30)
 
+#define DEBUG_HTTP2
 #ifdef DEBUG_HTTP2
 #define H2BUGF(x) x
 #else
@@ -1370,6 +1374,12 @@ static ssize_t http2_handle_stream_close(struct connectdata *conn,
     httpc->pause_stream_id = 0;
   }
 
+  printf("RRRRR easy=%p, conn=%p, httpc=%p\n", data, conn, httpc);
+  printf("RRRRR4 httpc->drain_total=%d >="
+         " data->state.drain=%d\n",httpc->drain_total, data->state.drain);
+  if(httpc->drain_total < data->state.drain) {
+    printf("RRRRR WILL ASSERT\n");
+  }
   DEBUGASSERT(httpc->drain_total >= data->state.drain);
   httpc->drain_total -= data->state.drain;
   data->state.drain = 0;
@@ -1492,6 +1502,8 @@ static ssize_t http2_recv(struct connectdata *conn, int sockindex,
   struct HTTP *stream = data->req.protop;
 
   (void)sockindex; /* we always do HTTP2 on sockindex 0 */
+
+  printf("RRRRR2 easy=%p, conn=%p, httpc=%p\n", data, conn, httpc);
 
   if(should_close_session(httpc)) {
     H2BUGF(infof(data,
@@ -2227,6 +2239,7 @@ CURLcode Curl_http2_switched(struct connectdata *conn,
   }
 
   /* Try to send some frames since we may read SETTINGS already. */
+  printf("RRRRR3 easy=%p, conn=%p, httpc=%p\n", data, conn, httpc);
   rv = h2_session_send(data, httpc->h2);
 
   if(rv != 0) {
