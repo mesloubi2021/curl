@@ -6,7 +6,7 @@ rem *                             / __| | | | |_) | |
 rem *                            | (__| |_| |  _ <| |___
 rem *                             \___|\___/|_| \_\_____|
 rem *
-rem * Copyright (C) 2014 - 2017, Steve Holme, <steve_holme@hotmail.com>.
+rem * Copyright (C) 2014 - 2020, Steve Holme, <steve_holme@hotmail.com>.
 rem *
 rem * This software is licensed as described in the file COPYING, which
 rem * you should have received as part of this distribution. The terms
@@ -64,6 +64,8 @@ rem ***************************************************************************
     set VERSION=VC14
   ) else if /i "%~1" == "vc15" (
     set VERSION=VC15
+  ) else if /i "%~1" == "vc16" (
+    set VERSION=VC16
   ) else if /i "%~1" == "-clean" (
     set MODE=CLEAN
   ) else if /i "%~1" == "-?" (
@@ -99,6 +101,7 @@ rem ***************************************************************************
   if "%VERSION%" == "VC12" goto vc12
   if "%VERSION%" == "VC14" goto vc14
   if "%VERSION%" == "VC15" goto vc15
+  if "%VERSION%" == "VC16" goto vc16
 
 :vc6
   echo.
@@ -248,12 +251,27 @@ rem ***************************************************************************
     call :clean Windows\VC15\lib\libcurl.vcxproj
   )
 
+  if not "%VERSION%" == "ALL" goto success
+
+:vc16
+  echo.
+
+  if "%MODE%" == "GENERATE" (
+    echo Generating VC16 project files
+    call :generate vcxproj Windows\VC16\src\curl.tmpl Windows\VC16\src\curl.vcxproj
+    call :generate vcxproj Windows\VC16\lib\libcurl.tmpl Windows\VC16\lib\libcurl.vcxproj
+  ) else (
+    echo Removing VC16 project files
+    call :clean Windows\VC16\src\curl.vcxproj
+    call :clean Windows\VC16\lib\libcurl.vcxproj
+  )
+
   goto success
 
 rem Main generate function.
 rem
 rem %1 - Project Type (dsp for VC6, vcproj1 for VC7 and VC7.1, vcproj2 for VC8 and VC9
-rem      or vcxproj for VC10, VC11, VC12, VC14 and VC15)
+rem      or vcxproj for VC10, VC11, VC12, VC14, VC15 and VC16)
 rem %2 - Input template file
 rem %3 - Output project file
 rem
@@ -326,7 +344,7 @@ rem
 rem Generates a single file xml element.
 rem
 rem %1 - Project Type (dsp for VC6, vcproj1 for VC7 and VC7.1, vcproj2 for VC8 and VC9
-rem      or vcxproj for VC10, VC11, VC12, VC14 and VC15)
+rem      or vcxproj for VC10, VC11, VC12, VC14, VC15 and VC16)
 rem %2 - Directory (src, lib, lib\vauth, lib\vquic, lib\vssh, lib\vtls)
 rem %3 - Source filename
 rem %4 - Output project file
@@ -427,6 +445,7 @@ rem
   echo vc12      - Use Visual Studio 2013
   echo vc14      - Use Visual Studio 2015
   echo vc15      - Use Visual Studio 2017
+  echo vc16      - Use Visual Studio 2019
   echo.
   echo -clean    - Removes the project files
   goto error
