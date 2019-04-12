@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2009 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2009 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -76,6 +76,7 @@ struct smtp_conn {
 
 extern const struct Curl_handler Curl_handler_smtp;
 extern const struct Curl_handler Curl_handler_smtps;
+extern const struct Curl_handler Curl_handler_submit;
 
 /* this is the 5-bytes End-Of-Body marker for SMTP */
 #define SMTP_EOB "\x0d\x0a\x2e\x0d\x0a"

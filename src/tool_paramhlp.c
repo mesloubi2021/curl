@@ -295,6 +295,7 @@ long proto2num(struct OperationConfig *config, long *val, const char *str)
     { "pop3s", CURLPROTO_POP3S },
     { "smtp", CURLPROTO_SMTP },
     { "smtps", CURLPROTO_SMTPS },
+    { "submit", CURLPROTO_SUBMIT },
     { "rtsp", CURLPROTO_RTSP },
     { "gopher", CURLPROTO_GOPHER },
     { "smb", CURLPROTO_SMB },

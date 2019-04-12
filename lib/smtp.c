@@ -31,6 +31,7 @@
  * RFC8314 Use of TLS for Email Submission and Access
  * Draft   SMTP URL Interface   <draft-earhart-url-smtp-00.txt>
  * Draft   LOGIN SASL Mechanism <draft-murchison-sasl-login-00.txt>
+ * Draft   S/MIME MSA to MDA <draft-melnikov-smime-msa-to-mda-04.txt>
  *
  ***************************************************************************/
 
@@ -160,6 +161,32 @@ const struct Curl_handler Curl_handler_smtps = {
   | PROTOPT_NOURLQUERY | PROTOPT_URLOPTIONS /* flags */
 };
 #endif
+
+/*
+ * SMTP submit protocol handler.
+ */
+
+const struct Curl_handler Curl_handler_submit = {
+  "SUBMIT",                         /* scheme */
+  smtp_setup_connection,            /* setup_connection */
+  smtp_do,                          /* do_it */
+  smtp_done,                        /* done */
+  ZERO_NULL,                        /* do_more */
+  smtp_connect,                     /* connect_it */
+  smtp_multi_statemach,             /* connecting */
+  smtp_doing,                       /* doing */
+  smtp_getsock,                     /* proto_getsock */
+  smtp_getsock,                     /* doing_getsock */
+  ZERO_NULL,                        /* domore_getsock */
+  ZERO_NULL,                        /* perform_getsock */
+  smtp_disconnect,                  /* disconnect */
+  ZERO_NULL,                        /* readwrite */
+  ZERO_NULL,                        /* connection_check */
+  PORT_SUBMIT,                      /* defport */
+  CURLPROTO_SUBMIT,                 /* protocol */
+  PROTOPT_CLOSEACTION | PROTOPT_NOURLQUERY | /* flags */
+  PROTOPT_URLOPTIONS
+};
 
 /* SASL parameters for the smtp protocol */
 static const struct SASLproto saslsmtp = {

@@ -223,6 +223,7 @@ static const struct Curl_handler * const protocols[] = {
 #ifdef USE_SSL
   &Curl_handler_smtps,
 #endif
+  &Curl_handler_submit,
 #endif
 
 #ifndef CURL_DISABLE_RTSP
@@ -4128,6 +4129,7 @@ static unsigned int get_protocol_family(unsigned int protocol)
 
   case CURLPROTO_SMTP:
   case CURLPROTO_SMTPS:
+  case CURLPROTO_SUBMIT:
       family = CURLPROTO_SMTP;
       break;
 

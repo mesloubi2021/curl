@@ -288,9 +288,10 @@ static const char * const protocols[] = {
 #endif
 #ifndef CURL_DISABLE_SMTP
   "smtp",
-#endif
-#if defined(USE_SSL) && !defined(CURL_DISABLE_SMTP)
+#  if defined(USE_SSL)
   "smtps",
+#  endif
+    "submit",
 #endif
 #ifndef CURL_DISABLE_TELNET
   "telnet",
