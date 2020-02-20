@@ -261,6 +261,45 @@ static void DES_Final(DES_CTX *ctx)
   }
 }
 
+#elif defined(USE_MBEDTLS)
+
+#include <mbedtls/des.h>
+
+#include "curl_memory.h"
+
+/* The last #include file should be: */
+#include "memdebug.h"
+
+typedef mbedtls_des_context DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  char key[DES_KEY_SIZE];
+
+  /* Expand the 56-bit key to 64-bits */
+  Curl_extend_key_56_to_64(key_56, key);
+
+  /* Set the key parity to odd */
+  mbedtls_des_key_set_parity((unsigned char *) key);
+
+  /* Set the key */
+  mbedtls_des_init(ctx);
+  mbedtls_des_setkey_enc(ctx, (unsigned char *) key);
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  (void) mbedtls_des_crypt_ecb(ctx, input, output);
+}
+
+static void DES_Final(DES_CTX *ctx)
+{
+  /* Nothing to do when using mbed TLS */
+  (void) ctx;
+}
+
 #endif
 
 /*
@@ -285,7 +324,7 @@ void Curl_extend_key_56_to_64(const unsigned char *key_56, char *key)
   key[7] = (unsigned char) ((key_56[6] << 1) & 0xFF);
 }
 
-#if !defined(USE_OPENSSL)
+#if !defined(USE_OPENSSL) && !defined(USE_MBEDTLS)
 
 /*
  * Curl_des_set_odd_parity()
@@ -321,10 +360,10 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
   }
 }
 
-#endif
+#endif /* !defined(USE_OPENSSL) && !defined(USE_MBEDTLS) */
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS)
+    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS)
 /*
  * Curl_2desit()
  *

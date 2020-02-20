@@ -53,14 +53,9 @@
 #if !defined(USE_WINDOWS_SSPI) || defined(USE_WIN32_CRYPTO)
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS)
+    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_MBEDTLS)
-
-#  include <mbedtls/des.h>
-#  include "curl_md4.h"
 
 #elif defined(USE_SECTRANSP)
 
@@ -94,29 +89,9 @@
 #define NTLMv2_BLOB_LEN       (44 -16 + ntlm->target_info_len + 4)
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS)
+    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_MBEDTLS)
-
-static bool encrypt_des(const unsigned char *in, unsigned char *out,
-                        const unsigned char *key_56)
-{
-  mbedtls_des_context ctx;
-  char key[8];
-
-  /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, key);
-
-  /* Set the key parity to odd */
-  mbedtls_des_key_set_parity((unsigned char *) key);
-
-  /* Perform the encryption */
-  mbedtls_des_init(&ctx);
-  mbedtls_des_setkey_enc(&ctx, (unsigned char *) key);
-  return mbedtls_des_crypt_ecb(&ctx, in, out) == 0;
-}
 
 #elif defined(USE_SECTRANSP)
 
@@ -227,12 +202,12 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
                             unsigned char *results)
 {
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS)
+    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS)
 
   Curl_3desit(keys, plaintext, results);
 
-#elif defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
-  || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
+#elif defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || \
+      defined(USE_WIN32_CRYPTO)
   encrypt_des(plaintext, results, keys);
   encrypt_des(plaintext, results + 8, keys + 7);
   encrypt_des(plaintext, results + 16, keys + 14);
@@ -268,12 +243,12 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
     /* Create LanManager hashed password. */
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS)
+    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS)
 
     Curl_2desit(pw, magic, lmbuffer);
 
-#elif defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
-  || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
+#elif defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || \\
+      defined(USE_WIN32_CRYPTO)
     encrypt_des(magic, lmbuffer, pw);
     encrypt_des(magic, lmbuffer + 8, pw + 7);
 #endif
