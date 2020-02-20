@@ -52,13 +52,9 @@
 
 #if !defined(USE_WINDOWS_SSPI) || defined(USE_WIN32_CRYPTO)
 
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_GNUTLS_NETTLE)
-
-#  include <nettle/des.h>
 
 #elif defined(USE_GNUTLS)
 
@@ -106,26 +102,9 @@
 #define NTLMv2_BLOB_SIGNATURE "\x01\x01\x00\x00"
 #define NTLMv2_BLOB_LEN       (44 -16 + ntlm->target_info_len + 4)
 
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_GNUTLS_NETTLE)
-
-static void setup_des_key(const unsigned char *key_56,
-                          struct des_ctx *des)
-{
-  char key[8];
-
-  /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, key);
-
-  /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
-
-  /* Set the key */
-  des_set_key(des, (const uint8_t *) key);
-}
 
 #elif defined(USE_GNUTLS)
 
@@ -339,18 +318,10 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
                             const unsigned char *plaintext,
                             unsigned char *results)
 {
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
 
   Curl_3desit(keys, plaintext, results);
 
-#elif defined(USE_GNUTLS_NETTLE)
-  struct des_ctx des;
-  setup_des_key(keys, &des);
-  des_encrypt(&des, 8, results, plaintext);
-  setup_des_key(keys + 7, &des);
-  des_encrypt(&des, 8, results + 8, plaintext);
-  setup_des_key(keys + 14, &des);
-  des_encrypt(&des, 8, results + 16, plaintext);
 #elif defined(USE_GNUTLS)
   gcry_cipher_hd_t des;
 
@@ -404,16 +375,10 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
   {
     /* Create LanManager hashed password. */
 
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
 
     Curl_2desit(pw, magic, lmbuffer);
 
-#elif defined(USE_GNUTLS_NETTLE)
-    struct des_ctx des;
-    setup_des_key(pw, &des);
-    des_encrypt(&des, 8, lmbuffer, magic);
-    setup_des_key(pw + 7, &des);
-    des_encrypt(&des, 8, lmbuffer + 8, magic);
 #elif defined(USE_GNUTLS)
     gcry_cipher_hd_t des;
 

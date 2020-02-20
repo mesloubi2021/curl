@@ -26,6 +26,8 @@
 
 #include "curl_des.h"
 
+#define DES_KEY_SIZE 8
+
 #if defined(USE_OPENSSL)
 
 #include <openssl/des.h>
@@ -73,7 +75,39 @@ static void DES_Encrypt(DES_CTX *ctx,
                   DES_ENCRYPT);
 }
 
-#endif /* USE_OPENSSL */
+#elif defined(USE_GNUTLS_NETTLE)
+
+#include <nettle/des.h>
+
+#include "curl_memory.h"
+
+/* The last #include file should be: */
+#include "memdebug.h"
+
+typedef des_ctx DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  char key[DES_KEY_SIZE];
+
+  /* Expand the 56-bit key to 64-bits */
+  Curl_extend_key_56_to_64(key_56, key);
+
+  /* Set the key parity to odd */
+  Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
+
+  /* Set the key */
+  des_set_key(des, (const uint8_t *) key);
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  des_encrypt(&ctx, DES_KEY_SIZE, output, input);
+}
+
+#endif
 
 /*
  * Curl_extend_key_56_to_64()
@@ -133,8 +167,9 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
   }
 }
 
-#else
+#endif
 
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
 /*
  * Curl_2desit()
  *
