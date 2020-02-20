@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2015 - 2019, Steve Holme, <steve_holme@hotmail.com>.
+ * Copyright (C) 2015 - 2020, Steve Holme, <steve_holme@hotmail.com>.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -24,11 +24,16 @@
 
 #include "curl_setup.h"
 
-#if defined(USE_NTLM) && !defined(USE_OPENSSL)
+#if defined(USE_NTLM)
 
-/* Applies odd parity to the given byte array */
+#define DES_KEY_LENGTH 32
+
+void Curl_extend_key_56_to_64(const unsigned char *key_56, char *key);
+
+#if !defined(USE_OPENSSL)
 void Curl_des_set_odd_parity(unsigned char *bytes, size_t length);
+#endif
 
-#endif /* USE_NTLM && !USE_OPENSSL */
+#endif /* USE_NTLM */
 
 #endif /* HEADER_CURL_DES_H */

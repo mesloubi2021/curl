@@ -78,14 +78,12 @@
 #elif defined(USE_GNUTLS)
 
 #  include <gcrypt.h>
-#  define MD5_DIGEST_LENGTH 16
 
 #elif defined(USE_NSS)
 
 #  include <nss.h>
 #  include <pk11pub.h>
 #  include <hasht.h>
-#  define MD5_DIGEST_LENGTH MD5_LENGTH
 
 #elif defined(USE_MBEDTLS)
 
@@ -123,21 +121,6 @@
 #define NTLMv2_BLOB_SIGNATURE "\x01\x01\x00\x00"
 #define NTLMv2_BLOB_LEN       (44 -16 + ntlm->target_info_len + 4)
 
-/*
-* Turns a 56-bit key into being 64-bit wide.
-*/
-static void extend_key_56_to_64(const unsigned char *key_56, char *key)
-{
-  key[0] = key_56[0];
-  key[1] = (unsigned char)(((key_56[0] << 7) & 0xFF) | (key_56[1] >> 1));
-  key[2] = (unsigned char)(((key_56[1] << 6) & 0xFF) | (key_56[2] >> 2));
-  key[3] = (unsigned char)(((key_56[2] << 5) & 0xFF) | (key_56[3] >> 3));
-  key[4] = (unsigned char)(((key_56[3] << 4) & 0xFF) | (key_56[4] >> 4));
-  key[5] = (unsigned char)(((key_56[4] << 3) & 0xFF) | (key_56[5] >> 5));
-  key[6] = (unsigned char)(((key_56[5] << 2) & 0xFF) | (key_56[6] >> 6));
-  key[7] = (unsigned char) ((key_56[6] << 1) & 0xFF);
-}
-
 #ifdef USE_OPENSSL
 /*
  * Turns a 56 bit key into the 64 bit, odd parity key and sets the key.  The
@@ -149,7 +132,7 @@ static void setup_des_key(const unsigned char *key_56,
   DES_cblock key;
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, (char *) &key);
+  Curl_extend_key_56_to_64(key_56, (char *) &key);
 
   /* Set the key parity to odd */
   DES_set_odd_parity(&key);
@@ -166,7 +149,7 @@ static void setup_des_key(const unsigned char *key_56,
   char key[8];
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, key);
+  Curl_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
   Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
@@ -186,7 +169,7 @@ static void setup_des_key(const unsigned char *key_56,
   char key[8];
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, key);
+  Curl_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
   Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
@@ -220,7 +203,7 @@ static bool encrypt_des(const unsigned char *in, unsigned char *out,
     return FALSE;
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, key);
+  Curl_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
   Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
@@ -268,7 +251,7 @@ static bool encrypt_des(const unsigned char *in, unsigned char *out,
   char key[8];
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, key);
+  Curl_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
   mbedtls_des_key_set_parity((unsigned char *) key);
@@ -289,7 +272,7 @@ static bool encrypt_des(const unsigned char *in, unsigned char *out,
   CCCryptorStatus err;
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, key);
+  Curl_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
   Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
@@ -315,7 +298,7 @@ static bool encrypt_des(const unsigned char *in, unsigned char *out,
   ctl.Data_Len = sizeof(key);
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, ctl.Crypto_Key);
+  Curl_extend_key_56_to_64(key_56, ctl.Crypto_Key);
 
   /* Set the key parity to odd */
   Curl_des_set_odd_parity((unsigned char *) ctl.Crypto_Key, ctl.Data_Len);
@@ -353,7 +336,7 @@ static bool encrypt_des(const unsigned char *in, unsigned char *out,
   blob.len = sizeof(blob.key);
 
   /* Expand the 56-bit key to 64-bits */
-  extend_key_56_to_64(key_56, blob.key);
+  Curl_extend_key_56_to_64(key_56, blob.key);
 
   /* Set the key parity to odd */
   Curl_des_set_odd_parity((unsigned char *) blob.key, sizeof(blob.key));
