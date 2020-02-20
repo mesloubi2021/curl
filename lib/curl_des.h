@@ -32,6 +32,11 @@ void Curl_extend_key_56_to_64(const unsigned char *key_56, char *key);
 
 #if !defined(USE_OPENSSL)
 void Curl_des_set_odd_parity(unsigned char *bytes, size_t length);
+#else
+void Curl_2desit(const unsigned char *key, const unsigned char *input,
+                 unsigned char *output);
+void Curl_3desit(const unsigned char *key, const unsigned char *input,
+                 unsigned char *output);
 #endif
 
 #endif /* USE_NTLM */

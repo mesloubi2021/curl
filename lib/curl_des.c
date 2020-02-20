@@ -26,6 +26,55 @@
 
 #include "curl_des.h"
 
+#if defined(USE_OPENSSL)
+
+#include <openssl/des.h>
+#include <openssl/md5.h>
+#include <openssl/ssl.h>
+#include <openssl/rand.h>
+
+#if (OPENSSL_VERSION_NUMBER < 0x00907001L)
+#define DES_key_schedule des_key_schedule
+#define DES_cblock des_cblock
+#define DES_set_odd_parity des_set_odd_parity
+#define DES_set_key des_set_key
+#define DES_ecb_encrypt des_ecb_encrypt
+#define DESKEY(x) *x
+#else
+#define DESKEY(x) x
+#endif
+
+#include "curl_memory.h"
+
+/* The last #include file should be: */
+#include "memdebug.h"
+
+typedef DES_key_schedule DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  DES_cblock key;
+
+  /* Expand the 56-bit key to 64-bits */
+  Curl_extend_key_56_to_64(key_56, (char *) &key);
+
+  /* Set the key parity to odd */
+  DES_set_odd_parity(&key);
+
+  /* Set the key */
+  DES_set_key(&key, ctx);
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  DES_ecb_encrypt((DES_cblock *) input, (DES_cblock *) output, DESKEY(ctx),
+                  DES_ENCRYPT);
+}
+
+#endif /* USE_OPENSSL */
+
 /*
  * Curl_extend_key_56_to_64()
  *
@@ -84,6 +133,59 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
   }
 }
 
-#endif /* !USE_OPENSSL */
+#else
+
+/*
+ * Curl_2desit()
+ *
+ * Performs the 2DES encryption.
+ *
+ * Parameters:
+ *
+ * key    [in]     - The key.
+ * input  [in]     - The input data.
+ * output [in/out] - The output buffer.
+ */
+void Curl_2desit(const unsigned char *key,
+                 const unsigned char *input,
+                 unsigned char *output)
+{
+  DES_CTX ctx;
+
+  DES_Init(&ctx, key);
+  DES_Encrypt(&ctx, input, output);
+
+  DES_Init(&ctx, key + 7);
+  DES_Encrypt(&ctx, input, output + 8);
+}
+
+/*
+ * Curl_3desit()
+ *
+ * Performs the 3DES encryption.
+ *
+ * Parameters:
+ *
+ * key    [in]     - The key.
+ * input  [in]     - The input data.
+ * output [in/out] - The output buffer.
+ */
+void Curl_3desit(const unsigned char *key,
+                 const unsigned char *input,
+                 unsigned char *output)
+{
+  DES_CTX ctx;
+
+  DES_Init(&ctx, key);
+  DES_Encrypt(&ctx, input, output);
+
+  DES_Init(&ctx, key + 7);
+  DES_Encrypt(&ctx, input, output + 8);
+
+  DES_Init(&ctx, key + 14);
+  DES_Encrypt(&ctx, input, output + 16);
+}
+
+#endif
 
 #endif /* USE_NTLM */

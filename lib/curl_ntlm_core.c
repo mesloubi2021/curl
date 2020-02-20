@@ -54,22 +54,7 @@
 
 #ifdef USE_OPENSSL
 
-#  include <openssl/des.h>
-#  include <openssl/md5.h>
-#  include <openssl/ssl.h>
-#  include <openssl/rand.h>
-#  if (OPENSSL_VERSION_NUMBER < 0x00907001L)
-#    define DES_key_schedule des_key_schedule
-#    define DES_cblock des_cblock
-#    define DES_set_odd_parity des_set_odd_parity
-#    define DES_set_key des_set_key
-#    define DES_ecb_encrypt des_ecb_encrypt
-#    define DESKEY(x) x
-#    define DESKEYARG(x) x
-#  else
-#    define DESKEYARG(x) *x
-#    define DESKEY(x) &x
-#  endif
+/* Nothing - Now in curl_des.c */
 
 #elif defined(USE_GNUTLS_NETTLE)
 
@@ -122,24 +107,8 @@
 #define NTLMv2_BLOB_LEN       (44 -16 + ntlm->target_info_len + 4)
 
 #ifdef USE_OPENSSL
-/*
- * Turns a 56 bit key into the 64 bit, odd parity key and sets the key.  The
- * key schedule ks is also set.
- */
-static void setup_des_key(const unsigned char *key_56,
-                          DES_key_schedule DESKEYARG(ks))
-{
-  DES_cblock key;
 
-  /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, (char *) &key);
-
-  /* Set the key parity to odd */
-  DES_set_odd_parity(&key);
-
-  /* Set the key */
-  DES_set_key(&key, ks);
-}
+/* Nothing - Now in curl_des.c */
 
 #elif defined(USE_GNUTLS_NETTLE)
 
@@ -371,19 +340,9 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
                             unsigned char *results)
 {
 #ifdef USE_OPENSSL
-  DES_key_schedule ks;
 
-  setup_des_key(keys, DESKEY(ks));
-  DES_ecb_encrypt((DES_cblock*) plaintext, (DES_cblock*) results,
-                  DESKEY(ks), DES_ENCRYPT);
+  Curl_3desit(keys, plaintext, results);
 
-  setup_des_key(keys + 7, DESKEY(ks));
-  DES_ecb_encrypt((DES_cblock*) plaintext, (DES_cblock*) (results + 8),
-                  DESKEY(ks), DES_ENCRYPT);
-
-  setup_des_key(keys + 14, DESKEY(ks));
-  DES_ecb_encrypt((DES_cblock*) plaintext, (DES_cblock*) (results + 16),
-                  DESKEY(ks), DES_ENCRYPT);
 #elif defined(USE_GNUTLS_NETTLE)
   struct des_ctx des;
   setup_des_key(keys, &des);
@@ -446,15 +405,9 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
     /* Create LanManager hashed password. */
 
 #ifdef USE_OPENSSL
-    DES_key_schedule ks;
 
-    setup_des_key(pw, DESKEY(ks));
-    DES_ecb_encrypt((DES_cblock *)magic, (DES_cblock *)lmbuffer,
-                    DESKEY(ks), DES_ENCRYPT);
+    Curl_2desit(pw, magic, lmbuffer);
 
-    setup_des_key(pw + 7, DESKEY(ks));
-    DES_ecb_encrypt((DES_cblock *)magic, (DES_cblock *)(lmbuffer + 8),
-                    DESKEY(ks), DES_ENCRYPT);
 #elif defined(USE_GNUTLS_NETTLE)
     struct des_ctx des;
     setup_des_key(pw, &des);
