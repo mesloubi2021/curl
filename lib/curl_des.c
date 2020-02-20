@@ -75,7 +75,7 @@ static void DES_Encrypt(DES_CTX *ctx,
                   DES_ENCRYPT);
 }
 
-static void DES_Final(DES_CTX ctx)
+static void DES_Final(DES_CTX *ctx)
 {
   /* Nothing to do when using OpenSSL */
   (void) ctx;
@@ -113,7 +113,7 @@ static void DES_Encrypt(DES_CTX *ctx,
   des_encrypt(&ctx, DES_KEY_SIZE, output, input);
 }
 
-static void DES_Final(DES_CTX ctx)
+static void DES_Final(DES_CTX *ctx)
 {
   /* Nothing to do when using GNU TLS Nettle */
   (void) ctx;
@@ -154,9 +154,111 @@ static void DES_Encrypt(DES_CTX *ctx,
   gcry_cipher_encrypt(*ctx, results, DES_KEY_SIZE, input, DES_KEY_SIZE);
 }
 
-static void DES_Final(DES_CTX ctx)
+static void DES_Final(DES_CTX *ctx)
 {
-  gcry_cipher_close(ctx);
+  gcry_cipher_close(*ctx);
+}
+
+#elif defined(USE_NSS)
+
+#include <nss.h>
+#include <pk11pub.h>
+#include <hasht.h>
+
+include "curl_memory.h"
+
+/* The last #include file should be: */
+#include "memdebug.h"
+
+typedef struct {
+  PK11SlotInfo *slot;
+  PK11SymKey *symkey;
+  SECItem *param;
+
+  PK11Context *ctx;   /* The actual encryption context */
+  unsigned int len;
+} DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  const CK_MECHANISM_TYPE mech = CKM_DES_ECB; /* DES cipher in ECB mode */
+
+  /* Initialise the context */
+  memset(ctx, 0, sizeof(DES_CTX));
+
+  /* Use an internal slot for DES encryption */
+  ctx->slot = PK11_GetInternalKeySlot();
+  if(ctx->slot) {
+    char key[DES_KEY_SIZE];
+    SECItem key_item;
+
+    /* Expand the 56-bit key to 64-bits */
+    Curl_extend_key_56_to_64(key_56, key);
+
+    /* Set the key parity to odd */
+    Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
+
+    /* Import the key */
+    key_item.data = (unsigned char *) key;
+    key_item.len = sizeof(key);
+    ctx->symkey = PK11_ImportSymKey(ctx->slot, mech, PK11_OriginUnwrap,
+                                    CKA_ENCRYPT, &key_item, NULL);
+    if(ctx->symkey) {
+      ctx->param = PK11_ParamFromIV(mech, /* no IV in ECB mode */ NULL);
+      if(ctx->param)
+        /* Create the DES encryption context */
+        ctx->ctx = PK11_CreateContextBySymKey(mech, CKA_ENCRYPT, ctx->symkey,
+                                              param);
+    }
+  }
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  if(ctx->ctx) {
+    int len;
+
+    /* Perform the encryption */
+    if(!PK11_CipherOp(ctx->ctx, output, &len, DES_KEY_SIZE,
+                      (unsigned char *) input, DES_KEY_SIZE))
+      /* Success */
+      ctx->len = len;
+  }
+}
+
+static void DES_Final(DES_CTX *ctx)
+{
+  /* Finalise to shutdown the sessions */
+  if(ctx->len) {
+    PK11_Finalize(ctx->ctx);
+    ctx->len = 0;
+  }
+
+  /* Destroy the encryption context */
+  if(ctx->ctx) {
+    PK11_DestroyContext(ctx->ctx, PR_TRUE);
+    ctx->ctx = NULL;
+  }
+
+  /* Free the symmetric key */
+  if(ctx->symkey) {
+    PK11_FreeSymKey(ctx->symkey);
+    ctx->symkey = NULL;
+  }
+
+  /* Free the mechanism parameter */
+  if(ctx->param) {
+    SECITEM_FreeItem(param, PR_TRUE);
+    ctx->param = NULL;
+  }
+
+  /* Free the internal PK11 slot */
+  if(ctx->slot) {
+    PK11_FreeSlot(ctx->slot);
+    ctx->slot = NULL;
+  }
 }
 
 #endif
@@ -221,7 +323,8 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
 
 #endif
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
+    defined(USE_GNUTLS) || defined(USE_NSS)
 /*
  * Curl_2desit()
  *
@@ -241,11 +344,11 @@ void Curl_2desit(const unsigned char *key,
 
   DES_Init(&ctx, key);
   DES_Encrypt(&ctx, input, output);
-  DES_Final(ctx);
+  DES_Final(&ctx);
 
   DES_Init(&ctx, key + 7);
   DES_Encrypt(&ctx, input, output + 8);
-  DES_Final(ctx);
+  DES_Final(&ctx);
 }
 
 /*
@@ -267,15 +370,15 @@ void Curl_3desit(const unsigned char *key,
 
   DES_Init(&ctx, key);
   DES_Encrypt(&ctx, input, output);
-  DES_Final(ctx);
+  DES_Final(&ctx);
 
   DES_Init(&ctx, key + 7);
   DES_Encrypt(&ctx, input, output + 8);
-  DES_Final(ctx);
+  DES_Final(&ctx);
 
   DES_Init(&ctx, key + 14);
   DES_Encrypt(&ctx, input, output + 16);
-  DES_Final(ctx);
+  DES_Final(&ctx);
 }
 
 #endif

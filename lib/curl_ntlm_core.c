@@ -52,15 +52,10 @@
 
 #if !defined(USE_WINDOWS_SSPI) || defined(USE_WIN32_CRYPTO)
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
+    defined(USE_GNUTLS) || defined(USE_NSS)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_NSS)
-
-#  include <nss.h>
-#  include <pk11pub.h>
-#  include <hasht.h>
 
 #elif defined(USE_MBEDTLS)
 
@@ -98,73 +93,10 @@
 #define NTLMv2_BLOB_SIGNATURE "\x01\x01\x00\x00"
 #define NTLMv2_BLOB_LEN       (44 -16 + ntlm->target_info_len + 4)
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
+    defined(USE_GNUTLS) || defined(USE_NSS)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_NSS)
-
-/*
- * Expands a 56 bit key KEY_56 to 64 bit and encrypts 64 bit of data, using
- * the expanded key.  The caller is responsible for giving 64 bit of valid
- * data is IN and (at least) 64 bit large buffer as OUT.
- */
-static bool encrypt_des(const unsigned char *in, unsigned char *out,
-                        const unsigned char *key_56)
-{
-  const CK_MECHANISM_TYPE mech = CKM_DES_ECB; /* DES cipher in ECB mode */
-  char key[8];                                /* expanded 64 bit key */
-  SECItem key_item;
-  PK11SymKey *symkey = NULL;
-  SECItem *param = NULL;
-  PK11Context *ctx = NULL;
-  int out_len;                                /* not used, required by NSS */
-  bool rv = FALSE;
-
-  /* use internal slot for DES encryption (requires NSS to be initialized) */
-  PK11SlotInfo *slot = PK11_GetInternalKeySlot();
-  if(!slot)
-    return FALSE;
-
-  /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, key);
-
-  /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
-
-  /* Import the key */
-  key_item.data = (unsigned char *)key;
-  key_item.len = sizeof(key);
-  symkey = PK11_ImportSymKey(slot, mech, PK11_OriginUnwrap, CKA_ENCRYPT,
-                             &key_item, NULL);
-  if(!symkey)
-    goto fail;
-
-  /* Create the DES encryption context */
-  param = PK11_ParamFromIV(mech, /* no IV in ECB mode */ NULL);
-  if(!param)
-    goto fail;
-  ctx = PK11_CreateContextBySymKey(mech, CKA_ENCRYPT, symkey, param);
-  if(!ctx)
-    goto fail;
-
-  /* Perform the encryption */
-  if(SECSuccess == PK11_CipherOp(ctx, out, &out_len, /* outbuflen */ 8,
-                                 (unsigned char *)in, /* inbuflen */ 8)
-      && SECSuccess == PK11_Finalize(ctx))
-    rv = /* all OK */ TRUE;
-
-fail:
-  /* cleanup */
-  if(ctx)
-    PK11_DestroyContext(ctx, PR_TRUE);
-  if(symkey)
-    PK11_FreeSymKey(symkey);
-  if(param)
-    SECITEM_FreeItem(param, PR_TRUE);
-  PK11_FreeSlot(slot);
-  return rv;
-}
 
 #elif defined(USE_MBEDTLS)
 
@@ -294,11 +226,12 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
                             const unsigned char *plaintext,
                             unsigned char *results)
 {
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
+    defined(USE_GNUTLS) || defined(USE_NSS)
 
   Curl_3desit(keys, plaintext, results);
 
-#elif defined(USE_NSS) || defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
+#elif defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
   || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
   encrypt_des(plaintext, results, keys);
   encrypt_des(plaintext, results + 8, keys + 7);
@@ -334,11 +267,12 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
   {
     /* Create LanManager hashed password. */
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
+    defined(USE_GNUTLS) || defined(USE_NSS)
 
     Curl_2desit(pw, magic, lmbuffer);
 
-#elif defined(USE_NSS) || defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
+#elif defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
   || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
     encrypt_des(magic, lmbuffer, pw);
     encrypt_des(magic, lmbuffer + 8, pw + 7);
