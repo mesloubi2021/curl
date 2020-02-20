@@ -52,13 +52,9 @@
 
 #if !defined(USE_WINDOWS_SSPI) || defined(USE_WIN32_CRYPTO)
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_GNUTLS)
-
-#  include <gcrypt.h>
 
 #elif defined(USE_NSS)
 
@@ -102,29 +98,9 @@
 #define NTLMv2_BLOB_SIGNATURE "\x01\x01\x00\x00"
 #define NTLMv2_BLOB_LEN       (44 -16 + ntlm->target_info_len + 4)
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_GNUTLS)
-
-/*
- * Turns a 56 bit key into the 64 bit, odd parity key and sets the key.
- */
-static void setup_des_key(const unsigned char *key_56,
-                          gcry_cipher_hd_t *des)
-{
-  char key[8];
-
-  /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, key);
-
-  /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
-
-  /* Set the key */
-  gcry_cipher_setkey(*des, key, sizeof(key));
-}
 
 #elif defined(USE_NSS)
 
@@ -318,27 +294,10 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
                             const unsigned char *plaintext,
                             unsigned char *results)
 {
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
 
   Curl_3desit(keys, plaintext, results);
 
-#elif defined(USE_GNUTLS)
-  gcry_cipher_hd_t des;
-
-  gcry_cipher_open(&des, GCRY_CIPHER_DES, GCRY_CIPHER_MODE_ECB, 0);
-  setup_des_key(keys, &des);
-  gcry_cipher_encrypt(des, results, 8, plaintext, 8);
-  gcry_cipher_close(des);
-
-  gcry_cipher_open(&des, GCRY_CIPHER_DES, GCRY_CIPHER_MODE_ECB, 0);
-  setup_des_key(keys + 7, &des);
-  gcry_cipher_encrypt(des, results + 8, 8, plaintext, 8);
-  gcry_cipher_close(des);
-
-  gcry_cipher_open(&des, GCRY_CIPHER_DES, GCRY_CIPHER_MODE_ECB, 0);
-  setup_des_key(keys + 14, &des);
-  gcry_cipher_encrypt(des, results + 16, 8, plaintext, 8);
-  gcry_cipher_close(des);
 #elif defined(USE_NSS) || defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
   || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
   encrypt_des(plaintext, results, keys);
@@ -375,22 +334,10 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
   {
     /* Create LanManager hashed password. */
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
 
     Curl_2desit(pw, magic, lmbuffer);
 
-#elif defined(USE_GNUTLS)
-    gcry_cipher_hd_t des;
-
-    gcry_cipher_open(&des, GCRY_CIPHER_DES, GCRY_CIPHER_MODE_ECB, 0);
-    setup_des_key(pw, &des);
-    gcry_cipher_encrypt(des, lmbuffer, 8, magic, 8);
-    gcry_cipher_close(des);
-
-    gcry_cipher_open(&des, GCRY_CIPHER_DES, GCRY_CIPHER_MODE_ECB, 0);
-    setup_des_key(pw + 7, &des);
-    gcry_cipher_encrypt(des, lmbuffer + 8, 8, magic, 8);
-    gcry_cipher_close(des);
 #elif defined(USE_NSS) || defined(USE_MBEDTLS) || defined(USE_SECTRANSP) \
   || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
     encrypt_des(magic, lmbuffer, pw);

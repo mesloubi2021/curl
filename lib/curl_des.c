@@ -75,6 +75,12 @@ static void DES_Encrypt(DES_CTX *ctx,
                   DES_ENCRYPT);
 }
 
+static void DES_Final(DES_CTX ctx)
+{
+  /* Nothing to do when using OpenSSL */
+  (void) ctx;
+}
+
 #elif defined(USE_GNUTLS_NETTLE)
 
 #include <nettle/des.h>
@@ -105,6 +111,52 @@ static void DES_Encrypt(DES_CTX *ctx,
                         unsigned char *output)
 {
   des_encrypt(&ctx, DES_KEY_SIZE, output, input);
+}
+
+static void DES_Final(DES_CTX ctx)
+{
+  /* Nothing to do when using GNU TLS Nettle */
+  (void) ctx;
+}
+
+#el if defined(USE_GNUTLS)
+
+#include <gcrypt.h>
+
+#include "curl_memory.h"
+
+/* The last #include file should be: */
+#include "memdebug.h"
+
+typedef gcry_cipher_hd_t DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  char key[DES_KEY_SIZE];
+
+  /* Open the cipher */
+  gcry_cipher_open(ctx, GCRY_CIPHER_DES, GCRY_CIPHER_MODE_ECB, 0);
+
+  /* Expand the 56-bit key to 64-bits */
+  Curl_extend_key_56_to_64(key_56, key);
+
+  /* Set the key parity to odd */
+  Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
+
+  /* Set the key */
+  gcry_cipher_setkey(*ctx, key, sizeof(key));
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  gcry_cipher_encrypt(*ctx, results, DES_KEY_SIZE, input, DES_KEY_SIZE);
+}
+
+static void DES_Final(DES_CTX ctx)
+{
+  gcry_cipher_close(ctx);
 }
 
 #endif
@@ -169,7 +221,7 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
 
 #endif
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE)
+#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || defined(USE_GNUTLS)
 /*
  * Curl_2desit()
  *
@@ -189,9 +241,11 @@ void Curl_2desit(const unsigned char *key,
 
   DES_Init(&ctx, key);
   DES_Encrypt(&ctx, input, output);
+  DES_Final(ctx);
 
   DES_Init(&ctx, key + 7);
   DES_Encrypt(&ctx, input, output + 8);
+  DES_Final(ctx);
 }
 
 /*
@@ -213,12 +267,15 @@ void Curl_3desit(const unsigned char *key,
 
   DES_Init(&ctx, key);
   DES_Encrypt(&ctx, input, output);
+  DES_Final(ctx);
 
   DES_Init(&ctx, key + 7);
   DES_Encrypt(&ctx, input, output + 8);
+  DES_Final(ctx);
 
   DES_Init(&ctx, key + 14);
   DES_Encrypt(&ctx, input, output + 16);
+  DES_Final(ctx);
 }
 
 #endif
