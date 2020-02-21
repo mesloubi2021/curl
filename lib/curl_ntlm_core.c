@@ -60,13 +60,7 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
                             const unsigned char *plaintext,
                             unsigned char *results)
 {
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || \
-    defined(USE_WIN32_CRYPTO)
-
   Curl_3desit(keys, plaintext, results);
-#endif
 }
 
 /*
@@ -94,19 +88,10 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
   if(result)
     return result;
 
-  {
-    /* Create LanManager hashed password. */
+  /* Create LanManager hashed password. */
+  Curl_2desit(pw, magic, lmbuffer);
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || \
-    defined(USE_WIN32_CRYPTO)
-
-    Curl_2desit(pw, magic, lmbuffer);
-#endif
-
-    memset(lmbuffer + 16, 0, 21 - 16);
-  }
+  memset(lmbuffer + 16, 0, 21 - 16);
 
   return CURLE_OK;
 }
@@ -234,20 +219,20 @@ CURLcode Curl_ntlm_core_mk_ntlmv2_resp(unsigned char *ntlmv2hash,
                                        unsigned char **ntresp,
                                        unsigned int *ntresp_len)
 {
-/* NTLMv2 response structure :
-------------------------------------------------------------------------------
-0     HMAC MD5         16 bytes
-------BLOB--------------------------------------------------------------------
-16    Signature        0x01010000
-20    Reserved         long (0x00000000)
-24    Timestamp        LE, 64-bit signed value representing the number of
-                       tenths of a microsecond since January 1, 1601.
-32    Client Nonce     8 bytes
-40    Unknown          4 bytes
-44    Target Info      N bytes (from the type-2 message)
-44+N  Unknown          4 bytes
-------------------------------------------------------------------------------
-*/
+  /* NTLMv2 response structure :
+   * -------------------------------------------------------------------------
+   * 0    HMAC MD5       16 bytes
+   * -----BLOB----------------------------------------------------------------
+   * 16   Signature      0x01010000
+   * 20   Reserved       long (0x00000000)
+   * 24   Timestamp      LE, 64-bit signed value representing the number of
+   *                     tenths of a microsecond since January 1, 1601.
+   * 32   Client Nonce   8 bytes
+   * 40   Unknown        4 bytes
+   * 44   Target Info    N bytes (from the type-2 message)
+   * 44+N Unknown        4 bytes
+   * -------------------------------------------------------------------------
+   */
 
   unsigned int len = 0;
   unsigned char *ptr = NULL;

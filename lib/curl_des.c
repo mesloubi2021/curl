@@ -28,6 +28,12 @@
 
 #define DES_KEY_SIZE 8
 
+static void DES_extend_key_56_to_64(const unsigned char *key_56, char *key);
+
+#if !defined(USE_OPENSSL) && !defined(USE_MBEDTLS)
+static void DES_set_odd_parity(unsigned char *bytes, size_t len);
+#endif
+
 /* Please keep the SSL backend-specific #if branches in this order:
  *
  *  1. USE_OPENSSL
@@ -78,7 +84,7 @@ static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
   DES_cblock key;
 
   /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, (char *) &key);
+  DES_extend_key_56_to_64(key_56, (char *) &key);
 
   /* Set the key parity to odd */
   DES_set_odd_parity(&key);
@@ -117,10 +123,10 @@ static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
   char key[DES_KEY_SIZE];
 
   /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, key);
+  DES_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
+  DES_set_odd_parity((unsigned char *) key, sizeof(key));
 
   /* Set the key */
   des_set_key(des, (const uint8_t *) key);
@@ -158,10 +164,10 @@ static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
   gcry_cipher_open(ctx, GCRY_CIPHER_DES, GCRY_CIPHER_MODE_ECB, 0);
 
   /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, key);
+  DES_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
+  DES_set_odd_parity((unsigned char *) key, sizeof(key));
 
   /* Set the key */
   gcry_cipher_setkey(*ctx, key, sizeof(key));
@@ -213,10 +219,10 @@ static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
     SECItem key_item;
 
     /* Expand the 56-bit key to 64-bits */
-    Curl_extend_key_56_to_64(key_56, key);
+    DES_extend_key_56_to_64(key_56, key);
 
     /* Set the key parity to odd */
-    Curl_des_set_odd_parity((unsigned char *) key, sizeof(key));
+    DES_set_odd_parity((unsigned char *) key, sizeof(key));
 
     /* Import the key */
     key_item.data = (unsigned char *) key;
@@ -297,7 +303,7 @@ static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
   char key[DES_KEY_SIZE];
 
   /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, key);
+  DES_extend_key_56_to_64(key_56, key);
 
   /* Set the key parity to odd */
   mbedtls_des_key_set_parity((unsigned char *) key);
@@ -332,10 +338,10 @@ typedef struct {
 static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
 {
   /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, ctx->key);
+  DES_extend_key_56_to_64(key_56, ctx->key);
 
   /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) ctx->key, sizeof(ctx->key));
+  DES_set_odd_parity((unsigned char *) ctx->key, sizeof(ctx->key));
 }
 
 static void DES_Encrypt(DES_CTX *ctx,
@@ -367,10 +373,10 @@ static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
   ctx->Data_Len = DES_KEY_SIZE;
 
   /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, ctx->Crypto_Key);
+  DES_extend_key_56_to_64(key_56, ctx->Crypto_Key);
 
   /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) ctx->Crypto_Key, ctx->Data_Len);
+  DES_set_odd_parity((unsigned char *) ctx->Crypto_Key, ctx->Data_Len);
 }
 
 static void DES_Encrypt(DES_CTX *ctx,
@@ -418,11 +424,10 @@ static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
     ctx->blob.len = sizeof(ctx->blob.key);
 
     /* Expand the 56-bit key to 64-bits */
-    Curl_extend_key_56_to_64(key_56, ctx->blob.key);
+    DES_extend_key_56_to_64(key_56, ctx->blob.key);
 
     /* Set the key parity to odd */
-    Curl_des_set_odd_parity((unsigned char *) ctx->blob.key,
-                            sizeof(ctx->blob.key));
+    DES_set_odd_parity((unsigned char *) ctx->blob.key, sizeof(ctx->blob.key));
 
     /* Set the key */
     (void) CryptImportKey(ctx->hprov, (BYTE *) &ctx->blob, sizeof(ctx->blob),
@@ -468,7 +473,7 @@ static void DES_Final(DES_CTX *ctx)
 #endif
 
 /*
- * Curl_extend_key_56_to_64()
+ * DES_extend_key_56_to_64()
  *
  * Turns a 56-bit key into being 64-bit wide.
  *
@@ -477,7 +482,7 @@ static void DES_Final(DES_CTX *ctx)
  * key_56 [in]     - The 56-bit input key.
  * key    [in/out] - The 64-bit output.
  */
-void Curl_extend_key_56_to_64(const unsigned char *key_56, char *key)
+static void DES_extend_key_56_to_64(const unsigned char *key_56, char *key)
 {
   key[0] = key_56[0];
   key[1] = (unsigned char) (((key_56[0] << 7) & 0xFF) | (key_56[1] >> 1));
@@ -492,7 +497,7 @@ void Curl_extend_key_56_to_64(const unsigned char *key_56, char *key)
 #if !defined(USE_OPENSSL) && !defined(USE_MBEDTLS)
 
 /*
- * Curl_des_set_odd_parity()
+ * DES_set_odd_parity()
  *
  * This is used to apply odd parity to the given byte array. It is typically
  * used by when a cryptography engines doesn't have it's own version.
@@ -507,7 +512,7 @@ void Curl_extend_key_56_to_64(const unsigned char *key_56, char *key)
  *                        odd parity.
  * len         [out]    - The length of the data.
  */
-void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
+static void DES_set_odd_parity(unsigned char *bytes, size_t len)
 {
   size_t i;
 
@@ -526,10 +531,6 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
 }
 
 #endif /* !defined(USE_OPENSSL) && !defined(USE_MBEDTLS) */
-
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
 
 /*
  * Curl_2desit()
@@ -586,7 +587,5 @@ void Curl_3desit(const unsigned char *key,
   DES_Encrypt(&ctx, input, output + 16);
   DES_Final(&ctx);
 }
-
-#endif
 
 #endif /* USE_NTLM */
