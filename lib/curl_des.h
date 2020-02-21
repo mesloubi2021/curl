@@ -35,7 +35,8 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t length);
 #endif
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS)
+    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
+    defined(USE_SECTRANSP)
 void Curl_2desit(const unsigned char *key, const unsigned char *input,
                  unsigned char *output);
 void Curl_3desit(const unsigned char *key, const unsigned char *input,

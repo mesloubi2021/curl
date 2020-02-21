@@ -300,6 +300,40 @@ static void DES_Final(DES_CTX *ctx)
   (void) ctx;
 }
 
+#elif defined(USE_SECTRANSP)
+
+#include <CommonCrypto/CommonCryptor.h>
+#include <CommonCrypto/CommonDigest.h>
+
+typedef struct {
+  char key[DES_KEY_SIZE];
+} DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  /* Expand the 56-bit key to 64-bits */
+  Curl_extend_key_56_to_64(key_56, ctx->key);
+
+  /* Set the key parity to odd */
+  Curl_des_set_odd_parity((unsigned char *) ctx->key, sizeof(ctx->key));
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  size_t len;
+
+  CCCrypt(kCCEncrypt, kCCAlgorithmDES, kCCOptionECBMode, ctx->key,
+          kCCKeySizeDES, NULL, in, DES_KEY_SIZE, out, DES_KEY_SIZE, &len);
+}
+
+static void DES_Final(DES_CTX *ctx)
+{
+  /* Nothing to do when using the Secure Transport crypto library */
+  (void) ctx;
+}
+
 #endif
 
 /*
@@ -363,7 +397,9 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
 #endif /* !defined(USE_OPENSSL) && !defined(USE_MBEDTLS) */
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS)
+    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
+    defined(USE_SECTRANSP)
+
 /*
  * Curl_2desit()
  *
