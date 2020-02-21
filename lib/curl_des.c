@@ -334,6 +334,38 @@ static void DES_Final(DES_CTX *ctx)
   (void) ctx;
 }
 
+#elif defined(USE_OS400CRYPTO)
+
+#include "cipher.mih"
+
+typedef _CIPHER_Control_T DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  /* Setup the cipher control structure */
+  ctx->Func_ID = ENCRYPT_ONLY;
+  ctx->Data_Len = DES_KEY_SIZE;
+
+  /* Expand the 56-bit key to 64-bits */
+  Curl_extend_key_56_to_64(key_56, ctx->Crypto_Key);
+
+  /* Set the key parity to odd */
+  Curl_des_set_odd_parity((unsigned char *) ctx->Crypto_Key, ctx->Data_Len);
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  _CIPHER((_SPCPTR *) &out, ctx, (_SPCPTR *) &input);
+}
+
+static void DES_Final(DES_CTX *ctx)
+{
+  /* Nothing to do when using the OS/400 crypto library */
+  (void) ctx;
+}
+
 #endif
 
 /*
@@ -398,7 +430,7 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
 
 /*
  * Curl_2desit()

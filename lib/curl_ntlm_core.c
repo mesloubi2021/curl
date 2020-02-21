@@ -54,12 +54,10 @@
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
 
 /* Nothing - Now in curl_des.c */
 
-#elif defined(USE_OS400CRYPTO)
-#  include "cipher.mih"  /* mih/cipher */
 #elif defined(USE_WIN32_CRYPTO)
 #  include <wincrypt.h>
 #else
@@ -86,33 +84,9 @@
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
 
 /* Nothing - Now in curl_des.c */
-
-#elif defined(USE_OS400CRYPTO)
-
-static bool encrypt_des(const unsigned char *in, unsigned char *out,
-                        const unsigned char *key_56)
-{
-  char key[8];
-  _CIPHER_Control_T ctl;
-
-  /* Setup the cipher control structure */
-  ctl.Func_ID = ENCRYPT_ONLY;
-  ctl.Data_Len = sizeof(key);
-
-  /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, ctl.Crypto_Key);
-
-  /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) ctl.Crypto_Key, ctl.Data_Len);
-
-  /* Perform the encryption */
-  _CIPHER((_SPCPTR *) &out, &ctl, (_SPCPTR *) &in);
-
-  return TRUE;
-}
 
 #elif defined(USE_WIN32_CRYPTO)
 
@@ -177,11 +151,11 @@ void Curl_ntlm_core_lm_resp(const unsigned char *keys,
 {
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
 
   Curl_3desit(keys, plaintext, results);
 
-#elif defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
+#elif defined(USE_WIN32_CRYPTO)
   encrypt_des(plaintext, results, keys);
   encrypt_des(plaintext, results + 8, keys + 7);
   encrypt_des(plaintext, results + 16, keys + 14);
@@ -218,11 +192,11 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
 
     Curl_2desit(pw, magic, lmbuffer);
 
-#elif defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
+#elif defined(USE_WIN32_CRYPTO)
     encrypt_des(magic, lmbuffer, pw);
     encrypt_des(magic, lmbuffer + 8, pw + 7);
 #endif
