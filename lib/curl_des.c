@@ -28,6 +28,26 @@
 
 #define DES_KEY_SIZE 8
 
+/* Please keep the SSL backend-specific #if branches in this order:
+ *
+ *  1. USE_OPENSSL
+ *  2. USE_GNUTLS_NETTLE
+ *  3. USE_GNUTLS
+ *  4. USE_NSS
+ *  5. USE_MBEDTLS
+ *  6. USE_SECTRANSP
+ *  7. USE_OS400CRYPTO
+ *  8. USE_WIN32_CRYPTO
+ *
+ *  This ensures that:
+ *
+ *  - The same SSL branch gets activated throughout this source
+ *    file even if multiple backends are enabled at the same time.
+ *  - OpenSSL and NSS have higher priority than Windows Crypt, due
+ *    to issues with the latter supporting NTLM2Session responses
+ *    in NTLM type-3 messages.
+ */
+
 #if defined(USE_OPENSSL)
 
 #include <openssl/des.h>
@@ -366,6 +386,85 @@ static void DES_Final(DES_CTX *ctx)
   (void) ctx;
 }
 
+#elif defined(USE_WIN32_CRYPTO)
+
+#include <wincrypt.h>
+
+typedef struct {
+  BLOBHEADER hdr;
+  unsigned int len;
+  char key[DES_KEY_SIZE];
+} BLOB_DATA;
+
+typedef struct {
+  HCRYPTPROV hprov;
+  HCRYPTKEY hkey;
+  BLOB_DATA blob;
+} DES_CTX;
+
+static void DES_Init(DES_CTX *ctx, const unsigned char *key_56)
+{
+  /* Initialise the context */
+  memset(ctx, 0, sizeof(DES_CTX));
+
+  /* Acquire the crypto provider */
+  if(CryptAcquireContext(&ctx->hprov, NULL, NULL, PROV_RSA_FULL,
+                         CRYPT_VERIFYCONTEXT)) {
+
+    /* Initialise the blob */
+    ctx->blob.hdr.bType = PLAINTEXTKEYBLOB;
+    ctx->blob.hdr.bVersion = 2;
+    ctx->blob.hdr.aiKeyAlg = CALG_DES;
+    ctx->blob.len = sizeof(ctx->blob.key);
+
+    /* Expand the 56-bit key to 64-bits */
+    Curl_extend_key_56_to_64(key_56, ctx->blob.key);
+
+    /* Set the key parity to odd */
+    Curl_des_set_odd_parity((unsigned char *) ctx->blob.key,
+                            sizeof(ctx->blob.key));
+
+    /* Set the key */
+    (void) CryptImportKey(ctx->hprov, (BYTE *) &ctx->blob, sizeof(ctx->blob),
+                          0, 0, &ctx->hkey);
+  }
+}
+
+static void DES_Encrypt(DES_CTX *ctx,
+                        const unsigned char *input,
+                        unsigned char *output)
+{
+  if(ctx->hkey) {
+    DWORD len = DES_KEY_SIZE;
+
+    /* Copy the input data to the output buffer, as CryptEncrypt() uses the
+       same pointer for both input and output */
+    memcpy(output, input, DES_KEY_SIZE);
+
+    (void) CryptEncrypt(ctx->hkey, 0, FALSE, 0, output, &len, len);
+  }
+}
+
+static void DES_Final(DES_CTX *ctx)
+{
+  /* Destroy the key */
+  if(ctx->hkey) {
+    CryptDestroyKey(ctx->hkey);
+    ctx->hkey = 0;
+  }
+
+  /* Release the provider */
+  if(ctx->hprov) {
+    CryptReleaseContext(ctx->hprov, 0);
+    ctx->hprov = 0;
+  }
+}
+
+#else
+
+/* We stil need to implement our own DES implementation */
+#error "Cann not use DES without a crypto library."
+
 #endif
 
 /*
@@ -430,7 +529,7 @@ void Curl_des_set_odd_parity(unsigned char *bytes, size_t len)
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || defined(USE_WIN32_CRYPTO)
 
 /*
  * Curl_2desit()

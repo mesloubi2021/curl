@@ -31,38 +31,7 @@
  * https://www.innovation.ch/java/ntlm.html
  */
 
-/* Please keep the SSL backend-specific #if branches in this order:
-
-   1. USE_OPENSSL
-   2. USE_GNUTLS_NETTLE
-   3. USE_GNUTLS
-   4. USE_NSS
-   5. USE_MBEDTLS
-   6. USE_SECTRANSP
-   7. USE_OS400CRYPTO
-   8. USE_WIN32_CRYPTO
-
-   This ensures that:
-   - the same SSL branch gets activated throughout this source
-     file even if multiple backends are enabled at the same time.
-   - OpenSSL and NSS have higher priority than Windows Crypt, due
-     to issues with the latter supporting NTLM2Session responses
-     in NTLM type-3 messages.
- */
-
 #if !defined(USE_WINDOWS_SSPI) || defined(USE_WIN32_CRYPTO)
-
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
-
-/* Nothing - Now in curl_des.c */
-
-#elif defined(USE_WIN32_CRYPTO)
-#  include <wincrypt.h>
-#else
-#  error "Can't compile NTLM support without a crypto library."
-#endif
 
 #include "urldata.h"
 #include "non-ascii.h"
@@ -82,83 +51,21 @@
 #define NTLMv2_BLOB_SIGNATURE "\x01\x01\x00\x00"
 #define NTLMv2_BLOB_LEN       (44 -16 + ntlm->target_info_len + 4)
 
-#if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
-    defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
-
-/* Nothing - Now in curl_des.c */
-
-#elif defined(USE_WIN32_CRYPTO)
-
-static bool encrypt_des(const unsigned char *in, unsigned char *out,
-                        const unsigned char *key_56)
-{
-  HCRYPTPROV hprov;
-  HCRYPTKEY hkey;
-  struct {
-    BLOBHEADER hdr;
-    unsigned int len;
-    char key[8];
-  } blob;
-  DWORD len = 8;
-
-  /* Acquire the crypto provider */
-  if(!CryptAcquireContext(&hprov, NULL, NULL, PROV_RSA_FULL,
-                          CRYPT_VERIFYCONTEXT))
-    return FALSE;
-
-  /* Setup the key blob structure */
-  memset(&blob, 0, sizeof(blob));
-  blob.hdr.bType = PLAINTEXTKEYBLOB;
-  blob.hdr.bVersion = 2;
-  blob.hdr.aiKeyAlg = CALG_DES;
-  blob.len = sizeof(blob.key);
-
-  /* Expand the 56-bit key to 64-bits */
-  Curl_extend_key_56_to_64(key_56, blob.key);
-
-  /* Set the key parity to odd */
-  Curl_des_set_odd_parity((unsigned char *) blob.key, sizeof(blob.key));
-
-  /* Import the key */
-  if(!CryptImportKey(hprov, (BYTE *) &blob, sizeof(blob), 0, 0, &hkey)) {
-    CryptReleaseContext(hprov, 0);
-
-    return FALSE;
-  }
-
-  memcpy(out, in, 8);
-
-  /* Perform the encryption */
-  CryptEncrypt(hkey, 0, FALSE, 0, out, &len, len);
-
-  CryptDestroyKey(hkey);
-  CryptReleaseContext(hprov, 0);
-
-  return TRUE;
-}
-
-#endif /* defined(USE_WIN32_CRYPTO) */
-
- /*
-  * takes a 21 byte array and treats it as 3 56-bit DES keys. The
-  * 8 byte plaintext is encrypted with each key and the resulting 24
-  * bytes are stored in the results array.
-  */
+/*
+ * takes a 21 byte array and treats it as 3 56-bit DES keys. The
+ * 8 byte plaintext is encrypted with each key and the resulting 24
+ * bytes are stored in the results array.
+ */
 void Curl_ntlm_core_lm_resp(const unsigned char *keys,
                             const unsigned char *plaintext,
                             unsigned char *results)
 {
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || \
+    defined(USE_WIN32_CRYPTO)
 
   Curl_3desit(keys, plaintext, results);
-
-#elif defined(USE_WIN32_CRYPTO)
-  encrypt_des(plaintext, results, keys);
-  encrypt_des(plaintext, results + 8, keys + 7);
-  encrypt_des(plaintext, results + 16, keys + 14);
 #endif
 }
 
@@ -192,13 +99,10 @@ CURLcode Curl_ntlm_core_mk_lm_hash(struct Curl_easy *data,
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS_NETTLE) || \
     defined(USE_GNUTLS) || defined(USE_NSS) || defined(USE_MBEDTLS) || \
-    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO)
+    defined(USE_SECTRANSP) || defined(USE_OS400CRYPTO) || \
+    defined(USE_WIN32_CRYPTO)
 
     Curl_2desit(pw, magic, lmbuffer);
-
-#elif defined(USE_WIN32_CRYPTO)
-    encrypt_des(magic, lmbuffer, pw);
-    encrypt_des(magic, lmbuffer + 8, pw + 7);
 #endif
 
     memset(lmbuffer + 16, 0, 21 - 16);
