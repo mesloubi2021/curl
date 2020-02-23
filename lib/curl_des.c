@@ -533,6 +533,28 @@ static void DES_set_odd_parity(unsigned char *bytes, size_t len)
 #endif /* !defined(USE_OPENSSL) && !defined(USE_MBEDTLS) */
 
 /*
+ * Curl_desit()
+ *
+ * Performs the 2DES encryption.
+ *
+ * Parameters:
+ *
+ * key    [in]     - The key.
+ * input  [in]     - The input data.
+ * output [in/out] - The output buffer.
+ */
+void Curl_desit(const unsigned char *key,
+                const unsigned char *input,
+                unsigned char *output)
+{
+  DES_CTX ctx;
+
+  DES_Init(&ctx, key);
+  DES_Encrypt(&ctx, input, output);
+  DES_Final(&ctx);
+}
+
+/*
  * Curl_2desit()
  *
  * Performs the 2DES encryption.

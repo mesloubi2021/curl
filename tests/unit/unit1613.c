@@ -1,5 +1,3 @@
-#ifndef HEADER_CURL_DES_H
-#define HEADER_CURL_DES_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2015 - 2020, Steve Holme, <steve_holme@hotmail.com>.
+ * Copyright (C) 2020, Steve Holme, <steve_holme@hotmail.com>.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -21,20 +19,46 @@
  * KIND, either express or implied.
  *
  ***************************************************************************/
+#include "curlcheck.h"
 
-#include "curl_setup.h"
+#include "curl_des.h"
 
-#if defined(USE_NTLM)
+static CURLcode unit_setup(void)
+{
+  return CURLE_OK;
+}
 
-#define DES_KEY_LENGTH 32
+static void unit_stop(void)
+{
 
-void Curl_desit(const unsigned char *key, const unsigned char *input,
-                unsigned char *output);
-void Curl_2desit(const unsigned char *key, const unsigned char *input,
-                 unsigned char *output);
-void Curl_3desit(const unsigned char *key, const unsigned char *input,
-                 unsigned char *output);
+}
 
-#endif /* USE_NTLM */
+UNITTEST_START
 
-#endif /* HEADER_CURL_DES_H */
+#ifndef CURL_DISABLE_CRYPTO_AUTH
+  const char password[] = "Pa55worDPa55worDPa55worD";
+  const char string1[] = "1\x00\x00\x00\x00\x00\x00\x00";
+  const char string2[] = "hello-you-fool";
+  unsigned char output[100];
+  unsigned char *testp = output;
+
+  Curl_desit((const unsigned char *) password,
+             (const unsigned char *) string1,
+             output);
+
+  verify_memory(testp,
+                "\xD6\xF1\x39\xF3\x19\x43\x70\x00",
+                8);
+
+  Curl_desit((const unsigned char *) password,
+             (const unsigned char *) string2,
+             output);
+
+  verify_memory(testp,
+                "\x88\x66\x5C\xF5\x03\xE8\x44\xD2\x5D\xF1\x90\xA0\x16\xAB\x37"
+                "\xB0",
+                16);
+#endif
+
+
+UNITTEST_STOP
