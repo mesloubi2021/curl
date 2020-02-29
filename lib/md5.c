@@ -30,10 +30,33 @@
 #include "curl_hmac.h"
 #include "warnless.h"
 
-#if defined(USE_GNUTLS_NETTLE)
+/* Please keep the SSL backend-specific #if branches in this order:
+ *
+ * 1. USE_OPENSSL
+ * 2. USE_GNUTLS_NETTLE
+ * 3. USE_GNUTLS
+ * 4. USE_MBEDTLS
+ * 5. USE_COMMON_CRYPTO
+ * 6. USE_WIN32_CRYPTO
+ *
+ * This ensures that the same SSL branch gets activated throughout this
+ * source file even if multiple backends are enabled at the same time.
+ */
+
+#if defined(USE_OPENSSL) && !defined(USE_AMISSL)
+
+/* When OpenSSL is available we use the MD5-function from OpenSSL */
+#include <openssl/md5.h>
+#include "curl_memory.h"
+
+/* The last #include file should be: */
+#include "memdebug.h"
+
+#elif defined(USE_GNUTLS_NETTLE)
 
 #include <nettle/md5.h>
 #include "curl_memory.h"
+
 /* The last #include file should be: */
 #include "memdebug.h"
 
@@ -83,13 +106,6 @@ static void MD5_Final(unsigned char digest[16], MD5_CTX *ctx)
   gcry_md_close(*ctx);
 }
 
-#elif defined(USE_OPENSSL) && !defined(USE_AMISSL)
-/* When OpenSSL is available we use the MD5-function from OpenSSL */
-#include <openssl/md5.h>
-#include "curl_memory.h"
-/* The last #include file should be: */
-#include "memdebug.h"
-
 #elif (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && \
               (__MAC_OS_X_VERSION_MAX_ALLOWED >= 1040)) || \
       (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && \
@@ -101,9 +117,11 @@ static void MD5_Final(unsigned char digest[16], MD5_CTX *ctx)
 
    Declaring the functions as static like this seems to be a bit more
    reliable than defining COMMON_DIGEST_FOR_OPENSSL on older cats. */
-#  include <CommonCrypto/CommonDigest.h>
-#  define MD5_CTX CC_MD5_CTX
+#include <CommonCrypto/CommonDigest.h>
+#define MD5_CTX CC_MD5_CTX
+
 #include "curl_memory.h"
+
 /* The last #include file should be: */
 #include "memdebug.h"
 
