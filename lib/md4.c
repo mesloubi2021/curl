@@ -34,7 +34,25 @@
 #include <mbedtls/config.h>
 #endif
 
-#if defined(USE_GNUTLS_NETTLE)
+/* Please keep the SSL backend-specific #if branches in this order:
+ *
+ * 1. USE_OPENSSL
+ * 2. USE_GNUTLS_NETTLE
+ * 3. USE_GNUTLS
+ * 4. USE_MBEDTLS
+ * 5. USE_COMMON_CRYPTO
+ * 6. USE_WIN32_CRYPTO
+ *
+ * This ensures that the same SSL branch gets activated throughout this
+ * source file even if multiple backends are enabled at the same time.
+ */
+
+#if defined(USE_OPENSSL) && !defined(OPENSSL_NO_MD4)
+
+/* When OpenSSL is available we use the MD4-functions from OpenSSL */
+#include <openssl/md4.h>
+
+#elif defined(USE_GNUTLS_NETTLE)
 
 #include <nettle/md4.h>
 
@@ -87,9 +105,46 @@ static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
   gcry_md_close(*ctx);
 }
 
-#elif defined(USE_OPENSSL) && !defined(OPENSSL_NO_MD4)
-/* When OpenSSL is available we use the MD4-functions from OpenSSL */
-#include <openssl/md4.h>
+#elif(defined(USE_MBEDTLS) && defined(MBEDTLS_MD4_C))
+
+#include <mbedtls/md4.h>
+
+#include "curl_memory.h"
+
+/* The last #include file should be: */
+#include "memdebug.h"
+
+typedef struct {
+  void *data;
+  unsigned long size;
+} MD4_CTX;
+
+static void MD4_Init(MD4_CTX *ctx)
+{
+  ctx->data = NULL;
+  ctx->size = 0;
+}
+
+static void MD4_Update(MD4_CTX *ctx, const void *data, unsigned long size)
+{
+  if(ctx->data == NULL) {
+    ctx->data = malloc(size);
+    if(ctx->data != NULL) {
+      memcpy(ctx->data, data, size);
+      ctx->size = size;
+    }
+  }
+}
+
+static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
+{
+  if(ctx->data != NULL) {
+    mbedtls_md4(ctx->data, ctx->size, result);
+
+    Curl_safefree(ctx->data);
+    ctx->size = 0;
+  }
+}
 
 #elif defined(USE_SECTRANSP)
 
@@ -175,46 +230,6 @@ static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
 
   if(ctx->hCryptProv)
     CryptReleaseContext(ctx->hCryptProv, 0);
-}
-
-#elif(defined(USE_MBEDTLS) && defined(MBEDTLS_MD4_C))
-
-#include <mbedtls/md4.h>
-
-#include "curl_memory.h"
-/* The last #include file should be: */
-#include "memdebug.h"
-
-typedef struct {
-  void *data;
-  unsigned long size;
-} MD4_CTX;
-
-static void MD4_Init(MD4_CTX *ctx)
-{
-  ctx->data = NULL;
-  ctx->size = 0;
-}
-
-static void MD4_Update(MD4_CTX *ctx, const void *data, unsigned long size)
-{
-  if(ctx->data == NULL) {
-    ctx->data = malloc(size);
-    if(ctx->data != NULL) {
-      memcpy(ctx->data, data, size);
-      ctx->size = size;
-    }
-  }
-}
-
-static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
-{
-  if(ctx->data != NULL) {
-    mbedtls_md4(ctx->data, ctx->size, result);
-
-    Curl_safefree(ctx->data);
-    ctx->size = 0;
-  }
 }
 
 #else
