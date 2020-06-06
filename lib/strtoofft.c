@@ -36,6 +36,7 @@
 
 /* private implementaton of strtooff */
 #define PRIVATE_STRTOOFF 1
+#undef HAVE_STRTOLL
 
 #if (SIZEOF_CURL_OFF_T > SIZEOF_LONG)
 #  ifdef HAVE_STRTOLL

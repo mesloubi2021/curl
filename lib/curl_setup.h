@@ -201,6 +201,7 @@
 #  endif
 #endif
 
+// XXX: disable a bunch of protocols that we won't ever use.
 #    define CURL_DISABLE_TFTP
 #    define CURL_DISABLE_LDAP
 #    define CURL_DISABLE_TELNET
