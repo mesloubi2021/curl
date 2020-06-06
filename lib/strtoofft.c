@@ -33,11 +33,15 @@
  * https://www.opengroup.org/onlinepubs/009695399/functions/strtoimax.html
  */
 
+
+/* private implementaton of strtooff */
+#define PRIVATE_STRTOOFF 1
+
 #if (SIZEOF_CURL_OFF_T > SIZEOF_LONG)
 #  ifdef HAVE_STRTOLL
 #    define strtooff strtoll
 #  else
-#    if defined(_MSC_VER) && (_MSC_VER >= 1300) && (_INTEGRAL_MAX_BITS >= 64)
+#    if defined(_MSC_VER) && (_MSC_VER >= 1300) && (_INTEGRAL_MAX_BITS >= 64) && !defined(PRIVATE_STRTOOFF)
 #      if defined(_SAL_VERSION)
          _Check_return_ _CRTIMP __int64 __cdecl _strtoi64(
              _In_z_ const char *_String,

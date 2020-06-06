@@ -201,6 +201,17 @@
 #  endif
 #endif
 
+#    define CURL_DISABLE_TFTP
+#    define CURL_DISABLE_LDAP
+#    define CURL_DISABLE_TELNET
+#    define CURL_DISABLE_DICT
+#    define CURL_DISABLE_RTSP
+#    define CURL_DISABLE_POP3
+#    define CURL_DISABLE_IMAP
+#    define CURL_DISABLE_SMTP
+#    define CURL_DISABLE_GOPHER
+#    define CURL_DISABLE_SMB
+
 /*
  * When http is disabled rtsp is not supported.
  */
