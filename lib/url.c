@@ -59,6 +59,8 @@
 
 #include <limits.h>
 
+#undef USE_LIBIDN2
+#undef USE_WIN32_IDN
 #ifdef USE_LIBIDN2
 #include <idn2.h>
 
