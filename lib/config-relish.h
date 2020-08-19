@@ -8,7 +8,7 @@
 #define PACKAGE "curl"
 #define VERSION "-"
 
-#define OS "aarch64-none-linux-android"
+#define OS "x86_64-none-linux-android"
 
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_STDINT_H 1
@@ -92,7 +92,6 @@
 #define HAVE_SYS_SOCKET_H 1
 #define HAVE_STRUCT_TIMEVAL 1
 #define SIZEOF_SIZE_T 8
-#define SIZEOF_CURL_OFF_T 8
 #define SIZEOF_LONG 8
 #define SIZEOF_INT 4
 #define SIZEOF_SHORT 2
