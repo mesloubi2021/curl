@@ -192,7 +192,7 @@ jobs:
         - libbrotli-dev
         - libzstd-dev
   - env:
-    - T=debug C="--enable-alt-svc"
+    - T=debug C="--enable-hsts --enable-alt-svc"
     - *clang
     compiler: clang
     addons:

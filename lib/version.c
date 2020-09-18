@@ -418,6 +418,9 @@ static curl_version_info_data version_info = {
 #if defined(USE_ALTSVC)
   | CURL_VERSION_ALTSVC
 #endif
+#if defined(USE_HSTS)
+  | CURL_VERSION_HSTS
+#endif
   ,
   NULL, /* ssl_version */
   0,    /* ssl_version_num, this is kept at zero */
