@@ -1561,6 +1561,7 @@ CURLcode Curl_http_done(struct connectdata *conn,
   return CURLE_OK;
 }
 
+#ifndef USE_HYPER
 /*
  * Determine if we should use HTTP 1.1 (OR BETTER) for this request. Reasons
  * to avoid it include:
@@ -1601,7 +1602,9 @@ static const char *get_http_string(const struct Curl_easy *data,
 
   return "1.0";
 }
+#endif
 
+#ifndef USE_HYPER
 /* check and possibly add an Expect: header */
 static CURLcode expect100(struct Curl_easy *data,
                           struct connectdata *conn,
@@ -1629,6 +1632,7 @@ static CURLcode expect100(struct Curl_easy *data,
 
   return result;
 }
+#endif
 
 enum proxy_use {
   HEADER_SERVER,  /* direct to server */
@@ -1902,6 +1906,7 @@ CURLcode Curl_add_timecondition(const struct connectdata *conn,
 }
 #endif
 
+#ifndef USE_HYPER
 /*
  * Curl_http() gets called from the generic multi_do() function when a HTTP
  * request is to be performed. This creates and sends a properly constructed
@@ -2998,6 +3003,8 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     data->req.upload_chunky = FALSE;
   return result;
 }
+
+#endif /* USE_HYPER */
 
 typedef enum {
   STATUS_UNKNOWN, /* not enough data to tell yet */
