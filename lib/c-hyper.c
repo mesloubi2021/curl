@@ -50,6 +50,11 @@
 #include "sendf.h"
 #include "transfer.h"
 
+/* The last 3 #include files should be in this order */
+#include "curl_printf.h"
+#include "curl_memory.h"
+#include "memdebug.h"
+
 static size_t read_cb(void *userp, hyper_context *ctx,
                       uint8_t *buf, size_t buflen)
 {
