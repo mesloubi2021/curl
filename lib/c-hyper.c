@@ -119,6 +119,9 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   hyper_request *req = NULL;
   hyper_headers *headers = NULL;
   CURLcode result;
+  const char *p_accept; /* Accept: string */
+  const char *method;
+  Curl_HttpReq httpreq;
 
   /* Always consider the DO phase done after this function call, even if there
      may be parts of the request that is not yet sent, since we can deal with
@@ -131,6 +134,13 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   result = Curl_http_host(data, conn);
   if(result)
     return result;
+  result = Curl_http_useragent(data, conn);
+  if(result)
+    return result;
+
+  Curl_http_method(data, conn, &method, &httpreq);
+
+  p_accept = Curl_checkheaders(conn, "Accept")?NULL:"Accept: */*\r\n";
 
   io = hyper_io_new();
   if(!io) {
@@ -188,8 +198,8 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     failf(data, "Couldn't hyper_request_new");
     goto error;
   }
-  /* lame fixed method for early testing */
-  if(hyper_request_set_method(req, (uint8_t *)"GET", 3)) {
+
+  if(hyper_request_set_method(req, (uint8_t *)method, strlen(method))) {
     failf(data, "error setting method\n");
     goto error;
   }
@@ -210,7 +220,25 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     size_t plen = strlen(p) - 2; /* deduct the CRLF pair */
     if(HYPERE_OK != hyper_headers_add(headers, (uint8_t *)"Host", 4,
                                       (uint8_t *)p, plen)) {
-      failf(data, "hyper_headers_add\n");
+      failf(data, "hyper_headers_add host\n");
+      goto error;
+    }
+  }
+  if(data->state.aptr.uagent) {
+    const char *p = &data->state.aptr.uagent[12];
+    size_t plen = strlen(p) - 2; /* deduct the CRLF pair */
+    if(HYPERE_OK != hyper_headers_add(headers, (uint8_t *)"User-Agent", 10,
+                                      (uint8_t *)p, plen)) {
+      failf(data, "hyper_headers_add user-agent\n");
+      goto error;
+    }
+  }
+  if(p_accept) {
+    const char *p = &p_accept[8];
+    size_t plen = strlen(p) - 2; /* deduct the CRLF pair */
+    if(HYPERE_OK != hyper_headers_add(headers, (uint8_t *)"Accept", 6,
+                                      (uint8_t *)p, plen)) {
+      failf(data, "hyper_headers_add accept\n");
       goto error;
     }
   }

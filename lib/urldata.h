@@ -1189,17 +1189,6 @@ struct Progress {
 };
 
 typedef enum {
-  HTTPREQ_NONE, /* first in list */
-  HTTPREQ_GET,
-  HTTPREQ_POST,
-  HTTPREQ_POST_FORM, /* we make a difference internally */
-  HTTPREQ_POST_MIME, /* we make a difference internally */
-  HTTPREQ_PUT,
-  HTTPREQ_HEAD,
-  HTTPREQ_LAST /* last in list */
-} Curl_HttpReq;
-
-typedef enum {
     RTSPREQ_NONE, /* first in list */
     RTSPREQ_OPTIONS,
     RTSPREQ_DESCRIBE,

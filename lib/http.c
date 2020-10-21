@@ -1906,6 +1906,60 @@ CURLcode Curl_add_timecondition(const struct connectdata *conn,
 }
 #endif
 
+void Curl_http_method(struct Curl_easy *data, struct connectdata *conn,
+                      const char **method, Curl_HttpReq *reqp)
+{
+  Curl_HttpReq httpreq = data->state.httpreq;
+  const char *request;
+  if((conn->handler->protocol&(PROTO_FAMILY_HTTP|CURLPROTO_FTP)) &&
+     data->set.upload)
+    httpreq = HTTPREQ_PUT;
+
+  /* Now set the 'request' pointer to the proper request string */
+  if(data->set.str[STRING_CUSTOMREQUEST])
+    request = data->set.str[STRING_CUSTOMREQUEST];
+  else {
+    if(data->set.opt_no_body)
+      request = "HEAD";
+    else {
+      DEBUGASSERT((httpreq > HTTPREQ_NONE) && (httpreq < HTTPREQ_LAST));
+      switch(httpreq) {
+      case HTTPREQ_POST:
+      case HTTPREQ_POST_FORM:
+      case HTTPREQ_POST_MIME:
+        request = "POST";
+        break;
+      case HTTPREQ_PUT:
+        request = "PUT";
+        break;
+      default: /* this should never happen */
+      case HTTPREQ_GET:
+        request = "GET";
+        break;
+      case HTTPREQ_HEAD:
+        request = "HEAD";
+        break;
+      }
+    }
+  }
+  *method = request;
+  *reqp = httpreq;
+}
+
+CURLcode Curl_http_useragent(struct Curl_easy *data, struct connectdata *conn)
+{
+  /* The User-Agent string might have been allocated in url.c already, because
+     it might have been used in the proxy connect, but if we have got a header
+     with the user-agent string specified, we erase the previously made string
+     here. */
+  if(Curl_checkheaders(conn, "User-Agent")) {
+    free(data->state.aptr.uagent);
+    data->state.aptr.uagent = NULL;
+  }
+  return CURLE_OK;
+}
+
+
 CURLcode Curl_http_host(struct Curl_easy *data, struct connectdata *conn)
 {
   const char *ptr;
@@ -2012,12 +2066,12 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   struct HTTP *http;
   const char *path = data->state.up.path;
   const char *query = data->state.up.query;
+  Curl_HttpReq httpreq;
   bool paste_ftp_userpwd = FALSE;
   char ftp_typecode[sizeof("/;type=?")] = "";
   const char *te = ""; /* transfer-encoding */
   const char *ptr;
   const char *request;
-  Curl_HttpReq httpreq = data->state.httpreq;
 #if !defined(CURL_DISABLE_COOKIES)
   char *addcookies = NULL;
 #endif
@@ -2026,6 +2080,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   struct dynbuf req;
   curl_off_t postsize = 0; /* curl_off_t to handle large file sizes */
   char *altused = NULL;
+  const char *p_accept;      /* Accept: string */
 
   /* Always consider the DO phase done after this function call, even if there
      may be parts of the request that is not yet sent, since we can deal with
@@ -2084,47 +2139,11 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   if(result)
     return result;
 
-  if((conn->handler->protocol&(PROTO_FAMILY_HTTP|CURLPROTO_FTP)) &&
-     data->set.upload) {
-    httpreq = HTTPREQ_PUT;
-  }
+  result = Curl_http_useragent(data, conn);
+  if(result)
+    return result;
 
-  /* Now set the 'request' pointer to the proper request string */
-  if(data->set.str[STRING_CUSTOMREQUEST])
-    request = data->set.str[STRING_CUSTOMREQUEST];
-  else {
-    if(data->set.opt_no_body)
-      request = "HEAD";
-    else {
-      DEBUGASSERT((httpreq > HTTPREQ_NONE) && (httpreq < HTTPREQ_LAST));
-      switch(httpreq) {
-      case HTTPREQ_POST:
-      case HTTPREQ_POST_FORM:
-      case HTTPREQ_POST_MIME:
-        request = "POST";
-        break;
-      case HTTPREQ_PUT:
-        request = "PUT";
-        break;
-      default: /* this should never happen */
-      case HTTPREQ_GET:
-        request = "GET";
-        break;
-      case HTTPREQ_HEAD:
-        request = "HEAD";
-        break;
-      }
-    }
-  }
-
-  /* The User-Agent string might have been allocated in url.c already, because
-     it might have been used in the proxy connect, but if we have got a header
-     with the user-agent string specified, we erase the previously made string
-     here. */
-  if(Curl_checkheaders(conn, "User-Agent")) {
-    free(data->state.aptr.uagent);
-    data->state.aptr.uagent = NULL;
-  }
+  Curl_http_method(data, conn, &request, &httpreq);
 
   /* setup the authentication headers */
   {
@@ -2369,7 +2388,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   }
 #endif /* CURL_DISABLE_PROXY */
 
-  http->p_accept = Curl_checkheaders(conn, "Accept")?NULL:"Accept: */*\r\n";
+  p_accept = Curl_checkheaders(conn, "Accept")?NULL:"Accept: */*\r\n";
 
   if((HTTPREQ_POST == httpreq || HTTPREQ_PUT == httpreq) &&
      data->state.resume_from) {
@@ -2572,7 +2591,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
                    *data->set.str[STRING_USERAGENT] &&
                    data->state.aptr.uagent)?
                   data->state.aptr.uagent:"",
-                  http->p_accept?http->p_accept:"",
+                  p_accept?p_accept:"",
                   data->state.aptr.te?data->state.aptr.te:"",
                   (data->set.str[STRING_ENCODING] &&
                    *data->set.str[STRING_ENCODING] &&
@@ -2620,7 +2639,8 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
       Curl_share_lock(data, CURL_LOCK_DATA_COOKIE, CURL_LOCK_ACCESS_SINGLE);
       co = Curl_cookie_getlist(data->cookies,
                                data->state.aptr.cookiehost?
-                               data->state.aptr.cookiehost:host,
+                               data->state.aptr.cookiehost:
+                               conn->host.name,
                                data->state.up.path,
                                (conn->handler->protocol&CURLPROTO_HTTPS)?
                                TRUE:FALSE);
