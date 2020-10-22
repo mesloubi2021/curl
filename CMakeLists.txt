@@ -1363,7 +1363,7 @@ _add_if("Largefile"     (CURL_SIZEOF_CURL_OFF_T GREATER 4) AND
 # TODO SSP1 (Schannel) check is missing
 _add_if("SSPI"          USE_WINDOWS_SSPI)
 _add_if("GSS-API"       HAVE_GSSAPI)
-_add_if("alt-svc"       ENABLE_ALT_SVC)
+_add_if("alt-svc"       NOT CURL_DISABLE_ALTSVC)
 # TODO SSP1 missing for SPNEGO
 _add_if("SPNEGO"        NOT CURL_DISABLE_CRYPTO_AUTH AND
                         (HAVE_GSSAPI OR USE_WINDOWS_SSPI))
