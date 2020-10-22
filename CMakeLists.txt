@@ -208,9 +208,10 @@ if(HTTP_ONLY)
   set(CURL_DISABLE_TFTP ON)
 endif()
 
+option(CURL_DISABLE_ALTSVC "to disable alt-svc support" OFF)
+mark_as_advanced(CURL_DISABLE_ALTSVC)
 option(CURL_DISABLE_COOKIES "to disable cookies support" OFF)
 mark_as_advanced(CURL_DISABLE_COOKIES)
-
 option(CURL_DISABLE_CRYPTO_AUTH "to disable cryptographic authentication" OFF)
 mark_as_advanced(CURL_DISABLE_CRYPTO_AUTH)
 option(CURL_DISABLE_VERBOSE_STRINGS "to disable verbose strings" OFF)
@@ -790,8 +791,6 @@ else()
   unset(USE_UNIX_SOCKETS CACHE)
 endif()
 
-option(ENABLE_ALT_SVC "Enable alt-svc support" OFF)
-set(USE_ALTSVC ${ENABLE_ALT_SVC})
 
 #
 # CA handling
