@@ -447,7 +447,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)externals\curl\lib;$(SolutionDir)externals\curl\include;$(SolutionDir)externals\curl\src;$(SolutionDir)openssl\VC-WIN64A-STATIC\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\lib;$(ProjectDir)..\include;$(ProjectDir)..\src;$(ProjectDir)openssl\VC-WIN64A-STATIC\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>USE_OPENSSL;CURL_STATICLIB;HTTP_ONLY;CURL_DISABLE_LDAP;BUILDING_LIBCURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/d2Zi+ /MP20</AdditionalOptions>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -465,7 +465,7 @@
       <AdditionalDependencies>WS2_32.lib;Advapi32.lib;libcrypto.lib;libssl.lib;crypt32.lib;user32.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)openssl\VC-WIN64A-STATIC\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)openssl\VC-WIN64A-STATIC\lib</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
     </Lib>
   </ItemDefinitionGroup>
@@ -504,7 +504,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)externals\curl\lib;$(SolutionDir)externals\curl\include;$(SolutionDir)externals\curl\src;$(SolutionDir)openssl\VC-WIN64A-STATIC\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\lib;$(ProjectDir)..\include;$(ProjectDir)..\src;$(ProjectDir)openssl\VC-WIN64A-STATIC\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>CURL_STATICLIB;HTTP_ONLY;USE_OPENSSL;CURL_DISABLE_LDAP;BUILDING_LIBCURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/d2Zi+ /MP20</AdditionalOptions>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -518,7 +518,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>WS2_32.lib;Advapi32.lib;libcrypto.lib;libssl.lib;crypt32.lib;user32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)openssl\VC-WIN64A-STATIC\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)openssl\VC-WIN64A-STATIC\lib</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">
