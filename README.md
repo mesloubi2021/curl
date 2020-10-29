@@ -10,14 +10,17 @@ D11 - John Waring, 29/10/2020.
 
 Forked repository of libcurl. Supports the following platforms:
 
-* Windows x64 - Windows SDk 10.0.17763.0
+* Windows x64 - Windows SDK 10.0.17763.0
 * Xbox One - XDK 180713
-* PlayStation 4 - SDK 7.00
+* PlayStation 4 - SDK 7.00 (In Progress)
+
+Currently builds a static library and only supports HTTP requests (that's all that has been tested).
 
 ToDo:
 
 * Build OpenSSL from source for each platform supported
 * Setup DLL build configurations
+* Test and add support for other protocols such as FTP and SMTP.
 * Add the following platform support:
   * Nintendo Switch
   * Xbox X
