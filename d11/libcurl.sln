@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1267
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcurl", "libcurl.vcxproj", "{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Durango = Debug|Durango
+		Debug|ORBIS = Debug|ORBIS
+		Debug|x64 = Debug|x64
+		Release|Durango = Release|Durango
+		Release|ORBIS = Release|ORBIS
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Debug|Durango.ActiveCfg = Debug|Durango
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Debug|Durango.Build.0 = Debug|Durango
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Debug|ORBIS.ActiveCfg = Debug|ORBIS
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Debug|ORBIS.Build.0 = Debug|ORBIS
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Debug|x64.ActiveCfg = Debug|x64
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Debug|x64.Build.0 = Debug|x64
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Release|Durango.ActiveCfg = Release|Durango
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Release|Durango.Build.0 = Release|Durango
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Release|ORBIS.ActiveCfg = Release|ORBIS
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Release|ORBIS.Build.0 = Release|ORBIS
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Release|x64.ActiveCfg = Release|x64
+		{A683775A-E8EC-4CF6-BEBE-7C845686EA8C}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C6E05F7B-3D87-4AAF-A9DB-CA516EA2C50C}
+	EndGlobalSection
+EndGlobal
