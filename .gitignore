@@ -65,7 +65,7 @@ libstandaloneengine.a
 *.tlog
 *.idb
 *.user
-../build
+build/
 debug/
 release/
 
