@@ -1,3 +1,27 @@
+      _ __ __                 _    _ _____  _      
+     | /_ /_ |               | |  | |  __ \| |     
+   __| || || |  ______    ___| |  | | |__) | |     
+  / _` || || | |______|  / __| |  | |  _  /| |     
+ | (_| || || |          | (__| |__| | | \ \| |____ 
+  \__,_||_||_|           \___|\____/|_|  \_\______|
+D11 - John Waring, 29/10/2020.
+
+Forked repository of libcurl. Supports the following platforms:
+* Windows x64 - Windows SDk 10.0.17763.0
+* Xbox One - XDK 180713
+* PlayStation 4 - SDK 7.00
+
+ToDo:
+1. Build OpenSSL from source for each platform supported
+2. Setup DLL build configurations
+3. Add the following platform support:
+* Nintendo Switch
+* Xbox X
+* PlayStation 5
+* Mac OS
+* Linux
+
+Original cURL ReadMe:
 ![curl logo](https://curl.haxx.se/logo/curl-logo.svg)
 
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/63/badge)](https://bestpractices.coreinfrastructure.org/projects/63)
