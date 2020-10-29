@@ -38,7 +38,8 @@
  * Define WIN32 when build target is Win32 API
  */
 
-#if (defined(_WIN32) || defined(__WIN32__)) && !defined(WIN32)
+// D11.JW - Durango also defines WIN32, explicitly check if _DURANGO is defined too for WIN32
+#if (defined(_WIN32) || defined(__WIN32__)) && !defined(WIN32) && !defined(_DURANGO)
 #define WIN32
 #endif
 
@@ -101,6 +102,12 @@
 
 #ifdef __PLAN9__
 #  include "config-plan9.h"
+#endif
+
+// D11.JW - Added Durango platform configuration
+#ifdef _DURANGO
+#  define DURANGO
+#  include "config-durango.h"
 #endif
 
 #endif /* HAVE_CONFIG_H */
@@ -231,6 +238,11 @@
 
 #ifdef HAVE_WINDOWS_H
 #  include "setup-win32.h"
+#endif
+
+// D11.JW - Add Durango setup file
+#ifdef _DURANGO
+#  include "setup-durango.h"
 #endif
 
 /*
@@ -573,7 +585,7 @@
  */
 
 #if defined(_MSC_VER) && !defined(__POCC__)
-#  if !defined(HAVE_WINDOWS_H) || ((_MSC_VER < 1300) && !defined(_FILETIME_))
+#  if (!defined(DURANGO) && !defined(HAVE_WINDOWS_H)) || ((_MSC_VER < 1300) && !defined(_FILETIME_))
 #    if !defined(ALLOW_MSVC6_WITHOUT_PSDK)
 #      error MSVC 6.0 requires "February 2003 Platform SDK" a.k.a. \
              "Windows Server 2003 PSDK"
@@ -719,7 +731,7 @@ int netware_init(void);
 /* In Windows the default file mode is text but an application can override it.
 Therefore we specify it explicitly. https://github.com/curl/curl/pull/258
 */
-#if defined(WIN32) || defined(MSDOS)
+#if defined(WIN32) || defined(MSDOS) || defined(DURANGO) // D11.JW - Support for Durango
 #define FOPEN_READTEXT "rt"
 #define FOPEN_WRITETEXT "wt"
 #define FOPEN_APPENDTEXT "at"
@@ -745,7 +757,7 @@ endings either CRLF or LF so 't' is appropriate.
  * Define DONT_USE_RECV_BEFORE_SEND_WORKAROUND to force disable workaround.
  */
 #if !defined(DONT_USE_RECV_BEFORE_SEND_WORKAROUND)
-#  if defined(WIN32) || defined(__CYGWIN__)
+#  if defined(WIN32) || defined(__CYGWIN__) || defined(DURANGO) // D11.JW - Support for Durango
 #    define USE_RECV_BEFORE_SEND_WORKAROUND
 #  endif
 #else  /* DONT_USE_RECV_BEFORE_SEND_WORKAROUND */

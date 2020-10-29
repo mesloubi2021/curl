@@ -1081,6 +1081,7 @@ void Curl_sndbufset(curl_socket_t sockfd)
   int curval = 0;
   int curlen = sizeof(curval);
 
+#if defined(WIN32) &&!defined(DURANGO)
   static int detectOsState = DETECT_OS_NONE;
 
   if(detectOsState == DETECT_OS_NONE) {
@@ -1093,6 +1094,7 @@ void Curl_sndbufset(curl_socket_t sockfd)
 
   if(detectOsState == DETECT_OS_VISTA_OR_LATER)
     return;
+#endif
 
   if(getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&curval, &curlen) == 0)
     if(curval > val)

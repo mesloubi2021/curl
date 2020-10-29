@@ -75,7 +75,11 @@
 #include "vssh/ssh.h"
 #include "setopt.h"
 #include "http_digest.h"
-#include "system_win32.h"
+#if defined(WIN32) && !defined(DURANGO)
+#  include "system_win32.h"
+#elif defined(DURANGO)
+#  include "system_durango.h"
+#endif
 #include "http2.h"
 #include "dynbuf.h"
 #include "altsvc.h"
@@ -137,7 +141,7 @@ static CURLcode global_init(long flags, bool memoryfuncs)
     Curl_cmalloc = (curl_malloc_callback)malloc;
     Curl_cfree = (curl_free_callback)free;
     Curl_crealloc = (curl_realloc_callback)realloc;
-    Curl_cstrdup = (curl_strdup_callback)system_strdup;
+	Curl_cstrdup = (curl_strdup_callback)system_strdup;
     Curl_ccalloc = (curl_calloc_callback)calloc;
 #if defined(WIN32) && defined(UNICODE)
     Curl_cwcsdup = (curl_wcsdup_callback)_wcsdup;
@@ -149,10 +153,15 @@ static CURLcode global_init(long flags, bool memoryfuncs)
     goto fail;
   }
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(DURANGO)
   if(Curl_win32_init(flags)) {
     DEBUGF(fprintf(stderr, "Error: win32_init failed\n"));
     goto fail;
+  }
+#else defined(DURANGO)
+  if (Curl_durango_init(flags)) {
+	  DEBUGF(fprintf(stderr, "Error: durango_init failed\n"));
+	  goto fail;
   }
 #endif
 
@@ -253,8 +262,10 @@ void curl_global_cleanup(void)
   Curl_ssl_cleanup();
   Curl_resolver_global_cleanup();
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(DURANGO)
   Curl_win32_cleanup(init_flags);
+#else defined(DURANGO)
+  Curl_durango_cleanup(init_flags);
 #endif
 
   Curl_amiga_cleanup();

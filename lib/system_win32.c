@@ -22,7 +22,7 @@
 
 #include "curl_setup.h"
 
-#if defined(WIN32)
+#if defined(WIN32) && !defined(DURANGO)
 
 #include <curl/curl.h>
 #include "system_win32.h"
@@ -234,4 +234,4 @@ HMODULE Curl_load_library(LPCTSTR filename)
 #endif
 }
 
-#endif /* WIN32 */
+#endif /* WIN32 && !DURANGO */

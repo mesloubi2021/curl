@@ -1829,9 +1829,9 @@ static void zonefrom_url(CURLU *uh, struct connectdata *conn)
 #if defined(HAVE_IF_NAMETOINDEX) || defined(WIN32)
       /* Zone identifier is not numeric */
       unsigned int scopeidx = 0;
-#if defined(WIN32)
+#if defined(WIN32) && !defined(DURANGO)
       scopeidx = Curl_if_nametoindex(zoneid);
-#else
+#elif !defined(DURANGO)
       scopeidx = if_nametoindex(zoneid);
 #endif
       if(!scopeidx)

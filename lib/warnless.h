@@ -67,8 +67,7 @@ curl_socket_t curlx_sitosk(int i);
 
 #endif /* USE_WINSOCK */
 
-#if defined(WIN32) || defined(_WIN32)
-
+#if !defined(_DURANGO) && (defined(WIN32) || defined(_WIN32))
 ssize_t curlx_read(int fd, void *buf, size_t count);
 
 ssize_t curlx_write(int fd, const void *buf, size_t count);
@@ -80,7 +79,7 @@ ssize_t curlx_write(int fd, const void *buf, size_t count);
 #  define write(fd, buf, count) curlx_write(fd, buf, count)
 #endif
 
-#endif /* WIN32 || _WIN32 */
+#endif /* !_DURANGO && WIN32 || _WIN32 */
 
 #if defined(__INTEL_COMPILER) && defined(__unix__)
 

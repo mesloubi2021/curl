@@ -24,7 +24,7 @@
 
 #include "curl_setup.h"
 
-#if defined(WIN32)
+#if defined(WIN32) && !defined(DURANGO)
 
 /* Version condition */
 typedef enum {
@@ -48,6 +48,6 @@ bool curlx_verify_windows_version(const unsigned int majorVersion,
                                   const PlatformIdentifier platform,
                                   const VersionCondition condition);
 
-#endif /* WIN32 */
+#endif /* WIN32 && !DURANGO */
 
 #endif /* HEADER_CURL_VERSION_WIN32_H */

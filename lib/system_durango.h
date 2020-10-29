@@ -1,5 +1,5 @@
-#ifndef HEADER_CURL_SYSTEM_WIN32_H
-#define HEADER_CURL_SYSTEM_WIN32_H
+#ifndef HEADER_CURL_SYSTEM_DURANGO_H
+#define HEADER_CURL_SYSTEM_DURANGO_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -24,13 +24,13 @@
 
 #include "curl_setup.h"
 
-#if defined(WIN32) && !defined(DURANGO)
+#if defined(DURANGO)
 
 extern LARGE_INTEGER Curl_freq;
 extern bool Curl_isVistaOrGreater;
 
-CURLcode Curl_win32_init(long flags);
-void Curl_win32_cleanup(long init_flags);
+CURLcode Curl_durango_init(long flags);
+void Curl_durango_cleanup(long init_flags);
 
 /* We use our own typedef here since some headers might lack this */
 typedef unsigned int(WINAPI *IF_NAMETOINDEX_FN)(const char *);
@@ -38,9 +38,6 @@ typedef unsigned int(WINAPI *IF_NAMETOINDEX_FN)(const char *);
 /* This is used instead of if_nametoindex if available on Windows */
 extern IF_NAMETOINDEX_FN Curl_if_nametoindex;
 
-/* This is used to dynamically load DLLs */
-HMODULE Curl_load_library(LPCTSTR filename);
+#endif /* DURANGO */
 
-#endif /* WIN32 && !DURANGO */
-
-#endif /* HEADER_CURL_SYSTEM_WIN32_H */
+#endif /* HEADER_CURL_SYSTEM_DURANGO_H */
