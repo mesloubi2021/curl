@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcrypto", "libcrypto\libcrypto.vcxproj", "{2CDC957A-0B8A-4034-A52C-9AA4D59BD002}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ORBIS = Debug|ORBIS
+		Release|ORBIS = Release|ORBIS
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CDC957A-0B8A-4034-A52C-9AA4D59BD002}.Debug|ORBIS.ActiveCfg = Debug|ORBIS
+		{2CDC957A-0B8A-4034-A52C-9AA4D59BD002}.Debug|ORBIS.Build.0 = Debug|ORBIS
+		{2CDC957A-0B8A-4034-A52C-9AA4D59BD002}.Release|ORBIS.ActiveCfg = Release|ORBIS
+		{2CDC957A-0B8A-4034-A52C-9AA4D59BD002}.Release|ORBIS.Build.0 = Release|ORBIS
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {13A6C7B6-9A37-48E5-BB7F-F5503EBAA47E}
+	EndGlobalSection
+EndGlobal

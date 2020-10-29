@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ORBIS">
+      <Configuration>Debug</Configuration>
+      <Platform>ORBIS</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ORBIS">
+      <Configuration>Release</Configuration>
+      <Platform>ORBIS</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B347CF3B-B6A9-495F-8EC9-5505FB6DA564}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(DebuggerFlavor)'=='ORBISDebugger'" Label="OverrideDebuggerDefaults">
+    <!--LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand-->
+    <!--LocalDebuggerCommandArguments></LocalDebuggerCommandArguments-->
+    <!--LocalDebuggerTarget></LocalDebuggerTarget-->
+    <!--LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory-->
+    <!--LocalRunCommandLine></LocalRunCommandLine-->
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\OrbisWavePsslc.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\SCU.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
+    <IncludePath>..\..\openssl-1.1.1b.orbis;..\..\openssl-1.1.1b.orbis\include;$(SCE_ORBIS_SDK_DIR)\host_tools\lib\clang\include;$(SCE_ORBIS_SDK_DIR)\target\include;$(SCE_ORBIS_SDK_DIR)\target\include_common</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
+    <IncludePath>..\..\openssl-1.1.1b.orbis;..\..\openssl-1.1.1b.orbis\include;$(SCE_ORBIS_SDK_DIR)\host_tools\lib\clang\include;$(SCE_ORBIS_SDK_DIR)\target\include;$(SCE_ORBIS_SDK_DIR)\target\include_common;</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <OptimizationLevel>Level2</OptimizationLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_lib.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_msg.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_srtp.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\methods.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\packet.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\pqueue.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\dtls1_bitmap.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\rec_layer_d1.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\rec_layer_s3.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\ssl3_buffer.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\ssl3_record.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\ssl3_record_tls13.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_cbc.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_enc.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_lib.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_msg.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_asn1.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_cert.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_ciph.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_conf.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_err.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_init.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_lib.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_mcnf.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_rsa.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_sess.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_stat.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions_clnt.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions_cust.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions_srvr.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_clnt.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_dtls.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_lib.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_srvr.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\t1_enc.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\t1_lib.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\tls13_enc.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\tls_srp.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\openssl-1.1.1b.orbis\e_os.h" />
+    <ClInclude Include="..\..\openssl-1.1.1b.orbis\netdb.h" />
+  </ItemGroup>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\OrbisWavePsslc.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\SCU.targets" />
+  </ImportGroup>
+</Project>

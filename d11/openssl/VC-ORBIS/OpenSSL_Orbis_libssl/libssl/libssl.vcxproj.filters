@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;cc;s;asm</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="Source Files\ssl">
+      <UniqueIdentifier>{747f477d-2ffb-4e71-8601-86dc576f6d99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ssl\record">
+      <UniqueIdentifier>{d616ba51-3eeb-43d0-85cd-08c9bf4f527f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ssl\statem">
+      <UniqueIdentifier>{049bcc9c-6e94-4273-8d19-0090640c260b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\methods.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_lib.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_init.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_ciph.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_lib.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_sess.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_rsa.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_stat.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\rec_layer_d1.c">
+      <Filter>Source Files\ssl\record</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\packet.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_dtls.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\ssl3_record.c">
+      <Filter>Source Files\ssl\record</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_srvr.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\pqueue.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_lib.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\ssl3_buffer.c">
+      <Filter>Source Files\ssl\record</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\t1_enc.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\t1_lib.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_msg.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_msg.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\rec_layer_s3.c">
+      <Filter>Source Files\ssl\record</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\dtls1_bitmap.c">
+      <Filter>Source Files\ssl\record</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\record\ssl3_record_tls13.c">
+      <Filter>Source Files\ssl\record</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_lib.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_cbc.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\tls_srp.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\s3_enc.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_cert.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\tls13_enc.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions_cust.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_err.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_mcnf.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_conf.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\ssl_asn1.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions_clnt.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\extensions_srvr.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_srtp.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_clnt.c">
+      <Filter>Source Files\ssl\statem</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\openssl-1.1.1b.orbis\e_os.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\openssl-1.1.1b.orbis\netdb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libssl", "libssl\libssl.vcxproj", "{B347CF3B-B6A9-495F-8EC9-5505FB6DA564}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ORBIS = Debug|ORBIS
+		Release|ORBIS = Release|ORBIS
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B347CF3B-B6A9-495F-8EC9-5505FB6DA564}.Debug|ORBIS.ActiveCfg = Debug|ORBIS
+		{B347CF3B-B6A9-495F-8EC9-5505FB6DA564}.Debug|ORBIS.Build.0 = Debug|ORBIS
+		{B347CF3B-B6A9-495F-8EC9-5505FB6DA564}.Release|ORBIS.ActiveCfg = Release|ORBIS
+		{B347CF3B-B6A9-495F-8EC9-5505FB6DA564}.Release|ORBIS.Build.0 = Release|ORBIS
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {176BDBF7-7ABE-486D-BCCA-46F301687E5D}
+	EndGlobalSection
+EndGlobal
