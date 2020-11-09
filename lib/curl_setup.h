@@ -110,6 +110,13 @@
 #  include "config-durango.h"
 #endif
 
+// D11.JW - Added Orbis platform configuration
+#ifdef _ORBIS
+#  define ORBIS
+#  include "config-orbis.h"
+#endif
+
+
 #endif /* HAVE_CONFIG_H */
 
 /* ================================================================ */
@@ -279,6 +286,27 @@
 #  define select(a,b,c,d,e) tpf_select_libcurl(a,b,c,d,e)
 #endif
 
+#ifdef ORBIS
+#  include <strings.h>
+#  include <string.h>
+#  include <stdlib.h>
+#  include <sys/socket.h>
+#  include <sys/unistd.h>
+
+/*
+	PlayStation doesn't have this struct, typically FreeBSD would
+	have this in netdb.h which the Sony SDK does not have.
+*/
+struct hostent {
+	char  *h_name;            /* official name of host */
+	char **h_aliases;         /* alias list */
+	int    h_addrtype;        /* host address type */
+	int    h_length;          /* length of address */
+	char **h_addr_list;       /* list of addresses */
+};
+
+#endif
+
 #ifdef __VXWORKS__
 #  include <sockLib.h>    /* for generic BSD socket functions */
 #  include <ioLib.h>      /* for basic I/O interface functions */
@@ -369,6 +397,21 @@
      int curlx_win32_access(const char *path, int mode);
 #  endif
 #  define LSEEK_ERROR                (long)-1
+#endif
+
+
+#ifdef ORBIS
+#  include <stdio.h>
+#  include <sys/stat.h>
+
+#  include <kernel.h>
+#  define lseek(fdes,offset,whence)  sceKernelLseek(fdes, offset, whence)
+#  define fstat(fdes,stp)            sceKernelFstat(fdes, stp)
+#  define struct_stat                SceKernelStat
+
+// stat is defined in <sys/stat.h>
+//#  define fopen(fname,flags,mode)	 sceKernelOpen(fname, flags, mode)
+#  define access(fname)		 sceKernelCheckReachability(fname)
 #endif
 
 #ifndef struct_stat

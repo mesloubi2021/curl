@@ -476,6 +476,9 @@
     <ClInclude Include="..\lib\vtls\wolfssl.h">
       <Filter>lib\vtls</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\config-orbis.h">
+      <Filter>lib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\x509asn1.c">

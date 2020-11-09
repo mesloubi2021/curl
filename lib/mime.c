@@ -1445,8 +1445,13 @@ CURLcode curl_mime_filedata(curl_mimepart *part, const char *filename)
     char *base;
     struct_stat sbuf;
 
-    if(stat(filename, &sbuf) || access(filename, R_OK))
+#ifdef ORBIS
+    if(stat(filename, &sbuf) || access(filename))
       result = CURLE_READ_ERROR;
+#else
+	if(stat(filename, &sbuf) || access(filename, R_OK))
+	  result = CURLE_READ_ERROR;
+#endif
 
     part->data = strdup(filename);
     if(!part->data)

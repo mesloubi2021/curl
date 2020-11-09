@@ -37,6 +37,11 @@
 #include <inet.h>
 #endif
 
+#ifdef ORBIS
+//#include <libnet/socket.h>
+#define SCE_NET_SO_NBIO               0x1200
+#endif 
+
 #include "nonblock.h"
 
 /*
@@ -81,9 +86,14 @@ int curlx_nonblock(curl_socket_t sockfd,    /* operate on this */
 
 #elif defined(HAVE_SETSOCKOPT_SO_NONBLOCK)
 
+#define IPPROTO_TCP 1
   /* BeOS */
   long b = nonblock ? 1L : 0L;
+#ifdef ORBIS
+	return setsockopt(sockfd, SOL_SOCKET, SCE_NET_SO_NBIO, &b, sizeof(b));
+#else
   return setsockopt(sockfd, SOL_SOCKET, SO_NONBLOCK, &b, sizeof(b));
+#endif
 
 #else
 #  error "no non-blocking method was found/used/set"

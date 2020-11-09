@@ -50,7 +50,12 @@
 
 int Curl_gethostname(char * const name, GETHOSTNAME_TYPE_ARG2 namelen)
 {
-#ifndef HAVE_GETHOSTNAME
+#ifdef ORBIS
+  (void) name;
+  (void)namelen;
+  return -1;
+
+#elif defined(HAVE_GETHOSTNAME)
 
   /* Allow compilation and return failure when unavailable */
   (void) name;

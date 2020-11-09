@@ -140,6 +140,9 @@
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\statem\statem_clnt.c">
       <Filter>Source Files\ssl\statem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\bio_ssl.c">
+      <Filter>Source Files\ssl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\openssl-1.1.1b.orbis\e_os.h">

@@ -146,6 +146,7 @@
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\bio\bio_lib.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\bio\bio_meth.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\bio\bss_bio.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\bio\bss_conn.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\bio\bss_dgram.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\bio\bss_file.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\bio\bss_mem.c" />
@@ -429,6 +430,8 @@
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\ocsp\ocsp_ext.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\ocsp\ocsp_ht.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\ocsp\ocsp_lib.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\ocsp\ocsp_prn.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\ocsp\ocsp_vfy.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\ocsp\v3_ocsp.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\o_dir.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\o_fopen.c" />
@@ -466,6 +469,7 @@
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\poly1305\poly1305_pmeth.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\rand\drbg_ctr.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\rand\drbg_lib.c" />
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\rand\randfile.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\rand\rand_err.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\rand\rand_lib.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\crypto\rand\rand_unix.c" />

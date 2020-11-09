@@ -38,6 +38,7 @@
     <ClInclude Include="..\lib\config-dos.h" />
     <ClInclude Include="..\lib\config-durango.h" />
     <ClInclude Include="..\lib\config-mac.h" />
+    <ClInclude Include="..\lib\config-orbis.h" />
     <ClInclude Include="..\lib\config-os400.h" />
     <ClInclude Include="..\lib\config-plan9.h" />
     <ClInclude Include="..\lib\config-riscos.h" />
@@ -376,11 +377,11 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
     <PlatformToolset>Clang</PlatformToolset>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
     <PlatformToolset>Clang</PlatformToolset>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -422,12 +423,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
     <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
-    <LibraryPath>$(SolutionDir)src\platforms\ps4;</LibraryPath>
+    <LibraryPath>
+    </LibraryPath>
+    <IncludePath>$(ProjectDir)openssl\VC-ORBIS\openssl-1.1.1b.orbis\include;$(SCE_ORBIS_SDK_DIR)\host_tools\lib\clang\include;$(SCE_ORBIS_SDK_DIR)\target\include;$(SCE_ORBIS_SDK_DIR)\target\include_common</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
     <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
-    <LibraryPath>$(SolutionDir)src\platforms\ps4;</LibraryPath>
+    <LibraryPath>
+    </LibraryPath>
+    <SourcePath>
+    </SourcePath>
+    <IncludePath>$(ProjectDir)openssl\VC-ORBIS\openssl-1.1.1b.orbis\include;$(SCE_ORBIS_SDK_DIR)\host_tools\lib\clang\include;$(SCE_ORBIS_SDK_DIR)\target\include;$(SCE_ORBIS_SDK_DIR)\target\include_common</IncludePath>
+    <TargetName>$(ProjectName)_debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
@@ -529,7 +537,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)externals\curl\lib;$(SolutionDir)externals\curl\include;$(SolutionDir)externals\curl\src;$(SolutionDir)openssl\VC-DURANGO\include;.\;.\durango;$(WindowsSDK_LibraryPath_arm)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\lib;$(ProjectDir)..\include;$(ProjectDir)..\src;$(ProjectDir)openssl\VC-DURANGO\include;$(WindowsSDK_LibraryPath_arm)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>HAVE_IF_NAMETOINDEX;USE_OPENSSL;CURL_STATICLIB;HTTP_ONLY;CURL_DISABLE_LDAP;BUILDING_LIBCURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -545,6 +553,7 @@
       <CompileAs>CompileAsC</CompileAs>
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
+      <SupportJustMyCode>true</SupportJustMyCode>
     </ClCompile>
     <Link>
       <SubSystem>NotSet</SubSystem>
@@ -554,22 +563,39 @@
       <AdditionalOptions>/VERBOSE:LIB %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)openssl\VC-DURANGO\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)openssl\VC-DURANGO\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>WS2_32.lib;libcrypto.lib;libssl.lib;combase.lib;kernelx.lib;uuid.lib;</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
     <ClCompile>
-      <AdditionalIncludeDirectories>externals\curl\lib;externals\curl\include;externals\curl\src;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\lib;$(ProjectDir)..\include;$(ProjectDir)..\src;$(ProjectDir)openssl\VC-ORBIS\openssl-1.1.1b.orbis\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_THREADS_POSIX;USE_OPENSSL;CURL_STATICLIB;HTTP_ONLY;CURL_DISABLE_LDAP;BUILDING_LIBCURL;_ORBIS;</PreprocessorDefinitions>
+      <CLanguageStd>
+      </CLanguageStd>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\j.waring\Documents\Projects\OnlineTeam\d11-project-portal-bridge\src\platforms\ps4</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalDependencies>$(SolutionDir)externals\curl\d11\openssl\VC-ORBIS\OpenSSL_Orbis_libcrypto\ORBIS_$(Configuration)\libcrypto.a; $(SolutionDir)externals\curl\d11\openssl\VC-ORBIS\OpenSSL_Orbis_libssl\ORBIS_$(Configuration)\libssl.a</AdditionalDependencies>
+      <ThinArchive>false</ThinArchive>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
     <ClCompile>
-      <AdditionalIncludeDirectories>externals\curl\lib;externals\curl\include;externals\curl\src;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\lib;$(ProjectDir)..\include;$(ProjectDir)..\src;$(ProjectDir)openssl\VC-ORBIS\openssl-1.1.1b.orbis\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_THREADS_POSIX;USE_OPENSSL;CURL_STATICLIB;HTTP_ONLY;CURL_DISABLE_LDAP;BUILDING_LIBCURL;_ORBIS;</PreprocessorDefinitions>
     </ClCompile>
+    <Lib>
+      <AdditionalDependencies>$(SolutionDir)externals\curl\d11\openssl\VC-ORBIS\OpenSSL_Orbis_libcrypto\ORBIS_$(Configuration)\libcrypto.a; $(SolutionDir)externals\curl\d11\openssl\VC-ORBIS\OpenSSL_Orbis_libssl\ORBIS_$(Configuration)\libssl.a</AdditionalDependencies>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

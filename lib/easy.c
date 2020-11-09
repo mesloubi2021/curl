@@ -158,7 +158,7 @@ static CURLcode global_init(long flags, bool memoryfuncs)
     DEBUGF(fprintf(stderr, "Error: win32_init failed\n"));
     goto fail;
   }
-#else defined(DURANGO)
+#elif defined(DURANGO)
   if (Curl_durango_init(flags)) {
 	  DEBUGF(fprintf(stderr, "Error: durango_init failed\n"));
 	  goto fail;
@@ -264,7 +264,7 @@ void curl_global_cleanup(void)
 
 #if defined(WIN32) && !defined(DURANGO)
   Curl_win32_cleanup(init_flags);
-#else defined(DURANGO)
+#elif defined(DURANGO)
   Curl_durango_cleanup(init_flags);
 #endif
 

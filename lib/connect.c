@@ -1441,6 +1441,7 @@ bool Curl_connalive(struct connectdata *conn)
   else {
     /* use the socket */
     char buf;
+
     if(recv((RECV_TYPE_ARG1)conn->sock[FIRSTSOCKET], (RECV_TYPE_ARG2)&buf,
             (RECV_TYPE_ARG3)1, (RECV_TYPE_ARG4)MSG_PEEK) == 0) {
       return false;   /* FIN received */
@@ -1514,8 +1515,11 @@ CURLcode Curl_socket(struct connectdata *conn,
 
   addr->family = ai->ai_family;
   addr->socktype = (conn->transport == TRNSPRT_TCP) ? SOCK_STREAM : SOCK_DGRAM;
-  addr->protocol = conn->transport != TRNSPRT_TCP ? IPPROTO_UDP :
-    ai->ai_protocol;
+#ifndef ORBIS
+  addr->protocol = conn->transport != TRNSPRT_TCP ? IPPROTO_UDP : ai->ai_protocol;
+#else
+  addr->protocol = ai->ai_protocol;
+#endif
   addr->addrlen = ai->ai_addrlen;
 
   if(addr->addrlen > sizeof(struct Curl_sockaddr_storage))

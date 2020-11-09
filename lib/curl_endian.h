@@ -36,8 +36,11 @@ unsigned short Curl_read16_be(const unsigned char *buf);
 #if defined(HAVE_LONGLONG)
 void Curl_write64_le(const long long value, unsigned char *buffer);
 #else
+#ifdef ORBIS
+void Curl_write64_le(const __int64_t value, unsigned char *buffer);
+#else
 void Curl_write64_le(const __int64 value, unsigned char *buffer);
-#endif
-#endif
-
+#endif /* ORBIS */
+#endif /* HAVE_LONGLONG */
+#endif /* CURL_SIZEOF_CURL_OFF_T */
 #endif /* HEADER_CURL_ENDIAN_H */

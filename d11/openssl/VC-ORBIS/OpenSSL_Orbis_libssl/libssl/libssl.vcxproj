@@ -66,6 +66,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\bio_ssl.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_lib.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_msg.c" />
     <ClCompile Include="..\..\openssl-1.1.1b.orbis\ssl\d1_srtp.c" />

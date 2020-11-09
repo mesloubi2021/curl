@@ -57,6 +57,15 @@
 #include "curl_memory.h"
 #include "memdebug.h"
 
+#ifdef ORBIS
+#include <net.h>
+
+void cleanupSceNetLib(rid, memid) {
+	sceNetResolverDestroy(rid);
+	sceNetPoolDestroy(memid);
+}
+#endif
+
 /*
  * Curl_ipvalid() checks what CURL_IPRESOLVE_* requirements that might've
  * been set and returns TRUE if they are OK.
@@ -277,6 +286,65 @@ struct Curl_addrinfo *Curl_ipv4_resolve_r(const char *hostname,
     h = NULL; /* set return code to NULL */
     free(buf);
   }
+#elif defined(ORBIS)
+
+  SceNetId rid = -1;
+  int memid = -1;
+
+  // Move creation elsewhere
+  int ret = sceNetPoolCreate(__FUNCTION__, 4 * 1024, 0);
+
+  if (ret < 0) {
+	  printf("sceNetPoolCreate() failed (0x%x errno=%d)\n", ret, sce_net_errno);
+	  cleanupSceNetLib(rid, memid);
+	  return NULL;
+  }
+
+  memid = ret;
+  ret = sceNetResolverCreate("resolver", memid, 0);
+  
+  if (ret < 0) {
+	  printf("sceNetResolverCreate() failed (0x%x errno=%d)\n", ret, sce_net_errno);
+	  cleanupSceNetLib(rid, memid);
+	  return NULL;
+  }
+
+  rid = ret;
+
+  SceNetInAddr* nia;
+  ret = sceNetResolverStartNtoa(rid, hostname, nia, 0, 0, 0);
+  
+  if (ret < 0) {
+	  printf("sceNetResolverStartNtoa() failed (0x%x errno=%d)\n", ret, sce_net_errno);
+	  cleanupSceNetLib(rid, memid);
+	  return NULL;
+  }
+
+  ret = sceNetResolverDestroy(rid);
+  if (ret < 0) {
+	  printf("sceNetResolverDestroy() failed (0x%x errno=%d)\n", ret, sce_net_errno);
+	  cleanupSceNetLib(rid, memid);
+	  return NULL;
+  }
+
+  ret = sceNetPoolDestroy(memid);
+  if (ret < 0) {
+	  printf("sceNetPoolDestroy() failed (0x%x errno=%d)\n", ret, sce_net_errno);
+	  cleanupSceNetLib(rid, memid);
+	  return NULL;
+  }
+
+  char** aliases = calloc(1, sizeof(char*));
+  aliases[0] = (char*)nia->s_addr;
+
+  h->h_name = hostname;
+  h->h_aliases = aliases;
+  h->h_addrtype = AF_INET;
+  h->h_length = strlen(hostname);
+  h->h_addr_list = NULL;
+
+  printf("Tried to get ip");
+
 #else /* HAVE_GETADDRINFO_THREADSAFE || HAVE_GETHOSTBYNAME_R */
   /*
    * Here is code for platforms that don't have a thread safe
@@ -289,10 +357,15 @@ struct Curl_addrinfo *Curl_ipv4_resolve_r(const char *hostname,
   if(h) {
     ai = Curl_he2ai(h, port);
 
+#ifdef ORBIS
+	free(aliases);
+#endif
+
     if(buf) /* used a *_r() function */
       free(buf);
   }
 
   return ai;
 }
+
 #endif /* defined(CURLRES_IPV4) && !defined(CURLRES_ARES) */

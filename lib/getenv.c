@@ -29,7 +29,7 @@
 
 static char *GetEnv(const char *variable)
 {
-#if defined(DURANGO) || defined(_WIN32_WCE) || defined(CURL_WINDOWS_APP)
+#if defined(ORBIS) || defined(DURANGO) || defined(_WIN32_WCE) || defined(CURL_WINDOWS_APP)
   (void)variable;
   return NULL;
 #elif defined(WIN32)

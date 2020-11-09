@@ -49,7 +49,7 @@
 #include <stdio.h>
 #include <limits.h>
 
-#if defined(__FreeBSD__) && (__FreeBSD__ >= 2)
+#if !defined(_ORBIS) && defined(__FreeBSD__) && (__FreeBSD__ >= 2)
 /* Needed for __FreeBSD_version symbol definition */
 #include <osreldate.h>
 #endif
@@ -75,6 +75,7 @@
     defined(__minix) || defined(__SYMBIAN32__) || defined(__INTEGRITY) || \
     defined(ANDROID) || defined(__ANDROID__) || defined(__OpenBSD__) || \
     defined(__CYGWIN__) || \
+	defined(ORBIS) || \
    (defined(__FreeBSD_version) && (__FreeBSD_version < 800000))
 #include <sys/select.h>
 #endif

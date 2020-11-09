@@ -115,7 +115,11 @@ static void write32_le(const int value, unsigned char *buffer)
 #if defined(HAVE_LONGLONG)
 void Curl_write64_le(const long long value, unsigned char *buffer)
 #else
+#ifdef ORBIS
+void Curl_write64_le(const __int64_t value, unsigned char *buffer)
+#else
 void Curl_write64_le(const __int64 value, unsigned char *buffer)
+#endif
 #endif
 {
   write32_le((int)value, buffer);

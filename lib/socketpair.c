@@ -46,6 +46,9 @@
 #ifndef INADDR_LOOPBACK
 #define INADDR_LOOPBACK 0x7f000001
 #endif /* !INADDR_LOOPBACK */
+#ifdef ORBIS
+#define SCE_NET_SOCK_STREAM           1
+#endif
 #endif /* !WIN32 */
 
 /* The last 3 #include files should be in this order */
@@ -68,8 +71,13 @@ int Curl_socketpair(int domain, int type, int protocol,
   (void)domain;
   (void)type;
   (void)protocol;
-
+  
+#ifdef ORBIS 
+  listener = socket(AF_INET, SOCK_STREAM, SCE_NET_SOCK_STREAM);
+#else
   listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+#endif
+
   if(listener == CURL_SOCKET_BAD)
     return -1;
 
