@@ -293,7 +293,7 @@
 #  include <sys/socket.h>
 #  include <sys/unistd.h>
 
-/*
+   /*
 	PlayStation doesn't have this struct, typically FreeBSD would
 	have this in netdb.h which the Sony SDK does not have.
 */

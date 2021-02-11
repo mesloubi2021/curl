@@ -1534,7 +1534,7 @@ static int cookie_output(struct Curl_easy *data,
       return 1;
 
 #ifdef ORBIS
-	out = fopen(tempstore, SCE_KERNEL_O_CREAT | SCE_KERNEL_O_WRONLY);
+	out = fopen(tempstore, "w");
 #else
     out = fopen(tempstore, FOPEN_WRITETEXT);
 #endif

@@ -486,6 +486,7 @@ enum resolve_t Curl_resolv(struct connectdata *conn,
                            bool allowDOH,
                            struct Curl_dns_entry **entry)
 {
+	printf("In resolver....\n");
   struct Curl_dns_entry *dns = NULL;
   struct Curl_easy *data = conn->data;
   CURLcode result;
@@ -497,8 +498,9 @@ enum resolve_t Curl_resolv(struct connectdata *conn,
   if(data->share)
     Curl_share_lock(data, CURL_LOCK_DATA_DNS, CURL_LOCK_ACCESS_SINGLE);
 
+  printf("Fetching address: %s %d\n", hostname, port);
   dns = fetch_addr(conn, hostname, port);
-
+  
   if(dns) {
     infof(data, "Hostname %s was found in DNS cache\n", hostname);
     dns->inuse++; /* we use it! */
@@ -521,20 +523,26 @@ enum resolve_t Curl_resolv(struct connectdata *conn,
 
     /* notify the resolver start callback */
     if(data->set.resolver_start) {
+	  printf("resolver_start is valid\n");
+
       int st;
       Curl_set_in_callback(data, true);
       st = data->set.resolver_start(data->state.resolver, NULL,
                                     data->set.resolver_start_client);
       Curl_set_in_callback(data, false);
-      if(st)
-        return CURLRESOLV_ERROR;
+	  if (st) {
+		  printf("resolver_start returned error\n");
+		  return CURLRESOLV_ERROR;
+	  }
     }
-
+	printf("curl_inet_pton check\n");
 #ifndef USE_RESOLVE_ON_IPS
     /* First check if this is an IPv4 address string */
-    if(Curl_inet_pton(AF_INET, hostname, &in) > 0)
-      /* This is a dotted IP address 123.123.123.123-style */
-      addr = Curl_ip2addr(AF_INET, &in, hostname, port);
+	if (Curl_inet_pton(AF_INET, hostname, &in) > 0) {
+		printf("Hostname is an ipv4 address %s\n", hostname);
+		/* This is a dotted IP address 123.123.123.123-style */
+		addr = Curl_ip2addr(AF_INET, &in, hostname, port);
+	}
 #ifdef ENABLE_IPV6
     if(!addr) {
       struct in6_addr in6;
@@ -586,6 +594,7 @@ enum resolve_t Curl_resolv(struct connectdata *conn,
     }
     if(!addr) {
       if(respwait) {
+		  printf("Curl_resolv_check\n");
         /* the response to our resolve call will come asynchronously at
            a later time, good or bad */
         /* First, check that we haven't received the info by now */
@@ -617,6 +626,8 @@ enum resolve_t Curl_resolv(struct connectdata *conn,
   }
 
   *entry = dns;
+
+  printf("End of resolver\n");
 
   return rc;
 }

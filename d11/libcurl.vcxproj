@@ -402,8 +402,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">
-    <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
-    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\obj\</IntDir>
     <ExecutablePath>$(Console_SdkRoot)bin;$(VCInstallDir)bin\x86_amd64;$(VCInstallDir)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(ProgramFiles)\HTML Help Workshop;$(MSBuildToolsPath32);$(FxCopDir);$(PATH);</ExecutablePath>
     <IncludePath>$(Console_SdkIncludeRoot)</IncludePath>
     <LibraryPath>$(Console_SdkIncludeRoot);$(Console_SdkLibPath)</LibraryPath>
@@ -412,8 +412,8 @@
     <TargetName>$(ProjectName)_debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">
-    <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
-    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\obj\</IntDir>
     <ExecutablePath>$(Console_SdkRoot)bin;$(VCInstallDir)bin\x86_amd64;$(VCInstallDir)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(ProgramFiles)\HTML Help Workshop;$(MSBuildToolsPath32);$(FxCopDir)</ExecutablePath>
     <IncludePath>$(Console_SdkIncludeRoot)</IncludePath>
     <LibraryPath>$(Console_SdkIncludeRoot);$(Console_SdkLibPath)</LibraryPath>
@@ -421,15 +421,15 @@
     <LibraryWPath>$(Console_SdkLibPath);$(Console_SdkWindowsMetadataPath)</LibraryWPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ORBIS'">
-    <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
-    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\obj\</IntDir>
     <LibraryPath>
     </LibraryPath>
     <IncludePath>$(ProjectDir)openssl\VC-ORBIS\openssl-1.1.1b.orbis\include;$(SCE_ORBIS_SDK_DIR)\host_tools\lib\clang\include;$(SCE_ORBIS_SDK_DIR)\target\include;$(SCE_ORBIS_SDK_DIR)\target\include_common</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ORBIS'">
-    <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
-    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\obj\</IntDir>
     <LibraryPath>
     </LibraryPath>
     <SourcePath>
@@ -438,14 +438,14 @@
     <TargetName>$(ProjectName)_debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
-    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\obj\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\bin\</OutDir>
-    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\$(PlatformShortname)\obj\</IntDir>
+    <OutDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(PlatformShortname)\$(Configuration)\obj\</IntDir>
     <TargetName>$(ProjectName)_debug</TargetName>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;</LibraryPath>
   </PropertyGroup>
@@ -573,6 +573,7 @@
       <PreprocessorDefinitions>USE_THREADS_POSIX;USE_OPENSSL;CURL_STATICLIB;HTTP_ONLY;CURL_DISABLE_LDAP;BUILDING_LIBCURL;_ORBIS;</PreprocessorDefinitions>
       <CLanguageStd>
       </CLanguageStd>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\j.waring\Documents\Projects\OnlineTeam\d11-project-portal-bridge\src\platforms\ps4</AdditionalLibraryDirectories>

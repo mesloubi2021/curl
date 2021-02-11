@@ -47,7 +47,7 @@
 #define INADDR_LOOPBACK 0x7f000001
 #endif /* !INADDR_LOOPBACK */
 #ifdef ORBIS
-#define SCE_NET_SOCK_STREAM           1
+#define SCE_NET_IPPROTO_TCP           6
 #endif
 #endif /* !WIN32 */
 
@@ -73,13 +73,15 @@ int Curl_socketpair(int domain, int type, int protocol,
   (void)protocol;
   
 #ifdef ORBIS 
-  listener = socket(AF_INET, SOCK_STREAM, SCE_NET_SOCK_STREAM);
+  listener = socket(AF_INET, SOCK_STREAM, SCE_NET_IPPROTO_TCP);
 #else
   listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 #endif
 
-  if(listener == CURL_SOCKET_BAD)
-    return -1;
+  if (listener == CURL_SOCKET_BAD) {
+	  printf("Listener socket creation FAILED!\n");
+	  return -1;
+  }
 
   memset(&a, 0, sizeof(a));
   a.inaddr.sin_family = AF_INET;

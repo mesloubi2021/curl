@@ -60,9 +60,55 @@
 #ifdef ORBIS
 #include <net.h>
 
-void cleanupSceNetLib(rid, memid) {
+void cleanupSceNetLib(SceNetId rid, int memid)
+{
 	sceNetResolverDestroy(rid);
 	sceNetPoolDestroy(memid);
+}
+
+int doResolverNtoa(const char *hostname, SceNetInAddr *addr)
+{
+	SceNetId rid = -1;
+	int memid = -1;
+	int ret;
+
+	ret = sceNetPoolCreate(__FUNCTION__, 4 * 1024, 0);
+	if (ret < 0) {
+		printf("sceNetPoolCreate() failed (0x%x errno=%d)\n",
+			ret, sce_net_errno);
+		goto failed;
+	}
+	memid = ret;
+	ret = sceNetResolverCreate("resolver", memid, 0);
+	if (ret < 0) {
+		printf("sceNetResolverCreate() failed (0x%x errno=%d)\n",
+			ret, sce_net_errno);
+		goto failed;
+	}
+	rid = ret;
+	ret = sceNetResolverStartNtoa(rid, hostname, addr, 0, 0, 0);
+	if (ret < 0) {
+		printf("sceNetResolverStartNtoa() failed (0x%x errno=%d)\n",
+			ret, sce_net_errno);
+		goto failed;
+	}
+	ret = sceNetResolverDestroy(rid);
+	if (ret < 0) {
+		printf("sceNetResolverDestroy() failed (0x%x errno=%d)\n",
+			ret, sce_net_errno);
+		goto failed;
+	}
+	ret = sceNetPoolDestroy(memid);
+	if (ret < 0) {
+		printf("sceNetPoolDestroy() failed (0x%x errno=%d)\n",
+			ret, sce_net_errno);
+		goto failed;
+	}
+	return 0;
+
+failed:
+	cleanupSceNetLib(rid, memid);
+	return ret;
 }
 #endif
 
@@ -135,8 +181,13 @@ struct Curl_addrinfo *Curl_ipv4_resolve_r(const char *hostname,
   int res;
 #endif
   struct Curl_addrinfo *ai = NULL;
+
+#ifdef ORBIS
+  struct hostent h;
+#else
   struct hostent *h = NULL;
   struct hostent *buf = NULL;
+#endif
 
 #if defined(HAVE_GETADDRINFO_THREADSAFE)
   struct addrinfo hints;
@@ -288,62 +339,29 @@ struct Curl_addrinfo *Curl_ipv4_resolve_r(const char *hostname,
   }
 #elif defined(ORBIS)
 
-  SceNetId rid = -1;
-  int memid = -1;
+  SceNetInAddr dst;
+  dst.s_addr = 0;
+  int ret;
 
-  // Move creation elsewhere
-  int ret = sceNetPoolCreate(__FUNCTION__, 4 * 1024, 0);
-
-  if (ret < 0) {
-	  printf("sceNetPoolCreate() failed (0x%x errno=%d)\n", ret, sce_net_errno);
-	  cleanupSceNetLib(rid, memid);
-	  return NULL;
+  if (sceNetInetPton(SCE_NET_AF_INET, hostname, &dst) == 0) {
+	  ret = doResolverNtoa(hostname, &dst);
+	  if (ret < 0) {
+		  return NULL;
+	  }
   }
 
-  memid = ret;
-  ret = sceNetResolverCreate("resolver", memid, 0);
+  char** aliases = (char**)calloc(1, sizeof(char*));
+  aliases[0] = NULL;
+
+  char** addr_list = (char**)calloc(2, sizeof(char*));
+  addr_list[0] = (char*)&dst.s_addr;
+  addr_list[1] = NULL;
   
-  if (ret < 0) {
-	  printf("sceNetResolverCreate() failed (0x%x errno=%d)\n", ret, sce_net_errno);
-	  cleanupSceNetLib(rid, memid);
-	  return NULL;
-  }
-
-  rid = ret;
-
-  SceNetInAddr* nia;
-  ret = sceNetResolverStartNtoa(rid, hostname, nia, 0, 0, 0);
-  
-  if (ret < 0) {
-	  printf("sceNetResolverStartNtoa() failed (0x%x errno=%d)\n", ret, sce_net_errno);
-	  cleanupSceNetLib(rid, memid);
-	  return NULL;
-  }
-
-  ret = sceNetResolverDestroy(rid);
-  if (ret < 0) {
-	  printf("sceNetResolverDestroy() failed (0x%x errno=%d)\n", ret, sce_net_errno);
-	  cleanupSceNetLib(rid, memid);
-	  return NULL;
-  }
-
-  ret = sceNetPoolDestroy(memid);
-  if (ret < 0) {
-	  printf("sceNetPoolDestroy() failed (0x%x errno=%d)\n", ret, sce_net_errno);
-	  cleanupSceNetLib(rid, memid);
-	  return NULL;
-  }
-
-  char** aliases = calloc(1, sizeof(char*));
-  aliases[0] = (char*)nia->s_addr;
-
-  h->h_name = hostname;
-  h->h_aliases = aliases;
-  h->h_addrtype = AF_INET;
-  h->h_length = strlen(hostname);
-  h->h_addr_list = NULL;
-
-  printf("Tried to get ip");
+  h.h_name = (char*)hostname;
+  h.h_aliases = aliases;
+  h.h_addrtype = AF_INET;
+  h.h_length = sizeof(SceNetInAddr_t);
+  h.h_addr_list = addr_list;
 
 #else /* HAVE_GETADDRINFO_THREADSAFE || HAVE_GETHOSTBYNAME_R */
   /*
@@ -354,16 +372,23 @@ struct Curl_addrinfo *Curl_ipv4_resolve_r(const char *hostname,
   h = gethostbyname((void *)hostname);
 #endif /* HAVE_GETADDRINFO_THREADSAFE || HAVE_GETHOSTBYNAME_R */
 
+#ifdef ORBIS
+  ai = Curl_he2ai(&h, port);
+
+  free(aliases);
+  aliases = NULL;
+  free(addr_list);
+  addr_list = NULL;
+
+#else
   if(h) {
     ai = Curl_he2ai(h, port);
-
-#ifdef ORBIS
-	free(aliases);
-#endif
+	printf("Done.\n");
 
     if(buf) /* used a *_r() function */
       free(buf);
   }
+#endif
 
   return ai;
 }

@@ -56,7 +56,7 @@
 #define HAVE_SYS_STAT_H 1
 
 /* Define if you have the <sys/time.h> header file. */
-/* #define HAVE_SYS_TIME_H 1 */
+#define HAVE_SYS_TIME_H 1
 
 /* Define if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
@@ -70,10 +70,9 @@
 #define HAVE_TIME_H 1
 
 /* Define if you have the <unistd.h> header file. */
-#if defined(__MINGW32__) || defined(__WATCOMC__) || defined(__LCC__) || \
-    defined(__POCC__)
+//#if defined(__MINGW32__) || defined(__WATCOMC__) || defined(__LCC__) || defined(__POCC__)
 #define HAVE_UNISTD_H 1
-#endif
+//#endif
 
 /* ---------------------------------------------------------------- */
 /*                        OTHER HEADER INFO                         */
@@ -81,6 +80,7 @@
 
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NETINET_TCP_H 1
+#define HAVE_ARPA_INET_H 1
 
 /* Define if sig_atomic_t is an available typedef. */
 #define HAVE_SIG_ATOMIC_T 1
@@ -122,10 +122,10 @@
 /* #define HAVE_GETPASS 1 */
 
 /* Define if you have the getservbyname function. */
-#define HAVE_GETSERVBYNAME 1
+//#define HAVE_GETSERVBYNAME 1
 
 /* Define if you have the getprotobyname function. */
-#define HAVE_GETPROTOBYNAME
+//#define HAVE_GETPROTOBYNAME
 
 /* Define if you have the gettimeofday function. */
 /* #define HAVE_GETTIMEOFDAY 1 */
@@ -134,7 +134,7 @@
 #define HAVE_INET_ADDR 1
 
 /* Define if you have the ioctlsocket function. */
-#define HAVE_IOCTLSOCKET 1
+//#define HAVE_IOCTLSOCKET 1
 
 /* Define if you have a working ioctlsocket FIONBIO function. */
 //#define HAVE_IOCTLSOCKET_FIONBIO 1

@@ -239,14 +239,20 @@ int init_thread_sync_data(struct thread_data *td,
 #endif
 
   tsd->mtx = malloc(sizeof(curl_mutex_t));
-  if(tsd->mtx == NULL)
-    goto err_exit;
+  if (tsd->mtx == NULL) {
+	  printf("Mutex alloc failed!\n");
+	  goto err_exit;
+  }
 
+  printf("Mutex init...\n");
   Curl_mutex_init(tsd->mtx);
+  printf("Mutex init SUCCESS!\n");
 
 #ifdef USE_SOCKETPAIR
+  printf("Create socket pair....\n");
   /* create socket pair, avoid AF_LOCAL since it doesn't build on Solaris */
   if(Curl_socketpair(AF_UNIX, SOCK_STREAM, 0, &tsd->sock_pair[0]) < 0) {
+	  printf("Create socket pair FAILED!\n");
     tsd->sock_pair[0] = CURL_SOCKET_BAD;
     tsd->sock_pair[1] = CURL_SOCKET_BAD;
     goto err_exit;
@@ -464,10 +470,12 @@ static bool init_resolve_thread(struct connectdata *conn,
 #ifdef HAVE_GETADDRINFO
   td->thread_hnd = Curl_thread_create(getaddrinfo_thread, &td->tsd);
 #else
+  printf("Create thread gethostbyname_thread...\n");
   td->thread_hnd = Curl_thread_create(gethostbyname_thread, &td->tsd);
 #endif
 
   if(!td->thread_hnd) {
+	  printf("Couldn't create gethostbyname_thread\n");
     /* The thread never started, so mark it as done here for proper cleanup. */
     td->tsd.done = 1;
     err = errno;
@@ -705,8 +713,11 @@ struct Curl_addrinfo *Curl_resolver_getaddrinfo(struct connectdata *conn,
 
   reslv->start = Curl_now();
 
+  printf("Init resolve thread: %s:%d\n", hostname, port);
+
   /* fire up a new resolver thread! */
   if(init_resolve_thread(conn, hostname, port, NULL)) {
+	  printf("Resolve thread ok!\n");
     *waitp = 1; /* expect asynchronous response */
     return NULL;
   }

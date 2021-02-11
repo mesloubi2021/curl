@@ -320,8 +320,8 @@ Curl_he2ai(const struct hostent *he, int port)
       addr = (void *)ai->ai_addr; /* storage area for this info */
 
       memcpy(&addr->sin_addr, curr, sizeof(struct in_addr));
-      addr->sin_family = (CURL_SA_FAMILY_T)(he->h_addrtype);
-      addr->sin_port = htons((unsigned short)port);
+      addr->sin_family = (CURL_SA_FAMILY_T)(he->h_addrtype);  
+	  addr->sin_port = htons((unsigned short)port);
       break;
 
 #ifdef ENABLE_IPV6
