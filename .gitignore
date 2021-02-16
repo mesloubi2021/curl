@@ -69,3 +69,5 @@ build/
 debug/
 release/
 
+!d11/openssl/**/*.lib
+!d11/openssl/**/*.pdb
