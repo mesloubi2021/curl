@@ -71,3 +71,7 @@ release/
 
 !d11/openssl/**/*.lib
 !d11/openssl/**/*.pdb
+!d11/openssl/**/*.a
+!d11/openssl/**/Configure
+!d11/openssl/**/Makefile
+!d11/openssl/**/INSTALL
