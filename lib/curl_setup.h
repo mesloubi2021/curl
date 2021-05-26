@@ -98,6 +98,10 @@
 #  include "config-linux.h"
 #endif
 
+#if defined(__QNX__)
+#  include "config-qnx.h"
+#endif
+
 #endif /* HAVE_CONFIG_H */
 
 /* ================================================================ */
