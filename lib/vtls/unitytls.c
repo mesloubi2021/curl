@@ -220,18 +220,78 @@ static size_t on_read(void* userData, UInt8* buffer, size_t bufferLen, unitytls_
   return read;
 }
 
+/* Pretty much a copy of Curl_send_plain */
+static ssize_t send_plain(struct connectdata *conn, int num,
+                        const void *mem, size_t len, CURLcode *code)
+{
+  curl_socket_t sockfd;
+  ssize_t bytes_written;
+
+  DEBUGASSERT(conn);
+  sockfd = conn->sock[num];
+
+#if defined(MSG_FASTOPEN) && !defined(TCP_FASTOPEN_CONNECT) /* Linux */
+  if(conn->bits.tcp_fastopen) {
+    bytes_written = sendto(sockfd, mem, len, MSG_FASTOPEN,
+                           conn->ip_addr->ai_addr, conn->ip_addr->ai_addrlen);
+    conn->bits.tcp_fastopen = FALSE;
+  }
+  else
+#endif
+    bytes_written = swrite(sockfd, mem, len);
+
+  *code = CURLE_OK;
+  if(-1 == bytes_written) {
+    int err = SOCKERRNO;
+
+    if(
+#ifdef WSAEWOULDBLOCK
+      /* This is how Windows does it */
+      (WSAEWOULDBLOCK == err)
+#else
+      /* errno may be EWOULDBLOCK or on some systems EAGAIN when it returned
+         due to its inability to send off data without blocking. We therefore
+         treat both error codes the same here */
+      (EWOULDBLOCK == err) || (EAGAIN == err) || (EINTR == err) ||
+      (EINPROGRESS == err)
+#endif
+      ) {
+      /* this is just a case of EWOULDBLOCK */
+      bytes_written = 0;
+      *code = CURLE_AGAIN;
+    }
+    else {
+      *code = CURLE_SEND_ERROR;
+    }
+  }
+  return bytes_written;
+}
+
+/* Pretty much a copy of Curl_write_plain */
+static CURLcode write_plain(struct connectdata *conn,
+                          curl_socket_t sockfd,
+                          const void *mem,
+                          size_t len,
+                          ssize_t *written)
+{
+  CURLcode result;
+  int num;
+  DEBUGASSERT(conn);
+  num = (sockfd == conn->sock[SECONDARYSOCKET]);
+
+  *written = send_plain(conn, num, mem, len, &result);
+
+  return result;
+}
+
 static size_t on_write(void* userData, const UInt8* data, size_t bufferLen, unitytls_errorstate* errorState)
 {
   struct ssl_backend_data* backend = ((struct ssl_connect_data*)userData)->backend;
+  struct connectdata* conn = backend->conn;
   CURLcode result;
   ssize_t written = 0;
 
-  if (backend->conn->data == NULL) {
-    unitytls->unitytls_errorstate_raise_error(errorState, UNITYTLS_USER_WRITE_FAILED);
-    return 0;
-  }
-
-  result = Curl_write_plain(backend->conn->data, backend->sockfd, data, bufferLen, &written);
+  result = write_plain(conn, backend->sockfd, data, bufferLen, &written);
   if(result == CURLE_AGAIN) {
     unitytls->unitytls_errorstate_raise_error(errorState, UNITYTLS_USER_WOULD_BLOCK);
     return 0;
@@ -351,9 +411,8 @@ static ssize_t unitytls_recv(struct Curl_easy *data, int sockindex,
 }
 
 
-static CURLcode unitytls_connect_step1(struct connectdata* conn, int sockindex)
+static CURLcode unitytls_connect_step1(struct Curl_easy* data, struct connectdata* conn, int sockindex)
 {
-  struct Curl_easy* data = conn->data;
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
   struct ssl_backend_data *backend = connssl->backend;
   const char* const ssl_cafile = SSL_CONN_CONFIG(CAfile);
@@ -572,7 +631,7 @@ static CURLcode unitytls_connect_common(struct Curl_easy *data,
       failf(data, "SSL connection timeout");
       return CURLE_OPERATION_TIMEDOUT;
     }
-    retcode = unitytls_connect_step1(conn, sockindex);
+    retcode = unitytls_connect_step1(data, conn, sockindex);
     if(retcode)
       return retcode;
   }
@@ -643,15 +702,8 @@ static void Curl_unitytls_close(struct Curl_easy *data, struct connectdata *conn
     return;
 
   if (backend->ctx) {
-
-    // During close both data->conn and conn->data are already NULL (but the objects are still valid)
-    // Our write function uses Curl_write_plain for convenience (instead of doing sendto on the socket directly like most TLS backends do)
-    // which assumes that these pointers are still in order. So we patch it up temporarily.
-    // Note that schannel.c also uses Curl_write_plain, but doesn't close off the TLS context like we do.
-    backend->conn->data = data;
     err = unitytls->unitytls_errorstate_create();
     unitytls->unitytls_tlsctx_notify_close(backend->ctx, &err);
-    backend->conn->data = NULL;
 
     unitytls->unitytls_tlsctx_free(backend->ctx);
     backend->ctx = NULL;
@@ -712,6 +764,7 @@ const struct Curl_ssl Curl_ssl_unitytls = {
   Curl_none_cert_status_request,    /* cert_status_request */
   Curl_unitytls_connect,            /* connect */
   Curl_unitytls_connect_nonblocking,/* connect_nonblocking */
+  Curl_ssl_getsock,                 /* getsock */
   Curl_unitytls_get_internals,      /* get_internals */
   Curl_unitytls_close,              /* close_one */
   Curl_none_close_all,              /* close_all */
@@ -720,7 +773,9 @@ const struct Curl_ssl Curl_ssl_unitytls = {
   Curl_none_set_engine_default,     /* set_engine_default */
   Curl_none_engines_list,           /* engines_list */
   Curl_none_false_start,            /* false_start */
-  NULL                              /* sha256sum */
+  NULL,                             /* sha256sum */
+  NULL,                             /* associate_connection */
+  NULL                              /* disassociate_connection */
 };
 
 #endif /* USE_UNITYTLS */
