@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -45,7 +45,8 @@ int test(char *URL)
     return TEST_ERR_MAJOR_BAD;
   }
 
-  if((curl = curl_easy_init()) == NULL) {
+  curl = curl_easy_init();
+  if(!curl) {
     fprintf(stderr, "curl_easy_init() failed\n");
     curl_global_cleanup();
     return TEST_ERR_MAJOR_BAD;
@@ -63,24 +64,23 @@ int test(char *URL)
 #ifdef CURL_DOES_CONVERSIONS
       /* ASCII representation with escape sequences for non-ASCII platforms */
       "\x47\x45\x54\x20\x2f\x35\x35\x36\x20\x48\x54\x54\x50\x2f\x31\x2e"
-      "\x32\x0d\x0a\x48\x6f\x73\x74\x3a\x20\x6e\x69\x6e\x6a\x61\x0d\x0a"
+      "\x31\x0d\x0a\x48\x6f\x73\x74\x3a\x20\x6e\x69\x6e\x6a\x61\x0d\x0a"
       "\x0d\x0a";
 #else
-      "GET /556 HTTP/1.2\r\n"
+      "GET /556 HTTP/1.1\r\n"
       "Host: ninja\r\n\r\n";
 #endif
-    size_t iolen;
-    char buf[1024];
+    size_t iolen = 0;
 
     res = curl_easy_send(curl, request, strlen(request), &iolen);
 
     if(!res) {
       /* we assume that sending always work */
-      size_t total=0;
 
       do {
+        char buf[1024];
         /* busy-read like crazy */
-        res = curl_easy_recv(curl, buf, 1024, &iolen);
+        res = curl_easy_recv(curl, buf, sizeof(buf), &iolen);
 
 #ifdef TPF
         sleep(1); /* avoid ctl-10 dump */
@@ -91,10 +91,12 @@ int test(char *URL)
           if(!write(STDOUT_FILENO, buf, iolen))
             break;
         }
-        total += iolen;
 
-      } while(((res == CURLE_OK) || (res == CURLE_AGAIN)) && (total < 129));
+      } while((res == CURLE_OK && iolen) || (res == CURLE_AGAIN));
     }
+
+    if(iolen)
+      res = (CURLcode)TEST_ERR_FAILURE;
   }
 
 test_cleanup:
@@ -104,4 +106,3 @@ test_cleanup:
 
   return (int)res;
 }
-
