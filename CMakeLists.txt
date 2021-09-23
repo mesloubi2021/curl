@@ -681,7 +681,7 @@ if(ZLIB_FOUND)
   # version of CMake.  This allows our dependents to get our dependencies
   # transitively.
   if(NOT CMAKE_VERSION VERSION_LESS 3.4)
-    list(APPEND CURL_LIBS ZLIB::ZLIB)
+    #list(APPEND CURL_LIBS ZLIB::ZLIB)
   else()
     list(APPEND CURL_LIBS ${ZLIB_LIBRARIES})
     include_directories(${ZLIB_INCLUDE_DIRS})
