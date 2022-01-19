@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #***************************************************************************
 #                                  _   _ ____  _
 #  Project                     ___| | | |  _ \| |
@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 2020 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -37,7 +37,7 @@
 # 3. Run the cleanup script and let it sort the entries and remove unused
 # references from lines you removed in step (2):
 #
-# $ ./script/release-notes.pl cleanup
+# $ ./scripts/release-notes.pl cleanup
 #
 # 4. Reload RELEASE-NOTES and verify that things look okay. The cleanup
 # procedure can and should be re-run when lines are removed or rephrased.
@@ -82,6 +82,27 @@ sub getref {
     return $#refs + 1;
 }
 
+# '#num'
+# 'num'
+# 'https://github.com/curl/curl/issues/6939'
+# 'https://github.com/curl/curl-www/issues/69'
+
+sub extract {
+    my ($ref)=@_;
+    if($ref =~ /^(\#|)(\d+)/) {
+        # return the plain number
+        return $2;
+    }
+    elsif($ref =~ /^https:\/\/github.com\/curl\/curl\/.*\/(\d+)/) {
+        # return the plain number
+        return $2;
+    }
+    else {
+        # return the URL
+        return $ref;
+    }
+}
+
 my $short;
 my $first;
 for my $l (@gitlog) {
@@ -107,14 +128,14 @@ for my $l (@gitlog) {
         # not the first
         my $line = $1;
 
-        if($line =~ /^Fixes(:|) .*[^0-9](\d+)/i) {
-            push @fixes, $2;
+        if($line =~ /^Fixes(:|) *(.*)/i) {
+            push @fixes, extract($2);
         }
-        elsif($line =~ /^Closes(:|) .*[^0-9](\d+)/i) {
-            push @closes, $2;
+        elsif($line =~ /^Clo(s|)es(:|) *(.*)/i) {
+            push @closes, extract($3);
         }
         elsif($line =~ /^Bug: (.*)/i) {
-            push @bug, $1;
+            push @bug, extract($1);
         }
     }
 }
