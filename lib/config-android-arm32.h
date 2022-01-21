@@ -247,6 +247,8 @@
 /* Define to 1 if you have the gethostname function. */
 #define HAVE_GETHOSTNAME 1
 
+#define HAVE_GETPEERNAME 1
+
 /* Define to 1 if you have a working getifaddrs function. */
 /* #undef HAVE_GETIFADDRS */
 
