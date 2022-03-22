@@ -256,3 +256,6 @@
 #define NTLM_WB_ENABLED 1
 #define NTLM_WB_FILE "/usr/bin/ntlm_auth"
 #define CURL_EXTERN_SYMBOL __attribute__ ((__visibility__ ("default")))
+
+#define HAVE_GETPEERNAME 1
+#define ENABLE_IPV6 1
