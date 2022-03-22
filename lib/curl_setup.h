@@ -119,7 +119,7 @@
 
 #ifdef LUMIN
 #  include "config-lumin.h"
-#endif
+#else
 
 #ifdef __ANDROID__
 #  if defined(__arm__)
@@ -134,6 +134,8 @@
 #    error Unknown Android CPU architecture.
 #  endif
 #endif
+
+#endif  // LUMIN
 
 #if defined(__linux__) && !defined(LUMIN) && !defined(__ANDROID__)
 #  include "config-linux.h"
