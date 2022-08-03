@@ -2,14 +2,6 @@
 // ./configure --disable-sftp --disable-scp --disable-ldap --disable-ldaps --disable-dict --disable-telnet --disable-tftp --disable-pop3 --disable-imap --disable-smtp --disable-gopher --disable-manual --disable-verbose --disable-sspi --disable-unix-sockets --disable-versioned-symbols --without-ssl --with-unitytls --without-libidn --without-libpsl --without-libssh2 --enable-threaded-resolver --enable-static --disable-shared
 // Some manual changes on top of this (after empty line at the end).
 
-#define PACKAGE "curl"
-#define PACKAGE_BUGREPORT "a suitable curl mailing list: https://curl.se/mail/"
-#define PACKAGE_NAME "curl"
-#define PACKAGE_STRING "curl -"
-#define PACKAGE_TARNAME "curl"
-#define PACKAGE_URL ""
-#define PACKAGE_VERSION "-"
-#define VERSION "-"
 #define CURL_DISABLE_DICT 1
 #define CURL_DISABLE_GOPHER 1
 #define CURL_DISABLE_HSTS 1
@@ -30,14 +22,18 @@
 #define HAVE_ARPA_INET_H 1
 #define HAVE_ARPA_TFTP_H 1
 #define HAVE_ASSERT_H 1
+#define HAVE_ATOMIC 1
 #define HAVE_BASENAME 1
 #define HAVE_BOOL_T 1
+#define HAVE_BROTLI 1
+#define HAVE_BROTLI_DECODE_H 1
 #define HAVE_BUILTIN_AVAILABLE 1
 #define HAVE_CLOCK_GETTIME_MONOTONIC 1
 #define HAVE_CONNECT 1
 #define HAVE_DECL_GETPWUID_R 1
 #define HAVE_DLFCN_H 1
 #define HAVE_ERRNO_H 1
+#define HAVE_FCHMOD 1
 #define HAVE_FCNTL 1
 #define HAVE_FCNTL_H 1
 #define HAVE_FCNTL_O_NONBLOCK 1
@@ -60,6 +56,7 @@
 #define HAVE_GETSOCKNAME 1
 #define HAVE_GETTIMEOFDAY 1
 #define HAVE_GMTIME_R 1
+#define HAVE_IDN2_H 1
 #define HAVE_IFADDRS_H 1
 #define HAVE_IF_NAMETOINDEX 1
 #define HAVE_INET_NTOP 1
@@ -68,8 +65,11 @@
 #define HAVE_IOCTL 1
 #define HAVE_IOCTL_FIONBIO 1
 #define HAVE_IOCTL_SIOCGIFADDR 1
+#define HAVE_LIBBROTLIDEC 1
 #define HAVE_LIBGEN_H 1
+#define HAVE_LIBIDN2 1
 #define HAVE_LIBZ 1
+#define HAVE_LIBZSTD 1
 #define HAVE_LL 1
 #define HAVE_LOCALE_H 1
 #define HAVE_LOCALTIME_R 1
@@ -79,15 +79,19 @@
 #define HAVE_NETDB_H 1
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NETINET_TCP_H 1
+#define HAVE_NETINET_UDP_H 1
 #define HAVE_NET_IF_H 1
+#define HAVE_NGHTTP2_NGHTTP2_H 1
 #define HAVE_PIPE 1
 #define HAVE_POLL_H 1
 #define HAVE_POSIX_STRERROR_R 1
 #define HAVE_PTHREAD_H 1
 #define HAVE_PWD_H 1
 #define HAVE_RECV 1
+#define HAVE_SCHED_YIELD 1
 #define HAVE_SELECT 1
 #define HAVE_SEND 1
+#define HAVE_SENDMSG 1
 #define HAVE_SETJMP_H 1
 #define HAVE_SETLOCALE 1
 #define HAVE_SETMODE 1
@@ -142,13 +146,23 @@
 #define HAVE_WRITABLE_ARGV 1
 #define HAVE_WRITEV 1
 #define HAVE_ZLIB_H 1
+#define HAVE_ZSTD 1
+#define HAVE_ZSTD_H 1
 #define LT_OBJDIR ".libs/"
+#define OS "x86_64-apple-darwin21.6.0"
+#define PACKAGE "curl"
+#define PACKAGE_BUGREPORT "a suitable curl mailing list: https://curl.se/mail/"
+#define PACKAGE_NAME "curl"
+#define PACKAGE_STRING "curl -"
+#define PACKAGE_TARNAME "curl"
+#define PACKAGE_URL ""
+#define PACKAGE_VERSION "-"
 #define RECV_TYPE_ARG1 int
 #define RECV_TYPE_ARG2 void *
 #define RECV_TYPE_ARG3 size_t
 #define RECV_TYPE_ARG4 int
 #define RECV_TYPE_RETV ssize_t
-#define SELECT_QUAL_ARG5
+#define SELECT_QUAL_ARG5 
 #define SELECT_TYPE_ARG1 int
 #define SELECT_TYPE_ARG234 fd_set *
 #define SELECT_TYPE_ARG5 struct timeval *
@@ -168,7 +182,12 @@
 #define SIZEOF_TIME_T 8
 #define STDC_HEADERS 1
 #define STRERROR_R_TYPE_ARG3 size_t
+#define USE_NGHTTP2 1
 #define USE_THREADS_POSIX 1
+#define VERSION "-"
+#ifndef _ALL_SOURCE
+#endif
+#ifndef __cplusplus
+#endif
 
 #define USE_UNITYTLS 1
-#define OS "macos"
