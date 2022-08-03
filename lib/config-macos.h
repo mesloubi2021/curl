@@ -54,7 +54,6 @@
 #define HAVE_GETSOCKNAME 1
 #define HAVE_GETTIMEOFDAY 1
 #define HAVE_GMTIME_R 1
-#define HAVE_IDN2_H 1
 #define HAVE_IFADDRS_H 1
 #define HAVE_IF_NAMETOINDEX 1
 #define HAVE_INET_NTOP 1
@@ -64,7 +63,6 @@
 #define HAVE_IOCTL_FIONBIO 1
 #define HAVE_IOCTL_SIOCGIFADDR 1
 #define HAVE_LIBGEN_H 1
-#define HAVE_LIBIDN2 1
 #define HAVE_LIBZ 1
 #define HAVE_LL 1
 #define HAVE_LOCALE_H 1
