@@ -81,7 +81,6 @@
 #define HAVE_NETINET_TCP_H 1
 #define HAVE_NETINET_UDP_H 1
 #define HAVE_NET_IF_H 1
-#define HAVE_NGHTTP2_NGHTTP2_H 1
 #define HAVE_PIPE 1
 #define HAVE_POLL_H 1
 #define HAVE_POSIX_STRERROR_R 1
@@ -182,7 +181,6 @@
 #define SIZEOF_TIME_T 8
 #define STDC_HEADERS 1
 #define STRERROR_R_TYPE_ARG3 size_t
-#define USE_NGHTTP2 1
 #define USE_THREADS_POSIX 1
 #define VERSION "-"
 #ifndef _ALL_SOURCE
