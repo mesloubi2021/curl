@@ -66,7 +66,6 @@
 #define HAVE_LIBGEN_H 1
 #define HAVE_LIBIDN2 1
 #define HAVE_LIBZ 1
-#define HAVE_LIBZSTD 1
 #define HAVE_LL 1
 #define HAVE_LOCALE_H 1
 #define HAVE_LOCALTIME_R 1
@@ -142,8 +141,6 @@
 #define HAVE_WRITABLE_ARGV 1
 #define HAVE_WRITEV 1
 #define HAVE_ZLIB_H 1
-#define HAVE_ZSTD 1
-#define HAVE_ZSTD_H 1
 #define LT_OBJDIR ".libs/"
 #define OS "x86_64-apple-darwin21.6.0"
 #define PACKAGE "curl"
