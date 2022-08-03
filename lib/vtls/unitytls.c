@@ -419,7 +419,6 @@ static CURLcode unitytls_connect_step1(struct Curl_easy* data, struct connectdat
   const bool verifypeer = SSL_CONN_CONFIG(verifypeer);
   const char* const ssl_capath = SSL_CONN_CONFIG(CApath);
   char* const ssl_cert = SSL_SET_OPTION(primary.clientcert);
-  const char* const ssl_crlfile = SSL_SET_OPTION(CRLfile);
   const char* const hostname = SSL_IS_PROXY() ? conn->http_proxy.host.name : conn->host.name;
 
   unitytls_errorstate err = unitytls->unitytls_errorstate_create();
@@ -476,11 +475,6 @@ static CURLcode unitytls_connect_step1(struct Curl_easy* data, struct connectdat
   }
   else {
     backend->pk = NULL;
-  }
-
-  /* We don't support CRL */
-  if(ssl_crlfile) {
-    failf(data, "UnityTls does not suppport crl");
   }
 
   /* Create and configure context */
