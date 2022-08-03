@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: user
 Short: u
 Arg: <user:password>
@@ -5,6 +7,7 @@ Help: Server user and password
 Category: important auth
 Example: -u user:secret $URL
 Added: 4.0
+See-also: netrc config
 ---
 Specify the user name and password to use for server authentication. Overrides
 --netrc and --netrc-optional.

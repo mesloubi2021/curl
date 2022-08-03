@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,15 +18,18 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .TH curl_escape 3 "6 March 2002" "libcurl 7.9" "libcurl Manual"
 .SH NAME
 curl_escape - URL encodes the given string
 .SH SYNOPSIS
-.B #include <curl/curl.h>
-.sp
-.BI "char *curl_escape( const char *" url ", int "length " );"
-.ad
+.nf
+#include <curl/curl.h>
+
+char *curl_escape(const char *url, int length);
+.fi
 .SH DESCRIPTION
 Obsolete function. Use \fIcurl_easy_escape(3)\fP instead!
 

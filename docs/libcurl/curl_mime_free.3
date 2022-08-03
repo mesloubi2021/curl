@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,18 +18,21 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .TH curl_mime_free 3 "22 August 2017" "libcurl 7.56.0" "libcurl Manual"
 .SH NAME
 curl_mime_free - free a previously built mime structure
 .SH SYNOPSIS
-.B #include <curl/curl.h>
-.sp
-.BI "void curl_mime_free(curl_mime *" mime);
-.ad
+.nf
+#include <curl/curl.h>
+
+void curl_mime_free(curl_mime *mime);
+.fi
 .SH DESCRIPTION
 \fIcurl_mime_free(3)\fP is used to clean up data previously built/appended
-with \fIcurl_mime_addpart(3)\fP and other mime-handling functions.  This must
+with \fIcurl_mime_addpart(3)\fP and other mime-handling functions. This must
 be called when the data has been used, which typically means after
 \fIcurl_easy_perform(3)\fP has been called.
 

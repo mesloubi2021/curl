@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: trace-ascii
 Arg: <file>
 Help: Like --trace, but without hex output
@@ -5,6 +7,7 @@ Mutexed: trace verbose
 Category: verbose
 Example: --trace-ascii log.txt $URL
 Added: 7.9.7
+See-also: verbose trace
 ---
 Enables a full trace dump of all incoming and outgoing data, including
 descriptive information, to the given output file. Use "-" as filename to have

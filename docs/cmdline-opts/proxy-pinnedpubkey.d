@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: proxy-pinnedpubkey
 Arg: <hashes>
 Help: FILE/HASHES public key to verify proxy with
@@ -6,6 +8,7 @@ Category: proxy tls
 Example: --proxy-pinnedpubkey keyfile $URL
 Example: --proxy-pinnedpubkey 'sha256//ce118b51897f4452dc' $URL
 Added: 7.59.0
+See-also: pinnedpubkey proxy
 ---
 Tells curl to use the specified public key file (or hashes) to verify the
 proxy. This can be a path to a file which contains a single public key in PEM

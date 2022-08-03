@@ -1,7 +1,7 @@
 # dynbuf
 
 This is the internal module for creating and handling "dynamic buffers". This
-means buffers that can be appended to, dynamically and grow in size to adapt.
+means buffers that can be appended to, dynamically and grow to adapt.
 
 There will always be a terminating zero put at the end of the dynamic buffer.
 
@@ -84,9 +84,9 @@ larger than the buffer length.
 char *Curl_dyn_ptr(const struct dynbuf *s);
 ```
 
-Returns a `char *` to the buffer if it has a length, otherwise a NULL. Since
-the buffer may be reallocated, this pointer should not be trusted or used
-anymore after the next buffer manipulation call.
+Returns a `char *` to the buffer if it has a length, otherwise may return
+NULL. Since the buffer may be reallocated, this pointer should not be trusted
+or used anymore after the next buffer manipulation call.
 
 ## uptr
 
@@ -94,9 +94,9 @@ anymore after the next buffer manipulation call.
 unsigned char *Curl_dyn_uptr(const struct dynbuf *s);
 ```
 
-Returns an `unsigned char *` to the buffer if it has a length, otherwise a
-NULL. Since the buffer may be reallocated, this pointer should not be trusted
-or used anymore after the next buffer manipulation call.
+Returns an `unsigned char *` to the buffer if it has a length, otherwise may
+return NULL. Since the buffer may be reallocated, this pointer should not be
+trusted or used anymore after the next buffer manipulation call.
 
 ## len
 
