@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: get
 Short: G
 Help: Put the post data in the URL and use GET
@@ -6,6 +8,7 @@ Example: --get $URL
 Example: --get -d "tool=curl" -d "age=old" $URL
 Example: --get -I -d "tool=curl" $URL
 Added: 7.8.1
+See-also: data request
 ---
 When used, this option will make all data specified with --data, --data-binary
 or --data-urlencode to be used in an HTTP GET request instead of the POST

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,15 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
 .TH CURLOPT_HTTPHEADER 3 "17 Jun 2014" "libcurl 7.37.0" "curl_easy_setopt options"
 .SH NAME
 CURLOPT_HTTPHEADER \- set of HTTP headers
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
-CURLcode curl_easy_setopt(CURL *handle, CURLOPT_HTTPHEADER, struct curl_slist *headers);
+CURLcode curl_easy_setopt(CURL *handle, CURLOPT_HTTPHEADER,
+                          struct curl_slist *headers);
+.fi
 .SH DESCRIPTION
 Pass a pointer to a linked list of HTTP headers to pass to the server and/or
 proxy in your HTTP request. The same list can be used for both host and proxy
@@ -121,7 +126,7 @@ if(curl) {
 
   curl_easy_perform(curl);
 
-  curl_slist_free_all(list); /* free the list again */
+  curl_slist_free_all(list); /* free the list */
 }
 .fi
 

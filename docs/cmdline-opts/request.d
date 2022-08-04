@@ -1,14 +1,17 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: request
 Short: X
-Arg: <command>
-Help: Specify request command to use
+Arg: <method>
+Help: Specify request method to use
 Category: connection
 Example: -X "DELETE" $URL
 Example: -X NLST ftp://example.com/
 Added: 6.0
+See-also: request-target
 ---
 (HTTP) Specifies a custom request method to use when communicating with the
-HTTP server.  The specified request method will be used instead of the method
+HTTP server. The specified request method will be used instead of the method
 otherwise used (which defaults to GET). Read the HTTP 1.1 specification for
 details and explanations. Common additional HTTP requests include PUT and
 DELETE, but related technologies like WebDAV offers PROPFIND, COPY, MOVE and

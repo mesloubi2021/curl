@@ -24,6 +24,7 @@
 #define HAVE_ARPA_INET_H 1
 #define HAVE_ARPA_TFTP_H 1
 #define HAVE_ASSERT_H 1
+#define HAVE_ATOMIC 1
 #define HAVE_BASENAME 1
 #define HAVE_BOOL_T 1
 #define HAVE_BUILTIN_AVAILABLE 1
@@ -32,6 +33,7 @@
 #define HAVE_DECL_GETPWUID_R 1
 #define HAVE_DLFCN_H 1
 #define HAVE_ERRNO_H 1
+#define HAVE_FCHMOD 1
 #define HAVE_FCNTL 1
 #define HAVE_FCNTL_H 1
 #define HAVE_FCNTL_O_NONBLOCK 1
@@ -55,6 +57,7 @@
 #define HAVE_GETSOCKNAME 1
 #define HAVE_GETTIMEOFDAY 1
 #define HAVE_GMTIME_R 1
+#define HAVE_IDN2_H 1
 #define HAVE_IFADDRS_H 1
 #define HAVE_IF_NAMETOINDEX 1
 #define HAVE_INET_NTOP 1
@@ -78,6 +81,7 @@
 #define HAVE_NETINET_IN6_H 1
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NETINET_TCP_H 1
+#define HAVE_NETINET_UDP_H 1
 #define HAVE_NET_IF_H 1
 #define HAVE_PIPE 1
 #define HAVE_POLL 1
@@ -87,8 +91,10 @@
 #define HAVE_PTHREAD_H 1
 #define HAVE_PWD_H 1
 #define HAVE_RECV 1
+#define HAVE_SCHED_YIELD 1
 #define HAVE_SELECT 1
 #define HAVE_SEND 1
+#define HAVE_SENDMSG 1
 #define HAVE_SETJMP_H 1
 #define HAVE_SETLOCALE 1
 #define HAVE_SETRLIMIT 1
@@ -176,5 +182,10 @@
 #define STRERROR_R_TYPE_ARG3 size_t
 #define USE_THREADS_POSIX 1
 #define VERSION "-"
+#ifndef _ALL_SOURCE
+#endif
+#define _FILE_OFFSET_BITS 64
+#ifndef __cplusplus
+#endif
 
 #define USE_UNITYTLS 1
