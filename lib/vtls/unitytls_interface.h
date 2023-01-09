@@ -291,7 +291,7 @@ typedef struct unitytls_interface_struct
 
     unitytls_x509verify_default_ca_t unitytls_x509verify_default_ca;
     unitytls_x509verify_explicit_ca_t unitytls_x509verify_explicit_ca;
-    unitytls_x509verify_result_to_string_t unitytls_x509verify_result;
+    unitytls_x509verify_result_to_string_t unitytls_x509verify_result_to_string;
 
     unitytls_tlsctx_create_server_t unitytls_tlsctx_create_server;
     unitytls_tlsctx_create_client_t unitytls_tlsctx_create_client;
