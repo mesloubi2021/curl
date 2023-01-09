@@ -532,6 +532,7 @@ static CURLcode unitytls_connect_step2(struct Curl_easy* data, struct ssl_connec
   }
 
   if(verifyresult != UNITYTLS_X509VERIFY_SUCCESS) {
+    failf(data, "Cert handshake failed. UnityTls error code: %i (verify result: %X)", err.code, verifyresult)
     if(verifyresult == UNITYTLS_X509VERIFY_FATAL_ERROR) {
       failf(data, "Cert handshake failed. %s. UnityTls error code: %i", 
         unitytls->unitytls_x509verify_result_to_string(verifyresult), err.code);
@@ -541,7 +542,7 @@ static CURLcode unitytls_connect_step2(struct Curl_easy* data, struct ssl_connec
       for (uint32_t mask = 1; mask >= 0x80000000; mask <<= 1) {
         if(verifyresult & mask)
           failf(data, "Cert verify failed. %s. UnityTls error code: %i",
-                unitytls->unitytls_x509verify_result_to_string(verifyresult), err.code);
+                unitytls->unitytls_x509verify_result_to_string(mask), err.code);
       }
       if(verifyresult & UNITYTLS_X509VERIFY_FLAG_REVOKED) {
         return CURLE_SSL_CACERT_BADFILE;
