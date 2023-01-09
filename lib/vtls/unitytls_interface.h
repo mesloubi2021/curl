@@ -31,24 +31,31 @@ typedef uint64_t    UInt64;
 typedef enum
 {
     UNITYTLS_SUCCESS = 0,
-    UNITYTLS_INVALID_ARGUMENT,      /* One of the arguments has an invalid value (e.g. null where not allowed) */
-    UNITYTLS_INVALID_FORMAT,        /* The passed data does not have a valid format. */
-    UNITYTLS_INVALID_PASSWORD,      /* Invalid password */
-    UNITYTLS_INVALID_STATE,         /* The object operating being operated on is not in a state that allows this function call. */
-    UNITYTLS_BUFFER_OVERFLOW,       /* A passed buffer was not large enough. */
-    UNITYTLS_OUT_OF_MEMORY,         /* Out of memory error */
-    UNITYTLS_INTERNAL_ERROR,        /* Internal implementation error. */
-    UNITYTLS_NOT_SUPPORTED,         /* The requested action is not supported on the current platform/implementation. */
-    UNITYTLS_ENTROPY_SOURCE_FAILED, /* Failed to generate requested amount of entropy data. */
-    UNITYTLS_STREAM_CLOSED,         /* The operation is not possible because the stream between the peers was closed. */
+    UNITYTLS_INVALID_ARGUMENT,          /* One of the arguments has an invalid value (e.g. null where not allowed) */
+    UNITYTLS_INVALID_FORMAT,            /* The passed data does not have a valid format. */
+    UNITYTLS_INVALID_PASSWORD,          /* Invalid password */
+    UNITYTLS_INVALID_STATE,             /* The object operating being operated on is not in a state that allows this function call. */
+    UNITYTLS_BUFFER_OVERFLOW,           /* A passed buffer was not large enough. */
+    UNITYTLS_OUT_OF_MEMORY,             /* Out of memory error */
+    UNITYTLS_INTERNAL_ERROR,            /* Internal implementation error. */
+    UNITYTLS_NOT_SUPPORTED,             /* The requested action is not supported on the current platform/implementation. */
+    UNITYTLS_ENTROPY_SOURCE_FAILED,     /* Failed to generate requested amount of entropy data. */
+    UNITYTLS_STREAM_CLOSED,             /* The operation is not possible because the stream between the peers was closed. */
+    UNITYTLS_DER_PARSE_ERROR,           /* error in parse_der */
+    UNITYTLS_KEY_PARSE_ERROR,           /* error parsing key */
+    UNITYTLS_SSL_ERROR,                 /* SSL setup failed */
 
-    UNITYTLS_USER_CUSTOM_ERROR_START    = 0x100000,
-    UNITYTLS_USER_WOULD_BLOCK,      /* Can be set by the user to signal that a call (e.g. read/write callback) would block and needs to be called again. */
-                                    /* Some implementations may set this if not all bytes have been read/written. */
-    UNITYTLS_USER_READ_FAILED,      /* Can be set by the user to indicate a failed read operation. */
-    UNITYTLS_USER_WRITE_FAILED,     /* Can be set by the user to indicate a failed write operation. */
-    UNITYTLS_USER_UNKNOWN_ERROR,    /* Can be set by the user to indicate a generic error. */
-    UNITYTLS_USER_CUSTOM_ERROR_END      = 0x200000,
+
+    UNITYTLS_USER_CUSTOM_ERROR_START = 0x100000,
+    UNITYTLS_USER_WOULD_BLOCK,          /* Can be set by the user to signal that a call (e.g. read/write callback) would block and needs to be called again. */
+    UNITYTLS_USER_WOULD_BLOCK_READ,     /* Refinement on UNITYTLS_USER_WOULD_BLOCK */
+    UNITYTLS_USER_WOULD_BLOCK_WRITE,    /* Refinement on UNITYTLS_USER_WOULD_BLOCK */
+    UNITYTLS_USER_READ_FAILED,          /* Can be set by the user to indicate a failed read operation. */
+    UNITYTLS_USER_WRITE_FAILED,         /* Can be set by the user to indicate a failed write operation. */
+    UNITYTLS_USER_UNKNOWN_ERROR,        /* Can be set by the user to indicate a generic error. */
+    UNITYTLS_SSL_NEEDS_VERIFY,          /* Not an error - need to verify the validity of a connecting client. */
+    UNITYTLS_HANDSHAKE_STEP,            /* Not an error - we are in the process of handshake stepping. */
+    UNITYTLS_USER_CUSTOM_ERROR_END = 0x200000,
 } unitytls_error_code_t;
 typedef UInt32 unitytls_error_code;
 
@@ -59,6 +66,22 @@ typedef struct
     unitytls_error_code code;
     UInt64              reserved;   /* Implementation specific error code/handle. */
 } unitytls_errorstate;
+
+/* ------------------------------------ */
+/* Log */
+/* ------------------------------------ */
+typedef enum
+{
+    UNITYTLS_LOGLEVEL_MIN = 0,
+    UNITYTLS_LOGLEVEL_FATAL = UNITYTLS_LOGLEVEL_MIN,
+    UNITYTLS_LOGLEVEL_ERROR,
+    UNITYTLS_LOGLEVEL_WARN,
+    UNITYTLS_LOGLEVEL_INFO,
+    UNITYTLS_LOGLEVEL_DEBUG,
+    UNITYTLS_LOGLEVEL_TRACE,
+    UNITYTLS_LOGLEVEL_MAX = UNITYTLS_LOGLEVEL_TRACE
+} unitytls_log_level_t;
+typedef uint32_t unitytls_log_level;
 
 /* ------------------------------------ */
 /* Public Key */
@@ -94,23 +117,42 @@ UNITYTLS_DECLARE_OBJECT(unitytls_x509list);
 /* ------------------------------------ */
 typedef enum
 {
-    UNITYTLS_X509VERIFY_SUCCESS            = 0x00000000,
-    UNITYTLS_X509VERIFY_NOT_DONE           = 0x80000000,
-    UNITYTLS_X509VERIFY_FATAL_ERROR        = 0xFFFFFFFF,
+    UNITYTLS_X509VERIFY_SUCCESS = 0x00000000,
 
-    UNITYTLS_X509VERIFY_FLAG_EXPIRED       = 0x00000001,
-    UNITYTLS_X509VERIFY_FLAG_REVOKED       = 0x00000002, /* requires CRL backend */
-    UNITYTLS_X509VERIFY_FLAG_CN_MISMATCH   = 0x00000004,
-    UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED   = 0x00000008,
+    UNITYTLS_X509VERIFY_NOT_DONE = 0x80000000,
+    UNITYTLS_X509VERIFY_FATAL_ERROR = 0xFFFFFFFF,
 
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR1   = 0x00010000,
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR2   = 0x00020000,
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR3   = 0x00040000,
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR4   = 0x00080000,
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR5   = 0x00100000,
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR6   = 0x00200000,
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR7   = 0x00400000,
-    UNITYTLS_X509VERIFY_FLAG_USER_ERROR8   = 0x00800000,
+    UNITYTLS_X509VERIFY_FLAG_EXPIRED = 0x00000001,                  /* MBEDTLS_X509_BADCERT_EXPIRED       - The certificate validity has expired. */
+    UNITYTLS_X509VERIFY_FLAG_REVOKED = 0x00000002,                  /* MBEDTLS_X509_BADCERT_REVOKED       - The certificate has been revoked (is on a CRL). Requires the CRL backend. */
+    UNITYTLS_X509VERIFY_FLAG_CN_MISMATCH = 0x00000004,              /* MBEDTLS_X509_BADCERT_CN_MISMATCH   - The certificate Common Name (CN) does not match with the expected CN. */
+    UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED = 0x00000008,              /* MBEDTLS_X509_BADCERT_NOT_TRUSTED   - The certificate is not correctly signed by the trusted CA. */
+    UNITYTLS_X509VERIFY_FLAG_BADCRL_NOT_TRUSTED = 0x00000010,       /* MBEDTLS_X509_BADCRL_NOT_TRUSTED    - The CRL is not correctly signed by the trusted CA. Requires the CRL backend. */
+    UNITYTLS_X509VERIFY_FLAG_BADCRL_EXPIRED = 0x00000020,           /* MBEDTLS_X509_BADCRL_EXPIRED        - The CRL is expired. Requires the CRL backend. */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_MISSING = 0x00000040,          /* MBEDTLS_X509_BADCERT_MISSING       - Certificate was missing. */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_SKIP_VERIFY = 0x00000080,      /* MBEDTLS_X509_BADCERT_SKIP_VERIFY   - Certificate verification was skipped. */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_OTHER = 0x00000100,            /* MBEDTLS_X509_BADCERT_OTHER         - Other reason (can be used by verify callback) */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_FUTURE = 0x00000200,           /* MBEDTLS_X509_BADCERT_FUTURE        - The certificate validity starts in the future. */
+    UNITYTLS_X509VERIFY_FLAG_BADCRL_FUTURE = 0x00000400,            /* MBEDTLS_X509_BADCRL_FUTURE         - The CRL is from the future */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_KEY_USAGE = 0x00000800,        /* MBEDTLS_X509_BADCERT_KEY_USAGE     - Usage does not match the keyUsage extension. */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_EXT_KEY_USAGE = 0x00001000,    /* MBEDTLS_X509_BADCERT_EXT_KEY_USAGE - Usage does not match the extendedKeyUsage extension. */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_NS_CERT_TYPE = 0x00002000,     /* MBEDTLS_X509_BADCERT_NS_CERT_TYPE  - Usage does not match the nsCertType extension. */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_BAD_MD = 0x00004000,           /* MBEDTLS_X509_BADCERT_BAD_MD        - The certificate is signed with an unacceptable hash. */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_BAD_PK = 0x00008000,           /* MBEDTLS_X509_BADCERT_BAD_PK        - The certificate is signed with an unacceptable PK alg (eg RSA vs ECDSA). */
+    UNITYTLS_X509VERIFY_FLAG_BADCERT_BAD_KEY = 0x00010000,          /* MBEDTLS_X509_BADCERT_BAD_KEY       - The certificate is signed with an unacceptable key (eg bad curve, RSA too short). */
+    UNITYTLS_X509VERIFY_FLAG_BADCRL_BAD_MD = 0x00020000,            /* MBEDTLS_X509_BADCRL_BAD_MD         - The CRL is signed with an unacceptable hash. Requires the CRL backend. */
+    UNITYTLS_X509VERIFY_FLAG_BADCRL_BAD_PK = 0x00040000,            /* MBEDTLS_X509_BADCRL_BAD_PK         - The CRL is signed with an unacceptable PK alg (eg RSA vs ECDSA).. Requires the CRL backend. */
+    UNITYTLS_X509VERIFY_FLAG_BADCRL_BAD_KEY = 0x00080000,           /* MBEDTLS_X509_BADCRL_BAD_KEY        - The CRL is signed with an unacceptable key (eg bad curve, RSA too short). Requires the CRL backend. */
+
+    // Deprecated enumerations
+
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR1 = UNITYTLS_X509VERIFY_FLAG_BADCERT_BAD_KEY,
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR2 = UNITYTLS_X509VERIFY_FLAG_BADCRL_BAD_MD,
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR3 = UNITYTLS_X509VERIFY_FLAG_BADCRL_BAD_PK,
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR4 = UNITYTLS_X509VERIFY_FLAG_BADCRL_BAD_KEY,
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR5 = 0x00100000, /* UNUSED */
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR6 = 0x00200000, /* UNUSED */
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR7 = 0x00400000, /* UNUSED */
+    UNITYTLS_X509VERIFY_FLAG_USER_ERROR8 = 0x00800000, /* UNUSED */
 
     UNITYTLS_X509VERIFY_FLAG_UNKNOWN_ERROR = 0x08000000,
 } unitytls_x509verify_result_t;
@@ -199,12 +241,15 @@ typedef void                        (*unitytls_x509list_free_t)(unitytls_x509lis
 
 typedef unitytls_x509verify_result  (*unitytls_x509verify_default_ca_t)(unitytls_x509list_ref chain, const char* cn, size_t cnLen, unitytls_x509verify_callback cb, void* userData, unitytls_errorstate* errorState);
 typedef unitytls_x509verify_result  (*unitytls_x509verify_explicit_ca_t)(unitytls_x509list_ref chain, unitytls_x509list_ref trustCA, const char* cn, size_t cnLen, unitytls_x509verify_callback cb, void* userData, unitytls_errorstate* errorState);
+typedef const char*                 (*unitytls_x509verify_result_to_string_t)(unitytls_x509verify_result value);
 
 typedef unitytls_tlsctx*            (*unitytls_tlsctx_create_server_t)(unitytls_tlsctx_protocolrange supportedProtocols, unitytls_tlsctx_callbacks callbacks, unitytls_x509list_ref certChain, unitytls_key_ref leafCertificateKey, unitytls_errorstate* errorState);
 typedef unitytls_tlsctx*            (*unitytls_tlsctx_create_client_t)(unitytls_tlsctx_protocolrange supportedProtocols, unitytls_tlsctx_callbacks callbacks, const char* cn, size_t cnLen, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_server_require_client_authentication_t)(unitytls_tlsctx* ctx, unitytls_x509list_ref clientAuthCAList, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_set_certificate_callback_t)(unitytls_tlsctx* ctx, unitytls_tlsctx_certificate_callback cb, void* userData, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_set_trace_callback_t)(unitytls_tlsctx* ctx, unitytls_tlsctx_trace_callback cb, void* userData, unitytls_errorstate* errorState);
+typedef void                        (*unitytls_tlsctx_set_trace_level_callback_t)(unitytls_tlsctx* ctx, unitytls_log_level level);
+
 typedef void                        (*unitytls_tlsctx_set_x509verify_callback_t)(unitytls_tlsctx* ctx, unitytls_tlsctx_x509verify_callback cb, void* userData, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_set_supported_ciphersuites_t)(unitytls_tlsctx* ctx, unitytls_ciphersuite* supportedCiphersuites, size_t supportedCiphersuitesLen, unitytls_errorstate* errorState);
 typedef unitytls_ciphersuite        (*unitytls_tlsctx_get_ciphersuite_t)(unitytls_tlsctx* ctx, unitytls_errorstate* errorState);
@@ -246,12 +291,14 @@ typedef struct unitytls_interface_struct
 
     unitytls_x509verify_default_ca_t unitytls_x509verify_default_ca;
     unitytls_x509verify_explicit_ca_t unitytls_x509verify_explicit_ca;
+    unitytls_x509verify_result_to_string_t unitytls_x509verify_result;
 
     unitytls_tlsctx_create_server_t unitytls_tlsctx_create_server;
     unitytls_tlsctx_create_client_t unitytls_tlsctx_create_client;
     unitytls_tlsctx_server_require_client_authentication_t unitytls_tlsctx_server_require_client_authentication;
     unitytls_tlsctx_set_certificate_callback_t unitytls_tlsctx_set_certificate_callback;
     unitytls_tlsctx_set_trace_callback_t unitytls_tlsctx_set_trace_callback;
+    unitytls_tlsctx_set_trace_level_callback_t unitytls_tlsctx_set_trace_level_callback;
     unitytls_tlsctx_set_x509verify_callback_t unitytls_tlsctx_set_x509verify_callback;
     unitytls_tlsctx_set_supported_ciphersuites_t unitytls_tlsctx_set_supported_ciphersuites;
     unitytls_tlsctx_get_ciphersuite_t unitytls_tlsctx_get_ciphersuite;

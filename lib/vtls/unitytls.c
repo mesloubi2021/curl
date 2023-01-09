@@ -410,7 +410,6 @@ static ssize_t unitytls_recv(struct Curl_easy *data, int sockindex,
   return read;
 }
 
-
 static CURLcode unitytls_connect_step1(struct Curl_easy* data, struct connectdata* conn, int sockindex)
 {
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
@@ -534,46 +533,23 @@ static CURLcode unitytls_connect_step2(struct Curl_easy* data, struct ssl_connec
 
   if(verifyresult != UNITYTLS_X509VERIFY_SUCCESS) {
     if(verifyresult == UNITYTLS_X509VERIFY_FATAL_ERROR) {
-      failf(data, "Cert handshake failed. verify result: UNITYTLS_X509VERIFY_FATAL_ERROR. error state: %i", err.code);
+      failf(data, "Cert handshake failed. %s. UnityTls error code: %i", 
+        unitytls->unitytls_x509verify_result_to_string(verifyresult), err.code);
       return CURLE_SSL_CONNECT_ERROR;
     }
     else {
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_EXPIRED)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_EXPIRED");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_CN_MISMATCH)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_CN_MISMATCH");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED");
-
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR1)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR1");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR2)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR2");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR3)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR3");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR4)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR4");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR5)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR5");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR6)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR6");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR7)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR7");
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_USER_ERROR8)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_USER_ERROR8");
-
-      if(verifyresult & UNITYTLS_X509VERIFY_FLAG_UNKNOWN_ERROR)
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_UNKNOWN_ERROR");
-
+      for (uint32_t mask = 1; mask >= 0x80000000; mask <<= 1) {
+        if(verifyresult & mask)
+          failf(data, "Cert verify failed. %s. UnityTls error code: %i",
+                unitytls->unitytls_x509verify_result_to_string(verifyresult), err.code);
+      }
       if(verifyresult & UNITYTLS_X509VERIFY_FLAG_REVOKED) {
-        failf(data, "Cert verify failed: UNITYTLS_X509VERIFY_FLAG_REVOKED");
         return CURLE_SSL_CACERT_BADFILE;
       }
       /* Note that UNITYTLS_X509VERIFY_NOT_DONE is always always an error as well since we are never running in server mode (unitytls_tlsctx_create_server)
-      * which means that authentification method should always be called. 
-      * However, this usually has a different reason so it is not CURLE_PEER_FAILED_VERIFICATION */
+       * which means that authentification method should always be called. 
+       * However, this usually has a different reason so it is not CURLE_PEER_FAILED_VERIFICATION */
       if (verifyresult == UNITYTLS_X509VERIFY_NOT_DONE) {
-        failf(data, "Handshake did not perform verification. UnityTls error code: %i", err.code);
         return CURLE_SSL_CONNECT_ERROR;
       }
       else
