@@ -532,14 +532,14 @@ static CURLcode unitytls_connect_step2(struct Curl_easy* data, struct ssl_connec
   }
 
   if(verifyresult != UNITYTLS_X509VERIFY_SUCCESS) {
-    failf(data, "Cert handshake failed. UnityTls error code: %i (verify result: %X)", err.code, verifyresult);
     if(verifyresult == UNITYTLS_X509VERIFY_FATAL_ERROR) {
       failf(data, "Cert handshake failed. %s. UnityTls error code: %i", 
         unitytls->unitytls_x509verify_result_to_string(verifyresult), err.code);
       return CURLE_SSL_CONNECT_ERROR;
     }
     else {
-      for (uint32_t mask = 1; mask >= 0x80000000; mask <<= 1) {
+      for (int i = 0; i < 32; ++i) {
+        const uint32_t mask = 1 << i;
         if(verifyresult & mask)
           failf(data, "Cert verify failed. %s. UnityTls error code: %i",
                 unitytls->unitytls_x509verify_result_to_string(mask), err.code);
