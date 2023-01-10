@@ -551,6 +551,8 @@ static CURLcode unitytls_connect_step2(struct Curl_easy* data, struct ssl_connec
        * which means that authentification method should always be called. 
        * However, this usually has a different reason so it is not CURLE_PEER_FAILED_VERIFICATION */
       if (verifyresult == UNITYTLS_X509VERIFY_NOT_DONE) {
+        failf(data, "Cert handshake failed. %s. UnityTls error code: %i", 
+            unitytls->unitytls_x509verify_result_to_string(verifyresult), err.code);
         return CURLE_SSL_CONNECT_ERROR;
       }
       else
