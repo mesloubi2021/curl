@@ -291,14 +291,12 @@ typedef struct unitytls_interface_struct
 
     unitytls_x509verify_default_ca_t unitytls_x509verify_default_ca;
     unitytls_x509verify_explicit_ca_t unitytls_x509verify_explicit_ca;
-    unitytls_x509verify_result_to_string_t unitytls_x509verify_result_to_string;
 
     unitytls_tlsctx_create_server_t unitytls_tlsctx_create_server;
     unitytls_tlsctx_create_client_t unitytls_tlsctx_create_client;
     unitytls_tlsctx_server_require_client_authentication_t unitytls_tlsctx_server_require_client_authentication;
     unitytls_tlsctx_set_certificate_callback_t unitytls_tlsctx_set_certificate_callback;
     unitytls_tlsctx_set_trace_callback_t unitytls_tlsctx_set_trace_callback;
-    unitytls_tlsctx_set_trace_level_callback_t unitytls_tlsctx_set_trace_level_callback;
     unitytls_tlsctx_set_x509verify_callback_t unitytls_tlsctx_set_x509verify_callback;
     unitytls_tlsctx_set_supported_ciphersuites_t unitytls_tlsctx_set_supported_ciphersuites;
     unitytls_tlsctx_get_ciphersuite_t unitytls_tlsctx_get_ciphersuite;
@@ -310,6 +308,9 @@ typedef struct unitytls_interface_struct
     unitytls_tlsctx_free_t unitytls_tlsctx_free;
 
     unitytls_random_generate_bytes_t unitytls_random_generate_bytes;
+
+    unitytls_x509verify_result_to_string_t unitytls_x509verify_result_to_string;
+    unitytls_tlsctx_set_trace_level_t unitytls_tlsctx_set_trace_level;
 } unitytls_interface_struct;
 
 
