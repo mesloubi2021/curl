@@ -247,7 +247,7 @@ typedef unitytls_tlsctx*            (*unitytls_tlsctx_create_server_t)(unitytls_
 typedef unitytls_tlsctx*            (*unitytls_tlsctx_create_client_t)(unitytls_tlsctx_protocolrange supportedProtocols, unitytls_tlsctx_callbacks callbacks, const char* cn, size_t cnLen, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_server_require_client_authentication_t)(unitytls_tlsctx* ctx, unitytls_x509list_ref clientAuthCAList, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_set_certificate_callback_t)(unitytls_tlsctx* ctx, unitytls_tlsctx_certificate_callback cb, void* userData, unitytls_errorstate* errorState);
-typedef void                        (*unitytls_tlsctx_set_trace_t)(unitytls_tlsctx* ctx, unitytls_tlsctx_trace_callback cb, void* userData, unitytls_errorstate* errorState);
+typedef void                        (*unitytls_tlsctx_set_trace_callback_t)(unitytls_tlsctx* ctx, unitytls_tlsctx_trace_callback cb, void* userData, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_set_trace_level_t)(unitytls_tlsctx* ctx, unitytls_log_level level);
 typedef void                        (*unitytls_tlsctx_set_x509verify_callback_t)(unitytls_tlsctx* ctx, unitytls_tlsctx_x509verify_callback cb, void* userData, unitytls_errorstate* errorState);
 typedef void                        (*unitytls_tlsctx_set_supported_ciphersuites_t)(unitytls_tlsctx* ctx, unitytls_ciphersuite* supportedCiphersuites, size_t supportedCiphersuitesLen, unitytls_errorstate* errorState);
