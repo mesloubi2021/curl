@@ -48,6 +48,3 @@ missing
 mkinstalldirs
 tags
 test-driver
-
-#Stadia builds
-**/GGP
