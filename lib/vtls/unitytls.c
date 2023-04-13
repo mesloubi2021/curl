@@ -202,6 +202,12 @@ static bool unitytls_parse_all_pem_in_dir(struct Curl_easy* data, const char* pa
   return success;
 }
 
+struct EasyFilter
+{
+  struct Curl_cfilter *cf;
+  struct Curl_easy *easy;
+};
+
 static CURLcode read_plain(curl_socket_t sockfd,
                          char *buf,
                          size_t bytesfromsocket,
@@ -230,13 +236,17 @@ static CURLcode read_plain(curl_socket_t sockfd,
 
 static size_t on_read(void* userData, UInt8* buffer, size_t bufferLen, unitytls_errorstate* errorState)
 {
-  struct Curl_cfilter *cf = (struct Curl_cfilter*)userData;
-  struct ssl_connect_data *connssl = cf->ctx;
-  struct ssl_backend_data *backend = connssl->backend;
+  struct EasyFilter *ef = (struct EasyFilter*)userData;
+  struct connectdata* conn = ef->easy->conn;
+  struct ssl_connect_data *connssl = ef->cf->ctx;
+  connssl->connecting_state = ssl_connect_2_reading;
+  //struct ssl_backend_data *backend = connssl->backend;
+  curl_socket_t socks[2] = { 0, 0 };
+  Curl_ssl_get_select_socks(ef->cf, ef->easy, socks);
   CURLcode result;
   ssize_t read = 0;
 
-  result = read_plain(backend->sockfd, (char*)(buffer), bufferLen, &read);
+  result = read_plain(socks[0], (char*)(buffer), bufferLen, &read);
   if(result == CURLE_AGAIN) {
     unitytls->unitytls_errorstate_raise_error(errorState, UNITYTLS_USER_WOULD_BLOCK);
     return 0;
@@ -315,14 +325,12 @@ static CURLcode write_plain(struct connectdata *conn,
 
 static size_t on_write(void* userData, const UInt8* data, size_t bufferLen, unitytls_errorstate* errorState)
 {
-  struct Curl_cfilter *cf = (struct Curl_cfilter*)userData;
-  struct ssl_connect_data *connssl = cf->ctx;
-  struct ssl_backend_data *backend = connssl->backend;
-  struct connectdata* conn = backend->conn;
+  struct EasyFilter *ef = (struct EasyFilter*)userData;
+  struct connectdata* conn = ef->easy->conn;
   CURLcode result;
   ssize_t written = 0;
 
-  result = write_plain(conn, backend->sockfd, data, bufferLen, &written);
+  result = write_plain(conn, conn->sock[0], data, bufferLen, &written);
   if(result == CURLE_AGAIN) {
     unitytls->unitytls_errorstate_raise_error(errorState, UNITYTLS_USER_WOULD_BLOCK);
     return 0;
@@ -456,7 +464,10 @@ static CURLcode unitytls_connect_step1(struct Curl_cfilter *cf, struct Curl_easy
 
   unitytls_errorstate err = unitytls->unitytls_errorstate_create();
   unitytls_tlsctx_protocolrange protocol_range;
-  unitytls_tlsctx_callbacks callbacks = { on_read, on_write, cf };
+  struct EasyFilter *ef = (struct EasyFilter*)malloc(sizeof(struct EasyFilter));
+  ef->cf = cf;
+  ef->easy = data;
+  unitytls_tlsctx_callbacks callbacks = { on_read, on_write, ef };
 
   /* unitytls only supports TLS 1.0-1.2 */
   switch (conn_config->version)
