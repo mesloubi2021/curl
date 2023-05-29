@@ -222,6 +222,7 @@ CURLcode Curl_ssl_addsessionid(struct Curl_cfilter *cf,
 #include "schannel.h"       /* Schannel SSPI version */
 #include "sectransp.h"      /* SecureTransport (Darwin) version */
 #include "mbedtls.h"        /* mbedTLS versions */
+#include "unitytls.h"       /* unityTLS versions */
 #include "bearssl.h"        /* BearSSL versions */
 #include "rustls.h"         /* rustls versions */
 
