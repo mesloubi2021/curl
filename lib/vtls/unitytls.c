@@ -233,16 +233,12 @@ static CURLcode read_plain(curl_socket_t sockfd,
 static size_t on_read(void* userData, UInt8* buffer, size_t bufferLen, unitytls_errorstate* errorState)
 {
   struct ssl_backend_data* backend = (struct ssl_backend_data*)userData;
-  struct connectdata* conn = backend->easy->conn;
   struct ssl_connect_data *connssl = backend->cf->ctx;
-
+  
+  curl_socket_t sockfd = Curl_conn_cf_get_socket(backend->cf, backend->easy);
   connssl->connecting_state = ssl_connect_2_reading;
-  curl_socket_t socks[2] = { 0, 0 };
-  Curl_ssl_get_select_socks(backend->cf, backend->easy, socks);
-  CURLcode result;
   ssize_t read = 0;
-
-  result = read_plain(socks[0], (char*)(buffer), bufferLen, &read);
+  CURLcode result = read_plain(sockfd, (char*)(buffer), bufferLen, &read);
   if(result == CURLE_AGAIN) {
     unitytls->unitytls_errorstate_raise_error(errorState, UNITYTLS_USER_WOULD_BLOCK);
     return 0;
@@ -255,77 +251,50 @@ static size_t on_read(void* userData, UInt8* buffer, size_t bufferLen, unitytls_
   return read;
 }
 
-/* Pretty much a copy of Curl_send_plain */
-static ssize_t send_plain(struct connectdata *conn, int num,
-                        const void *mem, size_t len, CURLcode *code)
-{
-  curl_socket_t sockfd;
-  ssize_t bytes_written;
-
-  DEBUGASSERT(conn);
-  sockfd = conn->sock[num];
-
-#if defined(MSG_FASTOPEN) && !defined(TCP_FASTOPEN_CONNECT) /* Linux */
-  if(conn->bits.tcp_fastopen) {
-    bytes_written = sendto(sockfd, mem, len, MSG_FASTOPEN,
-                            &conn->remote_addr->sa_addr,
-                            conn->remote_addr->addrlen);
-    conn->bits.tcp_fastopen = FALSE;
-  }
-  else
-#endif
-    bytes_written = swrite(sockfd, mem, len);
-
-  *code = CURLE_OK;
-  if(-1 == bytes_written) {
-    int err = SOCKERRNO;
-
-    if(
-#ifdef WSAEWOULDBLOCK
-      /* This is how Windows does it */
-      (WSAEWOULDBLOCK == err)
-#else
-      /* errno may be EWOULDBLOCK or on some systems EAGAIN when it returned
-         due to its inability to send off data without blocking. We therefore
-         treat both error codes the same here */
-      (EWOULDBLOCK == err) || (EAGAIN == err) || (EINTR == err) ||
-      (EINPROGRESS == err)
-#endif
-      ) {
-      /* this is just a case of EWOULDBLOCK */
-      bytes_written = 0;
-      *code = CURLE_AGAIN;
-    }
-    else {
-      *code = CURLE_SEND_ERROR;
-    }
-  }
-  return bytes_written;
-}
-
 /* Pretty much a copy of Curl_write_plain */
-static CURLcode write_plain(struct connectdata *conn,
-                          curl_socket_t sockfd,
+static CURLcode write_plain(curl_socket_t sockfd,
                           const void *mem,
                           size_t len,
                           ssize_t *written)
 {
-  DEBUGASSERT(conn);
-  int num = (sockfd == conn->sock[SECONDARYSOCKET]);
+  ssize_t bytes_written = bytes_written = swrite(sockfd, mem, len);
 
-  CURLcode result;
-  *written = send_plain(conn, num, mem, len, &result);
+  CURLcode code = CURLE_OK;
+  if (-1 == bytes_written) {
+      int err = SOCKERRNO;
 
-  return result;
+      if (
+#ifdef WSAEWOULDBLOCK
+          /* This is how Windows does it */
+          (WSAEWOULDBLOCK == err)
+#else
+          /* errno may be EWOULDBLOCK or on some systems EAGAIN when it returned
+             due to its inability to send off data without blocking. We therefore
+             treat both error codes the same here */
+          (EWOULDBLOCK == err) || (EAGAIN == err) || (EINTR == err) ||
+          (EINPROGRESS == err)
+#endif
+          ) {
+          /* this is just a case of EWOULDBLOCK */
+          bytes_written = 0;
+          code = CURLE_AGAIN;
+      }
+      else {
+          code = CURLE_SEND_ERROR;
+      }
+  }
+  *written = bytes_written;
+
+  return code;
 }
 
 static size_t on_write(void* userData, const UInt8* data, size_t bufferLen, unitytls_errorstate* errorState)
 {
   struct ssl_backend_data* backend = (struct ssl_backend_data*)userData;
-  struct connectdata* conn = backend->easy->conn;
 
+  curl_socket_t sockfd = Curl_conn_cf_get_socket(backend->cf, backend->easy);
   ssize_t written = 0;
-  CURLcode result = write_plain(conn, conn->sock[0], data, bufferLen, &written);
+  CURLcode result = write_plain(sockfd, data, bufferLen, &written);
   if(result == CURLE_AGAIN) {
     unitytls->unitytls_errorstate_raise_error(errorState, UNITYTLS_USER_WOULD_BLOCK);
     return 0;
