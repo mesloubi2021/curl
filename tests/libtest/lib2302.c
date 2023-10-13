@@ -39,7 +39,7 @@ static int ping(CURL *curl, const char *send_payload)
   return (int)result;
 }
 
-static int recv_pong(CURL *curl, const char *exected_payload)
+static int recv_pong(CURL *curl, const char *expected_payload)
 {
   size_t rlen;
   unsigned int rflags;
@@ -49,8 +49,8 @@ static int recv_pong(CURL *curl, const char *exected_payload)
   if(rflags & CURLWS_PONG) {
     int same = 0;
     fprintf(stderr, "ws: got PONG back\n");
-    if(rlen == strlen(exected_payload)) {
-      if(!memcmp(exected_payload, buffer, rlen)) {
+    if(rlen == strlen(expected_payload)) {
+      if(!memcmp(expected_payload, buffer, rlen)) {
         fprintf(stderr, "ws: got the same payload back\n");
         same = 1;
       }
@@ -97,7 +97,7 @@ static size_t writecb(char *buffer, size_t size, size_t nitems, void *p)
   CURL *easy = p;
   size_t i;
   size_t incoming = nitems;
-  struct curl_ws_frame *meta;
+  const struct curl_ws_frame *meta;
   (void)size;
   for(i = 0; i < nitems; i++)
     printf("%02x ", (unsigned char)buffer[i]);

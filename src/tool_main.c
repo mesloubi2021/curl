@@ -37,11 +37,6 @@
 #include <fcntl.h>
 #endif
 
-#ifdef USE_NSS
-#include <nspr.h>
-#include <plarenas.h>
-#endif
-
 #define ENABLE_CURLX_PRINTF
 /* use our own printf() functions */
 #include "curlx.h"
@@ -78,6 +73,7 @@ int vms_show = 0;
  * when command-line argument globbing is enabled under the MSYS shell, so turn
  * it off.
  */
+extern int _CRT_glob;
 int _CRT_glob = 0;
 #endif /* __MINGW32__ */
 
@@ -175,17 +171,17 @@ static CURLcode main_init(struct GlobalConfig *config)
         config->first->global = config;
       }
       else {
-        errorf(config, "error retrieving curl library information\n");
+        errorf(config, "error retrieving curl library information");
         free(config->first);
       }
     }
     else {
-      errorf(config, "error initializing curl library\n");
+      errorf(config, "error initializing curl library");
       free(config->first);
     }
   }
   else {
-    errorf(config, "error initializing curl\n");
+    errorf(config, "error initializing curl");
     result = CURLE_FAILED_INIT;
   }
 
@@ -212,14 +208,6 @@ static void main_free(struct GlobalConfig *config)
   /* Cleanup the easy handle */
   /* Main cleanup */
   curl_global_cleanup();
-#ifdef USE_NSS
-  if(PR_Initialized()) {
-    /* prevent valgrind from reporting still reachable mem from NSPR arenas */
-    PL_ArenaFinish();
-    /* prevent valgrind from reporting possibly lost memory (fd cache, ...) */
-    PR_Cleanup();
-  }
-#endif
   free_globalconfig(config);
 
   /* Free the config structures */
@@ -261,13 +249,13 @@ int main(int argc, char *argv[])
   /* win32_init must be called before other init routines. */
   result = win32_init();
   if(result) {
-    fprintf(stderr, "curl: (%d) Windows-specific init failed.\n", result);
+    errorf(&global, "(%d) Windows-specific init failed", result);
     return result;
   }
 #endif
 
   if(main_checkfds()) {
-    fprintf(stderr, "curl: out of file descriptors\n");
+    errorf(&global, "out of file descriptors");
     return CURLE_FAILED_INIT;
   }
 

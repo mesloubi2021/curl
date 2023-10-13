@@ -134,7 +134,6 @@ These options are provided to select the TLS backend to use.
  - BearSSL: `--with-bearssl`
  - GnuTLS: `--with-gnutls`.
  - mbedTLS: `--with-mbedtls`
- - NSS: `--with-nss`
  - OpenSSL: `--with-openssl` (also for BoringSSL, AWS-LC, libressl, and quictls)
  - rustls: `--with-rustls`
  - Schannel: `--with-schannel`
@@ -423,7 +422,7 @@ OpenSSL, follow the OpenSSL build instructions and then install `libssl.a` and
 OpenSSL like this:
 
 ```bash
-LIBS="-lssl -lcrypto -lc++" # For OpenSSL/BoringSSL. In general, you will need to the SSL/TLS layer's transtive dependencies if you are linking statically.
+LIBS="-lssl -lcrypto -lc++" # For OpenSSL/BoringSSL. In general, you will need to the SSL/TLS layer's transitive dependencies if you are linking statically.
 ./configure --host aarch64-linux-android --with-pic --disable-shared --with-openssl="$TOOLCHAIN/sysroot/usr"
 ```
 

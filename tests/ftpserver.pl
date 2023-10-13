@@ -78,6 +78,11 @@ use pathhelp qw(
     exe_ext
     );
 
+use globalconfig qw(
+    $SERVERCMD
+    $LOCKDIR
+    );
+
 #**********************************************************************
 # global vars...
 #
@@ -89,7 +94,7 @@ my $proto = 'ftp';  # default server protocol
 my $srcdir;         # directory where ftpserver.pl is located
 my $srvrname;       # server name for presentation purposes
 my $cwd_testno;     # test case numbers extracted from CWD command
-my $testno = 0;     # test case number (read from ftpserver.cmd)
+my $testno = 0;     # test case number (read from server.cmd)
 my $path   = '.';
 my $logdir = $path .'/log';
 my $piddir;
@@ -114,7 +119,6 @@ my $datasockf_logfile;  # log file for secondary connection sockfilt process
 #**********************************************************************
 # global vars used for server logs advisor read lock handling
 #
-my $SERVERLOGS_LOCK = "serverlogs.lock";
 my $serverlogs_lockfile;
 my $serverlogslocked = 0;
 
@@ -869,7 +873,7 @@ sub RCPT_smtp {
               /^<([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})>$/) ||
             ($smtputf8 && $to =~
               /^<([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4})>$/)) {
-            sendcontrol "250 Recipient OK\r\n";      
+            sendcontrol "250 Recipient OK\r\n";
         }
         else {
             sendcontrol "501 Invalid address\r\n";
@@ -1816,7 +1820,7 @@ sub LIST_pop3 {
     # This is a built-in fake-message list
     my @data = (
         "1 100\r\n",
-        "2 4294967400\r\n",	# > 4 GB
+        "2 4294967400\r\n",  # > 4 GB
         "3 200\r\n",
     );
 
@@ -2796,10 +2800,10 @@ sub customize {
     %customcount = ();  #
     %delayreply = ();   #
 
-    open(my $custom, "<", "$logdir/ftpserver.cmd") ||
+    open(my $custom, "<", "$logdir/$SERVERCMD") ||
         return 1;
 
-    logmsg "FTPD: Getting commands from $logdir/ftpserver.cmd\n";
+    logmsg "FTPD: Getting commands from $logdir/$SERVERCMD\n";
 
     while(<$custom>) {
         if($_ =~ /REPLY \"([A-Z]+ [A-Za-z0-9+-\/=\*. ]+)\" (.*)/) {
@@ -3040,7 +3044,6 @@ if(!$logfile) {
 $mainsockf_pidfile = mainsockf_pidfilename($piddir, $proto, $ipvnum, $idnum);
 $mainsockf_logfile =
     mainsockf_logfilename($logdir, $proto, $ipvnum, $idnum);
-$serverlogs_lockfile = "$logdir/$SERVERLOGS_LOCK";
 
 if($proto eq 'ftp') {
     $datasockf_pidfile = datasockf_pidfilename($piddir, $proto, $ipvnum, $idnum);
@@ -3049,6 +3052,7 @@ if($proto eq 'ftp') {
 }
 
 $srvrname = servername_str($proto, $ipvnum, $idnum);
+$serverlogs_lockfile = "$logdir/$LOCKDIR/${srvrname}.lock";
 
 $idstr = "$idnum" if($idnum > 1);
 

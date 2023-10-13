@@ -123,8 +123,9 @@ static void freecookie(struct Cookie *co)
   free(co);
 }
 
-static bool tailmatch(const char *cookie_domain, size_t cookie_domain_len,
-                      const char *hostname)
+static bool cookie_tailmatch(const char *cookie_domain,
+                             size_t cookie_domain_len,
+                             const char *hostname)
 {
   size_t hostname_len = strlen(hostname);
 
@@ -696,7 +697,7 @@ Curl_cookie_add(struct Curl_easy *data,
           if(!domain
              || (is_ip && !strncmp(valuep, domain, vlen) &&
                  (vlen == strlen(domain)))
-             || (!is_ip && tailmatch(valuep, vlen, domain))) {
+             || (!is_ip && cookie_tailmatch(valuep, vlen, domain))) {
             strstore(&co->domain, valuep, vlen);
             if(!co->domain) {
               badcookie = TRUE;
@@ -1431,7 +1432,7 @@ struct Cookie *Curl_cookie_getlist(struct Curl_easy *data,
       /* now check if the domain is correct */
       if(!co->domain ||
          (co->tailmatch && !is_ip &&
-          tailmatch(co->domain, strlen(co->domain), host)) ||
+          cookie_tailmatch(co->domain, strlen(co->domain), host)) ||
          ((!co->tailmatch || is_ip) && strcasecompare(host, co->domain)) ) {
         /*
          * the right part of the host matches the domain stuff in the
@@ -1721,7 +1722,7 @@ static CURLcode cookie_output(struct Curl_easy *data,
   }
 
   /*
-   * If we reach here we have successfully written a cookie file so theree is
+   * If we reach here we have successfully written a cookie file so there is
    * no need to inspect the error, any error case should have jumped into the
    * error block below.
    */

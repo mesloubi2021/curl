@@ -186,6 +186,7 @@ man_MANS =                                      \
   CURLOPT_GSSAPI_DELEGATION.3                   \
   CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS.3           \
   CURLOPT_HAPROXYPROTOCOL.3                     \
+  CURLOPT_HAPROXY_CLIENT_IP.3                   \
   CURLOPT_HEADER.3                              \
   CURLOPT_HEADERDATA.3                          \
   CURLOPT_HEADERFUNCTION.3                      \
@@ -228,7 +229,7 @@ man_MANS =                                      \
   CURLOPT_MAIL_AUTH.3                           \
   CURLOPT_MAIL_FROM.3                           \
   CURLOPT_MAIL_RCPT.3                           \
-  CURLOPT_MAIL_RCPT_ALLLOWFAILS.3               \
+  CURLOPT_MAIL_RCPT_ALLOWFAILS.3                \
   CURLOPT_MAX_RECV_SPEED_LARGE.3                \
   CURLOPT_MAX_SEND_SPEED_LARGE.3                \
   CURLOPT_MAXAGE_CONN.3                         \
@@ -347,7 +348,7 @@ man_MANS =                                      \
   CURLOPT_SSL_CIPHER_LIST.3                     \
   CURLOPT_SSL_CTX_DATA.3                        \
   CURLOPT_SSL_CTX_FUNCTION.3                    \
-  CURLOPT_SSL_EC_CURVES.3			\
+  CURLOPT_SSL_EC_CURVES.3                       \
   CURLOPT_SSL_ENABLE_ALPN.3                     \
   CURLOPT_SSL_ENABLE_NPN.3                      \
   CURLOPT_SSL_FALSESTART.3                      \
