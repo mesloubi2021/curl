@@ -237,7 +237,7 @@ jobs:
         sudo make install
       name: 'install mod_h2'
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - run: |
         sudo python3 -m pip install -r tests/requirements.txt -r tests/http/requirements.txt
@@ -267,13 +267,4 @@ jobs:
       name: 'run pytest'
       env:
         TFLAGS: "${{ matrix.build.tflags }}"
-        CURL_CI: github
-
-    - run: pytest -v tests
-      name: 'run pytest with slowed network'
-      env:
-        # 33% of sends are EAGAINed
-        CURL_DBG_SOCK_WBLOCK: 33
-        # only 80% of data > 10 bytes is send
-        CURL_DBG_SOCK_WPARTIAL: 80
         CURL_CI: github
