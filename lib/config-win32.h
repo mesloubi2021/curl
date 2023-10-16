@@ -103,6 +103,9 @@
 /* Define if you have the <termios.h> header file. */
 /* #define HAVE_TERMIOS_H 1 */
 
+#define HAVE_ZLIB_H 1
+#define HAVE_LIBZ 1
+
 /* Define if you have the <unistd.h> header file. */
 #if defined(__MINGW32__) || defined(__LCC__) || defined(__POCC__)
 #define HAVE_UNISTD_H 1
