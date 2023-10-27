@@ -1,0 +1,1087 @@
+diff --git a/docs/examples/https-tlcp-doublecerts.c b/docs/examples/https-tlcp-doublecerts.c
+new file mode 100644
+index 000000000..0196d509a
+--- /dev/null
++++ b/docs/examples/https-tlcp-doublecerts.c
+@@ -0,0 +1,63 @@
++/***************************************************************************
++ *                                  _   _ ____  _
++ *  Project                     ___| | | |  _ \| |
++ *                             / __| | | | |_) | |
++ *                            | (__| |_| |  _ <| |___
++ *                             \___|\___/|_| \_\_____|
++ *
++ * Copyright (C) 2022
++ *
++ * This software is licensed as described in the file COPYING, which
++ * you should have received as part of this distribution. The terms
++ * are also available at https://curl.se/docs/copyright.html.
++ *
++ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
++ * copies of the Software, and permit persons to whom the Software is
++ * furnished to do so, under the terms of the COPYING file.
++ *
++ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
++ * KIND, either express or implied.
++ *
++ * SPDX-License-Identifier: curl
++ *
++ ***************************************************************************/
++/* <DESC>
++ * HTTP over TLCP with double certificates
++ * </DESC>
++ */
++#include <stdio.h>
++#include <curl/curl.h>
++
++int main(int argc, char **argv)
++{
++    CURL *curl;
++    CURLcode res;
++
++    curl = curl_easy_init();
++    if (curl) {
++        curl_easy_setopt(curl, CURLOPT_URL, "https://127.0.0.1:443");
++        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_NTLSv1_1);
++        curl_easy_setopt(curl, CURLOPT_SSL_CIPHER_LIST,
++                         "ECDHE-SM2-SM4-CBC-SM3");
++
++        curl_easy_setopt(curl, CURLOPT_SSLSIGNCERT, "sm2_sign.crt");
++        curl_easy_setopt(curl, CURLOPT_SSLSIGNKEY, "sm2_sign.key");
++        curl_easy_setopt(curl, CURLOPT_SSLENCCERT, "sm2_enc.crt");
++        curl_easy_setopt(curl, CURLOPT_SSLENCKEY, "sm2_enc.key");
++
++        /* optional */
++        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
++        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
++
++        res = curl_easy_perform(curl);
++
++        if(res != CURLE_OK)
++            fprintf(stderr, "curl_easy_perform() failed: %s\n",
++                    curl_easy_strerror(res));
++
++        curl_easy_cleanup(curl);
++    }
++
++    return 0;
++}
++// gcc https-tlcp-doublecerts.c -o https-tlcp-doublecerts -I/usr/local/curl/include -lcurl -L/usr/local/curl/lib -Wl,-rpath=/usr/local/curl/lib
+\ No newline at end of file
+diff --git a/docs/examples/https-tlcp.c b/docs/examples/https-tlcp.c
+new file mode 100644
+index 000000000..329461b8e
+--- /dev/null
++++ b/docs/examples/https-tlcp.c
+@@ -0,0 +1,57 @@
++/***************************************************************************
++ *                                  _   _ ____  _
++ *  Project                     ___| | | |  _ \| |
++ *                             / __| | | | |_) | |
++ *                            | (__| |_| |  _ <| |___
++ *                             \___|\___/|_| \_\_____|
++ *
++ * Copyright (C) 2022
++ *
++ * This software is licensed as described in the file COPYING, which
++ * you should have received as part of this distribution. The terms
++ * are also available at https://curl.se/docs/copyright.html.
++ *
++ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
++ * copies of the Software, and permit persons to whom the Software is
++ * furnished to do so, under the terms of the COPYING file.
++ *
++ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
++ * KIND, either express or implied.
++ *
++ * SPDX-License-Identifier: curl
++ *
++ ***************************************************************************/
++/* <DESC>
++ * HTTP over TLCP
++ * </DESC>
++ */
++#include <stdio.h>
++#include <curl/curl.h>
++
++int main(int argc, char **argv)
++{
++    CURL *curl;
++    CURLcode res;
++
++    curl = curl_easy_init();
++    if (curl) {
++        curl_easy_setopt(curl, CURLOPT_URL, "https://127.0.0.1:443");
++        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_NTLSv1_1);
++        curl_easy_setopt(curl, CURLOPT_SSL_CIPHER_LIST, "ECC-SM2-SM4-CBC-SM3");
++
++        /* optional */
++        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
++        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
++
++        res = curl_easy_perform(curl);
++
++        if(res != CURLE_OK)
++            fprintf(stderr, "curl_easy_perform() failed: %s\n",
++                    curl_easy_strerror(res));
++
++        curl_easy_cleanup(curl);
++    }
++
++    return 0;
++}
++// gcc https-tlcp.c -o https-tlcp -I/usr/local/curl/include -lcurl -L/usr/local/curl/lib -Wl,-rpath=/usr/local/curl/lib
+\ No newline at end of file
+diff --git a/docs/libcurl/curl_easy_setopt.3 b/docs/libcurl/curl_easy_setopt.3
+index ae43811ab..6d9b21ba2 100644
+--- a/docs/libcurl/curl_easy_setopt.3
++++ b/docs/libcurl/curl_easy_setopt.3
+@@ -690,6 +690,14 @@ Custom pointer to pass to ssh key callback. See \fICURLOPT_SSH_KEYDATA(3)\fP
+ Callback for checking host key handling. See \fICURLOPT_SSH_HOSTKEYFUNCTION(3)\fP
+ .IP CURLOPT_SSH_HOSTKEYDATA
+ Custom pointer to pass to ssh host key callback. See \fICURLOPT_SSH_HOSTKEYDATA(3)\fP
++.IP CURLOPT_SSLSIGNCERT
++Signature certificate. See \fICURLOPT_SSLSIGNCERT(3)\fP
++.IP CURLOPT_SSLSIGNKEY
++Signature key. See \fICURLOPT_SSLSIGNKEY(3)\fP
++.IP CURLOPT_SSLENCCERT
++Encryption certificate. See \fICURLOPT_SSLENCCERT(3)\fP
++.IP CURLOPT_SSLENCKEY
++Encryption key. See \fICURLOPT_SSLENCKEY(3)\fP
+ .SH WEBSOCKET
+ .IP CURLOPT_WS_OPTIONS
+ Set WebSocket options. See \fICURLOPT_WS_OPTIONS(3)\fP
+diff --git a/docs/libcurl/opts/CURLOPT_SSLENCCERT.3 b/docs/libcurl/opts/CURLOPT_SSLENCCERT.3
+new file mode 100644
+index 000000000..fe60dba63
+--- /dev/null
++++ b/docs/libcurl/opts/CURLOPT_SSLENCCERT.3
+@@ -0,0 +1,91 @@
++.\" **************************************************************************
++.\" *                                  _   _ ____  _
++.\" *  Project                     ___| | | |  _ \| |
++.\" *                             / __| | | | |_) | |
++.\" *                            | (__| |_| |  _ <| |___
++.\" *                             \___|\___/|_| \_\_____|
++.\" *
++.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
++.\" *
++.\" * This software is licensed as described in the file COPYING, which
++.\" * you should have received as part of this distribution. The terms
++.\" * are also available at https://curl.se/docs/copyright.html.
++.\" *
++.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
++.\" * copies of the Software, and permit persons to whom the Software is
++.\" * furnished to do so, under the terms of the COPYING file.
++.\" *
++.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
++.\" * KIND, either express or implied.
++.\" *
++.\" * SPDX-License-Identifier: curl
++.\" *
++.\" **************************************************************************
++.\"
++.TH CURLOPT_SSLENCCERT 3 "28 Oct 2023" libcurl libcurl
++.SH NAME
++CURLOPT_SSLENCCERT \- SSL client encryption certificate
++.SH SYNOPSIS
++.nf
++#include <curl/curl.h>
++
++CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSLENCCERT, char *cert);
++.fi
++.SH DESCRIPTION
++Pass a pointer to a null-terminated string as parameter. The string should be
++the file name of your client encryption certificate. The default format is "P12"
++on Secure Transport and "PEM" on other engines, and can be changed with
++\fICURLOPT_SSLCERTTYPE(3)\fP.
++
++With Secure Transport, this can also be the nickname of the certificate you
++wish to authenticate with as it is named in the security database. If you want
++to use a file from the current directory, please precede it with "./" prefix,
++in order to avoid confusion with a nickname.
++
++(Schannel only) Client certificates can be specified by a path expression to a
++certificate store. (You can import \fIPFX\fP to a store first). You can use
++"<store location>\\<store name>\\<thumbprint>" to refer to a certificate in
++the system certificates store, for example,
++\fB"CurrentUser\\MY\\934a7ac6f8a5d579285a74fa"\fP. The thumbprint is usually a
++SHA-1 hex string which you can see in certificate details. Following store
++locations are supported: \fBCurrentUser\fP, \fBLocalMachine\fP,
++\fBCurrentService\fP, \fBServices\fP, \fBCurrentUserGroupPolicy\fP,
++\fBLocalMachineGroupPolicy\fP, \fBLocalMachineEnterprise\fP.  Schannel also
++support P12 certificate file, with the string "P12" specified with
++\fICURLOPT_SSLCERTTYPE(3)\fP.
++
++When using a client encryption certificate, you most likely also need to provide a
++private key with \fICURLOPT_SSLENCKEY(3)\fP.
++
++The application does not have to keep the string around after setting this
++option.
++.SH DEFAULT
++NULL
++.SH PROTOCOLS
++All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
++.SH EXAMPLE
++.nf
++CURL *curl = curl_easy_init();
++if(curl) {
++  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
++  curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_NTLSv1_1);
++  curl_easy_setopt(curl, CURLOPT_SSLENCCERT, "enc.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLENCKEY, "enc.key");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNCERT, "sign.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNKEY, "sign.key");
++  curl_easy_setopt(curl, CURLOPT_KEYPASSWD, "s3cret");
++  ret = curl_easy_perform(curl);
++  curl_easy_cleanup(curl);
++}
++.fi
++.SH AVAILABILITY
++If built TLS enabled.
++.SH RETURN VALUE
++Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
++CURLE_OUT_OF_MEMORY if there was insufficient heap space.
++.SH "SEE ALSO"
++.BR CURLOPT_SSLCERTTYPE (3),
++.BR CURLOPT_SSLENCKEY (3),
++.BR CURLOPT_SSLSIGNCERT (3),
++.BR CURLOPT_SSLSIGNKEY (3),
++.BR CURLOPT_KEYPASSWD (3)
+diff --git a/docs/libcurl/opts/CURLOPT_SSLENCKEY.3 b/docs/libcurl/opts/CURLOPT_SSLENCKEY.3
+new file mode 100644
+index 000000000..092f99cab
+--- /dev/null
++++ b/docs/libcurl/opts/CURLOPT_SSLENCKEY.3
+@@ -0,0 +1,74 @@
++.\" **************************************************************************
++.\" *                                  _   _ ____  _
++.\" *  Project                     ___| | | |  _ \| |
++.\" *                             / __| | | | |_) | |
++.\" *                            | (__| |_| |  _ <| |___
++.\" *                             \___|\___/|_| \_\_____|
++.\" *
++.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
++.\" *
++.\" * This software is licensed as described in the file COPYING, which
++.\" * you should have received as part of this distribution. The terms
++.\" * are also available at https://curl.se/docs/copyright.html.
++.\" *
++.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
++.\" * copies of the Software, and permit persons to whom the Software is
++.\" * furnished to do so, under the terms of the COPYING file.
++.\" *
++.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
++.\" * KIND, either express or implied.
++.\" *
++.\" * SPDX-License-Identifier: curl
++.\" *
++.\" **************************************************************************
++.\"
++.TH CURLOPT_SSLENCKEY 3 "28 Oct 2023" libcurl libcurl
++.SH NAME
++CURLOPT_SSLENCKEY \- SSL client encryption key
++.SH SYNOPSIS
++.nf
++#include <curl/curl.h>
++
++CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSLENCKEY, char *keyfile);
++.fi
++.SH DESCRIPTION
++Pass a pointer to a null-terminated string as parameter. The string should be
++the file name of your private key. The default format is "PEM" and can be
++changed with \fICURLOPT_SSLKEYTYPE(3)\fP.
++
++(Windows, iOS and Mac OS X) This option is ignored by Secure Transport and
++Schannel SSL backends because they expect the private key to be already present
++in the key-chain or PKCS#12 file containing the certificate.
++
++The application does not have to keep the string around after setting this
++option.
++.SH DEFAULT
++NULL
++.SH PROTOCOLS
++All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
++.SH EXAMPLE
++.nf
++CURL *curl = curl_easy_init();
++if(curl) {
++  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
++  curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_NTLSv1_1);
++  curl_easy_setopt(curl, CURLOPT_SSLENCCERT, "enc.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLENCKEY, "enc.key");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNCERT, "sign.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNKEY, "sign.key");
++  curl_easy_setopt(curl, CURLOPT_KEYPASSWD, "s3cret");
++  ret = curl_easy_perform(curl);
++  curl_easy_cleanup(curl);
++}
++.fi
++.SH AVAILABILITY
++If built TLS enabled.
++.SH RETURN VALUE
++Returns CURLE_OK if TLS is supported, CURLE_UNKNOWN_OPTION if not, or
++CURLE_OUT_OF_MEMORY if there was insufficient heap space.
++.SH "SEE ALSO"
++.BR CURLOPT_SSLCERTTYPE (3),
++.BR CURLOPT_SSLENCKEY (3),
++.BR CURLOPT_SSLSIGNCERT (3),
++.BR CURLOPT_SSLSIGNKEY (3),
++.BR CURLOPT_KEYPASSWD (3)
+\ No newline at end of file
+diff --git a/docs/libcurl/opts/CURLOPT_SSLSIGNCERT.3 b/docs/libcurl/opts/CURLOPT_SSLSIGNCERT.3
+new file mode 100644
+index 000000000..5d8cadea2
+--- /dev/null
++++ b/docs/libcurl/opts/CURLOPT_SSLSIGNCERT.3
+@@ -0,0 +1,91 @@
++.\" **************************************************************************
++.\" *                                  _   _ ____  _
++.\" *  Project                     ___| | | |  _ \| |
++.\" *                             / __| | | | |_) | |
++.\" *                            | (__| |_| |  _ <| |___
++.\" *                             \___|\___/|_| \_\_____|
++.\" *
++.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
++.\" *
++.\" * This software is licensed as described in the file COPYING, which
++.\" * you should have received as part of this distribution. The terms
++.\" * are also available at https://curl.se/docs/copyright.html.
++.\" *
++.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
++.\" * copies of the Software, and permit persons to whom the Software is
++.\" * furnished to do so, under the terms of the COPYING file.
++.\" *
++.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
++.\" * KIND, either express or implied.
++.\" *
++.\" * SPDX-License-Identifier: curl
++.\" *
++.\" **************************************************************************
++.\"
++.TH CURLOPT_SSLSIGNCERT 3 "28 Oct 2023" libcurl libcurl
++.SH NAME
++CURLOPT_SSLSIGNCERT \- SSL client signature certificate
++.SH SYNOPSIS
++.nf
++#include <curl/curl.h>
++
++CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSLSIGNCERT, char *cert);
++.fi
++.SH DESCRIPTION
++Pass a pointer to a null-terminated string as parameter. The string should be
++the file name of your client encryption certificate. The default format is "P12"
++on Secure Transport and "PEM" on other engines, and can be changed with
++\fICURLOPT_SSLCERTTYPE(3)\fP.
++
++With Secure Transport, this can also be the nickname of the certificate you
++wish to authenticate with as it is named in the security database. If you want
++to use a file from the current directory, please precede it with "./" prefix,
++in order to avoid confusion with a nickname.
++
++(Schannel only) Client certificates can be specified by a path expression to a
++certificate store. (You can import \fIPFX\fP to a store first). You can use
++"<store location>\\<store name>\\<thumbprint>" to refer to a certificate in
++the system certificates store, for example,
++\fB"CurrentUser\\MY\\934a7ac6f8a5d579285a74fa"\fP. The thumbprint is usually a
++SHA-1 hex string which you can see in certificate details. Following store
++locations are supported: \fBCurrentUser\fP, \fBLocalMachine\fP,
++\fBCurrentService\fP, \fBServices\fP, \fBCurrentUserGroupPolicy\fP,
++\fBLocalMachineGroupPolicy\fP, \fBLocalMachineEnterprise\fP.  Schannel also
++support P12 certificate file, with the string "P12" specified with
++\fICURLOPT_SSLCERTTYPE(3)\fP.
++
++When using a client encryption certificate, you most likely also need to provide a
++private key with \fICURLOPT_SSLSIGNKEY(3)\fP.
++
++The application does not have to keep the string around after setting this
++option.
++.SH DEFAULT
++NULL
++.SH PROTOCOLS
++All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
++.SH EXAMPLE
++.nf
++CURL *curl = curl_easy_init();
++if(curl) {
++  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
++  curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_NTLSv1_1);
++  curl_easy_setopt(curl, CURLOPT_SSLENCCERT, "enc.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLENCKEY, "enc.key");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNCERT, "sign.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNKEY, "sign.key");
++  curl_easy_setopt(curl, CURLOPT_KEYPASSWD, "s3cret");
++  ret = curl_easy_perform(curl);
++  curl_easy_cleanup(curl);
++}
++.fi
++.SH AVAILABILITY
++If built TLS enabled.
++.SH RETURN VALUE
++Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
++CURLE_OUT_OF_MEMORY if there was insufficient heap space.
++.SH "SEE ALSO"
++.BR CURLOPT_SSLCERTTYPE (3),
++.BR CURLOPT_SSLSIGNKEY (3),
++.BR CURLOPT_SSLENCCERT (3),
++.BR CURLOPT_SSLENCKEY (3),
++.BR CURLOPT_KEYPASSWD (3)
+diff --git a/docs/libcurl/opts/CURLOPT_SSLSIGNKEY.3 b/docs/libcurl/opts/CURLOPT_SSLSIGNKEY.3
+new file mode 100644
+index 000000000..7c95b8733
+--- /dev/null
++++ b/docs/libcurl/opts/CURLOPT_SSLSIGNKEY.3
+@@ -0,0 +1,74 @@
++.\" **************************************************************************
++.\" *                                  _   _ ____  _
++.\" *  Project                     ___| | | |  _ \| |
++.\" *                             / __| | | | |_) | |
++.\" *                            | (__| |_| |  _ <| |___
++.\" *                             \___|\___/|_| \_\_____|
++.\" *
++.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
++.\" *
++.\" * This software is licensed as described in the file COPYING, which
++.\" * you should have received as part of this distribution. The terms
++.\" * are also available at https://curl.se/docs/copyright.html.
++.\" *
++.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
++.\" * copies of the Software, and permit persons to whom the Software is
++.\" * furnished to do so, under the terms of the COPYING file.
++.\" *
++.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
++.\" * KIND, either express or implied.
++.\" *
++.\" * SPDX-License-Identifier: curl
++.\" *
++.\" **************************************************************************
++.\"
++.TH CURLOPT_SSLSIGNKEY 3 "28 Oct 2023" libcurl libcurl
++.SH NAME
++CURLOPT_SSLSIGNKEY \- SSL client signature key
++.SH SYNOPSIS
++.nf
++#include <curl/curl.h>
++
++CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSLSIGNKEY, char *keyfile);
++.fi
++.SH DESCRIPTION
++Pass a pointer to a null-terminated string as parameter. The string should be
++the file name of your private key. The default format is "PEM" and can be
++changed with \fICURLOPT_SSLKEYTYPE(3)\fP.
++
++(Windows, iOS and Mac OS X) This option is ignored by Secure Transport and
++Schannel SSL backends because they expect the private key to be already present
++in the key-chain or PKCS#12 file containing the certificate.
++
++The application does not have to keep the string around after setting this
++option.
++.SH DEFAULT
++NULL
++.SH PROTOCOLS
++All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
++.SH EXAMPLE
++.nf
++CURL *curl = curl_easy_init();
++if(curl) {
++  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
++  curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_NTLSv1_1);
++  curl_easy_setopt(curl, CURLOPT_SSLENCCERT, "enc.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLENCKEY, "enc.key");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNCERT, "sign.crt");
++  curl_easy_setopt(curl, CURLOPT_SSLSIGNKEY, "sign.key");
++  curl_easy_setopt(curl, CURLOPT_KEYPASSWD, "s3cret");
++  ret = curl_easy_perform(curl);
++  curl_easy_cleanup(curl);
++}
++.fi
++.SH AVAILABILITY
++If built TLS enabled.
++.SH RETURN VALUE
++Returns CURLE_OK if TLS is supported, CURLE_UNKNOWN_OPTION if not, or
++CURLE_OUT_OF_MEMORY if there was insufficient heap space.
++.SH "SEE ALSO"
++.BR CURLOPT_SSLCERTTYPE (3),
++.BR CURLOPT_SSLSIGNCERT (3),
++.BR CURLOPT_SSLENCCERT (3),
++.BR CURLOPT_SSLENCKEY (3),
++.BR CURLOPT_KEYPASSWD (3)
+\ No newline at end of file
+diff --git a/docs/libcurl/symbols-in-versions b/docs/libcurl/symbols-in-versions
+index 24a954ece..c79f5f445 100644
+--- a/docs/libcurl/symbols-in-versions
++++ b/docs/libcurl/symbols-in-versions
+@@ -12,6 +12,11 @@
+ 
+  Name                           Introduced  Deprecated  Last
+ 
++CURLOPT_SSLENCCERT              7.80.0
++CURLOPT_SSLENCKEY               7.80.0
++CURLOPT_SSLSIGNCERT             7.80.0
++CURLOPT_SSLSIGNKEY              7.80.0
++CURL_SSLVERSION_NTLSv1_1        7.80.0
+ CURL_AT_LEAST_VERSION           7.43.0
+ CURL_BLOB_COPY                  7.71.0
+ CURL_BLOB_NOCOPY                7.71.0
+diff --git a/include/curl/curl.h b/include/curl/curl.h
+index 1ef7c8d45..2d7830721 100644
+--- a/include/curl/curl.h
++++ b/include/curl/curl.h
+@@ -2210,6 +2210,18 @@ typedef enum {
+   /* set a specific client IP for HAProxy PROXY protocol header? */
+   CURLOPT(CURLOPT_HAPROXY_CLIENT_IP, CURLOPTTYPE_STRINGPOINT, 323),
+ 
++  /* name of the file keeping your SSL sign certificate */
++  CURLOPT(CURLOPT_SSLSIGNCERT, CURLOPTTYPE_STRINGPOINT, 324),
++
++  /* name of the file keeping your SSL sign key */
++  CURLOPT(CURLOPT_SSLSIGNKEY, CURLOPTTYPE_STRINGPOINT, 325),
++
++  /* name of the file keeping your SSL enc certificate */
++  CURLOPT(CURLOPT_SSLENCCERT, CURLOPTTYPE_STRINGPOINT, 326),
++
++  /* name of the file keeping your SSL enc key */
++  CURLOPT(CURLOPT_SSLENCKEY, CURLOPTTYPE_STRINGPOINT, 327),
++
+   CURLOPT_LASTENTRY /* the last unused */
+ } CURLoption;
+ 
+@@ -2324,6 +2336,7 @@ enum {
+   CURL_SSLVERSION_TLSv1_1,
+   CURL_SSLVERSION_TLSv1_2,
+   CURL_SSLVERSION_TLSv1_3,
++  CURL_SSLVERSION_NTLSv1_1,
+ 
+   CURL_SSLVERSION_LAST /* never use, keep last */
+ };
+diff --git a/include/curl/typecheck-gcc.h b/include/curl/typecheck-gcc.h
+index b880f3dc6..771409dfa 100644
+--- a/include/curl/typecheck-gcc.h
++++ b/include/curl/typecheck-gcc.h
+@@ -348,6 +348,10 @@ CURLWARNING(_curl_easy_getinfo_err_curl_off_t,
+    (option) == CURLOPT_USERPWD ||                                             \
+    (option) == CURLOPT_XOAUTH2_BEARER ||                                      \
+    (option) == CURLOPT_SSL_EC_CURVES ||                                       \
++   (option) == CURLOPT_SSLSIGNCERT ||                                         \
++   (option) == CURLOPT_SSLSIGNKEY ||                                          \
++   (option) == CURLOPT_SSLENCCERT ||                                          \
++   (option) == CURLOPT_SSLENCKEY ||                                           \
+    0)
+ 
+ /* evaluates to true if option takes a curl_write_callback argument */
+diff --git a/lib/easyoptions.c b/lib/easyoptions.c
+index e69c658b0..aded8dff5 100644
+--- a/lib/easyoptions.c
++++ b/lib/easyoptions.c
+@@ -298,12 +298,16 @@ struct curl_easyoption Curl_easyopts[] = {
+   {"SSLCERTPASSWD", CURLOPT_KEYPASSWD, CURLOT_STRING, CURLOT_FLAG_ALIAS},
+   {"SSLCERTTYPE", CURLOPT_SSLCERTTYPE, CURLOT_STRING, 0},
+   {"SSLCERT_BLOB", CURLOPT_SSLCERT_BLOB, CURLOT_BLOB, 0},
++  {"SSLENCCERT", CURLOPT_SSLENCCERT, CURLOT_STRING, 0},
++  {"SSLENCKEY", CURLOPT_SSLENCKEY, CURLOT_STRING, 0},
+   {"SSLENGINE", CURLOPT_SSLENGINE, CURLOT_STRING, 0},
+   {"SSLENGINE_DEFAULT", CURLOPT_SSLENGINE_DEFAULT, CURLOT_LONG, 0},
+   {"SSLKEY", CURLOPT_SSLKEY, CURLOT_STRING, 0},
+   {"SSLKEYPASSWD", CURLOPT_KEYPASSWD, CURLOT_STRING, CURLOT_FLAG_ALIAS},
+   {"SSLKEYTYPE", CURLOPT_SSLKEYTYPE, CURLOT_STRING, 0},
+   {"SSLKEY_BLOB", CURLOPT_SSLKEY_BLOB, CURLOT_BLOB, 0},
++  {"SSLSIGNCERT", CURLOPT_SSLSIGNCERT, CURLOT_STRING, 0},
++  {"SSLSIGNKEY", CURLOPT_SSLSIGNKEY, CURLOT_STRING, 0},
+   {"SSLVERSION", CURLOPT_SSLVERSION, CURLOT_VALUES, 0},
+   {"SSL_CIPHER_LIST", CURLOPT_SSL_CIPHER_LIST, CURLOT_STRING, 0},
+   {"SSL_CTX_DATA", CURLOPT_SSL_CTX_DATA, CURLOT_CBPTR, 0},
+@@ -373,6 +377,6 @@ struct curl_easyoption Curl_easyopts[] = {
+  */
+ int Curl_easyopts_check(void)
+ {
+-  return ((CURLOPT_LASTENTRY%10000) != (323 + 1));
++  return ((CURLOPT_LASTENTRY%10000) != (327 + 1));
+ }
+ #endif
+diff --git a/lib/setopt.c b/lib/setopt.c
+index 0d399adfe..c9cddd01f 100644
+--- a/lib/setopt.c
++++ b/lib/setopt.c
+@@ -3170,6 +3170,36 @@ CURLcode Curl_vsetopt(struct Curl_easy *data, CURLoption option, va_list param)
+   case CURLOPT_QUICK_EXIT:
+     data->set.quick_exit = (0 != va_arg(param, long)) ? 1L:0L;
+     break;
++#ifdef HAVE_NTLS
++  case CURLOPT_SSLSIGNCERT:
++    /*
++     * String that holds file name of the SSL sign certificate to use
++     */
++    result = Curl_setstropt(&data->set.str[STRING_SIGN_CERT],
++                            va_arg(param, char *));
++    break;
++  case CURLOPT_SSLSIGNKEY:
++    /*
++     * String that holds file name of the SSL sign key to use
++     */
++    result = Curl_setstropt(&data->set.str[STRING_SIGN_KEY],
++                            va_arg(param, char *));
++    break;
++  case CURLOPT_SSLENCCERT:
++    /*
++     * String that holds file name of the SSL enc certificate to use
++     */
++    result = Curl_setstropt(&data->set.str[STRING_ENC_CERT],
++                            va_arg(param, char *));
++    break;
++  case CURLOPT_SSLENCKEY:
++    /*
++     * String that holds file name of the SSL enc key to use
++     */
++    result = Curl_setstropt(&data->set.str[STRING_ENC_KEY],
++                            va_arg(param, char *));
++    break;
++#endif
+   default:
+     /* unknown tag and its companion, just ignore: */
+     result = CURLE_UNKNOWN_OPTION;
+diff --git a/lib/url.c b/lib/url.c
+index f3ca694d5..1b9c11c42 100644
+--- a/lib/url.c
++++ b/lib/url.c
+@@ -3642,6 +3642,12 @@ static CURLcode create_conn(struct Curl_easy *data,
+   data->set.ssl.key_type = data->set.str[STRING_KEY_TYPE];
+   data->set.ssl.key_passwd = data->set.str[STRING_KEY_PASSWD];
+   data->set.ssl.primary.clientcert = data->set.str[STRING_CERT];
++#ifdef HAVE_NTLS
++  data->set.ssl.sign_cert = data->set.str[STRING_SIGN_CERT];
++  data->set.ssl.sign_key = data->set.str[STRING_SIGN_KEY];
++  data->set.ssl.enc_cert = data->set.str[STRING_ENC_CERT];
++  data->set.ssl.enc_key = data->set.str[STRING_ENC_KEY];
++#endif
+ #ifdef USE_TLS_SRP
+   data->set.ssl.primary.username = data->set.str[STRING_TLSAUTH_USERNAME];
+   data->set.ssl.primary.password = data->set.str[STRING_TLSAUTH_PASSWORD];
+diff --git a/lib/urldata.h b/lib/urldata.h
+index 2f927a393..c3077cd78 100644
+--- a/lib/urldata.h
++++ b/lib/urldata.h
+@@ -302,6 +302,12 @@ struct ssl_config_data {
+   struct curl_blob *key_blob;
+   char *key_type; /* format for private key (default: PEM) */
+   char *key_passwd; /* plain text private key password */
++#ifdef HAVE_NTLS
++  char *sign_cert;
++  char *sign_key;
++  char *enc_cert;
++  char *enc_key;
++#endif
+   BIT(certinfo);     /* gather lots of certificate info */
+   BIT(falsestart);
+   BIT(enable_beast); /* allow this flaw for interoperability's sake */
+@@ -1619,6 +1625,10 @@ enum dupstring {
+   STRING_SSL_EC_CURVES,
+   STRING_AWS_SIGV4, /* Parameters for V4 signature */
+   STRING_HAPROXY_CLIENT_IP,     /* CURLOPT_HAPROXY_CLIENT_IP */
++  STRING_SIGN_CERT,
++  STRING_SIGN_KEY,
++  STRING_ENC_CERT,
++  STRING_ENC_KEY,
+ 
+   /* -- end of null-terminated strings -- */
+ 
+diff --git a/lib/vtls/openssl.c b/lib/vtls/openssl.c
+index 8dfad38fa..5b78d436e 100644
+--- a/lib/vtls/openssl.c
++++ b/lib/vtls/openssl.c
+@@ -3484,6 +3484,12 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
+   /* check to see if we've been told to use an explicit SSL/TLS version */
+ 
+   switch(ssl_version) {
++#ifdef HAVE_NTLS
++  case CURL_SSLVERSION_NTLSv1_1:
++    req_method = NTLS_client_method();
++    use_sni(TRUE);
++    break;
++#endif
+   case CURL_SSLVERSION_DEFAULT:
+   case CURL_SSLVERSION_TLSv1:
+   case CURL_SSLVERSION_TLSv1_0:
+@@ -3523,6 +3529,11 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
+     return CURLE_OUT_OF_MEMORY;
+   }
+ 
++#ifdef HAVE_NTLS
++  if(ssl_version == CURL_SSLVERSION_NTLSv1_1)
++    SSL_CTX_enable_ntls(backend->ctx);
++#endif
++
+ #ifdef SSL_MODE_RELEASE_BUFFERS
+   SSL_CTX_set_mode(backend->ctx, SSL_MODE_RELEASE_BUFFERS);
+ #endif
+@@ -3598,6 +3609,11 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
+   case CURL_SSLVERSION_SSLv3:
+     return CURLE_NOT_BUILT_IN;
+ 
++#ifdef HAVE_NTLS
++    case CURL_SSLVERSION_NTLSv1_1:
++      break;
++#endif
++
+     /* "--tlsv<x.y>" options mean TLS >= version <x.y> */
+   case CURL_SSLVERSION_DEFAULT:
+   case CURL_SSLVERSION_TLSv1: /* TLS >= version 1.0 */
+@@ -3653,6 +3669,51 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
+       return result;
+   }
+ 
++#ifdef HAVE_NTLS
++  if(ssl_version == CURL_SSLVERSION_NTLSv1_1) {
++    char *sign_cert = ssl_config->sign_cert;
++    char *sign_key = ssl_config->sign_key;
++    char *enc_cert = ssl_config->enc_cert;
++    char *enc_key = ssl_config->enc_key;
++
++    if(sign_cert
++       && !SSL_CTX_use_sign_certificate_file(backend->ctx, sign_cert,
++                                             SSL_FILETYPE_PEM)) {
++      failf(data, "SSL: failed settting sign certificate file: %s",
++            ossl_strerror(ERR_get_error(), error_buffer,
++                          sizeof(error_buffer)));
++      return CURLE_SSL_CERTPROBLEM;
++    }
++
++    if(sign_key
++       && !SSL_CTX_use_sign_PrivateKey_file(backend->ctx, sign_key,
++                                            SSL_FILETYPE_PEM)) {
++      failf(data, "SSL: failed settting sign key file: %s",
++            ossl_strerror(ERR_get_error(), error_buffer,
++                          sizeof(error_buffer)));
++      return CURLE_SSL_CERTPROBLEM;
++    }
++
++    if(enc_cert
++       && !SSL_CTX_use_enc_certificate_file(backend->ctx, enc_cert,
++                                             SSL_FILETYPE_PEM)) {
++      failf(data, "SSL: failed settting enc certificate file: %s",
++            ossl_strerror(ERR_get_error(), error_buffer,
++                          sizeof(error_buffer)));
++      return CURLE_SSL_CERTPROBLEM;
++    }
++
++    if(enc_key
++       && !SSL_CTX_use_enc_PrivateKey_file(backend->ctx, enc_key,
++                                           SSL_FILETYPE_PEM)) {
++      failf(data, "SSL: failed settting enc key file: %s",
++            ossl_strerror(ERR_get_error(), error_buffer,
++                          sizeof(error_buffer)));
++      return CURLE_SSL_CERTPROBLEM;
++    }
++  }
++#endif
++
+   ciphers = conn_config->cipher_list;
+   if(!ciphers)
+     ciphers = (char *)DEFAULT_CIPHER_SELECTION;
+diff --git a/m4/curl-openssl.m4 b/m4/curl-openssl.m4
+index a4811d2a3..3235537af 100644
+--- a/m4/curl-openssl.m4
++++ b/m4/curl-openssl.m4
+@@ -399,6 +399,26 @@ if test "$OPENSSL_ENABLED" = "1"; then
+   ])
+ fi
+ 
++dnl **********************************************************************
++dnl Check for NTLS provided by Tongsuo
++dnl **********************************************************************
++if test "$OPENSSL_ENABLED" = "1"; then
++  AC_MSG_CHECKING([for NTLS support in Tongsuo])
++  AC_LINK_IFELSE([
++    AC_LANG_PROGRAM([[
++#include <openssl/ssl.h>
++    ]],[[
++      const SSL_METHOD *meth = NTLS_method();
++    ]])
++  ],[
++    AC_MSG_RESULT([yes])
++    AC_DEFINE(HAVE_NTLS, 1, [if you have the functions NTLS_method])
++    AC_SUBST(HAVE_NTLS, [1])
++  ],[
++    AC_MSG_RESULT([no])
++  ])
++fi
++
+ dnl ---
+ dnl Whether the OpenSSL configuration will be loaded automatically
+ dnl ---
+diff --git a/packages/OS400/ccsidcurl.c b/packages/OS400/ccsidcurl.c
+index 48f1f5fbd..5fc65c417 100644
+--- a/packages/OS400/ccsidcurl.c
++++ b/packages/OS400/ccsidcurl.c
+@@ -1154,9 +1154,13 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
+   case CURLOPT_SSH_PUBLIC_KEYFILE:
+   case CURLOPT_SSLCERT:
+   case CURLOPT_SSLCERTTYPE:
++  case CURLOPT_SSLENCCERT:
++  case CURLOPT_SSLENCKEY:
+   case CURLOPT_SSLENGINE:
+   case CURLOPT_SSLKEY:
+   case CURLOPT_SSLKEYTYPE:
++  case CURLOPT_SSLSIGNCERT:
++  case CURLOPT_SSLSIGNKEY:
+   case CURLOPT_SSL_CIPHER_LIST:
+   case CURLOPT_SSL_EC_CURVES:
+   case CURLOPT_TLS13_CIPHERS:
+diff --git a/src/tool_cfgable.c b/src/tool_cfgable.c
+index 906e23e14..c25560a51 100644
+--- a/src/tool_cfgable.c
++++ b/src/tool_cfgable.c
+@@ -175,6 +175,13 @@ static void free_config_fields(struct OperationConfig *config)
+   Curl_safefree(config->aws_sigv4);
+   Curl_safefree(config->proto_str);
+   Curl_safefree(config->proto_redir_str);
++
++#ifdef HAVE_NTLS
++  Curl_safefree(config->sign_cert);
++  Curl_safefree(config->sign_key);
++  Curl_safefree(config->enc_cert);
++  Curl_safefree(config->enc_key);
++#endif
+ }
+ 
+ void config_free(struct OperationConfig *config)
+diff --git a/src/tool_cfgable.h b/src/tool_cfgable.h
+index 57e8fce52..21a6ff898 100644
+--- a/src/tool_cfgable.h
++++ b/src/tool_cfgable.h
+@@ -298,6 +298,12 @@ struct OperationConfig {
+   struct State state;             /* for create_transfer() */
+   bool rm_partial;                /* on error, remove partially written output
+                                      files */
++#ifdef HAVE_NTLS
++  char *sign_cert;
++  char *sign_key;
++  char *enc_cert;
++  char *enc_key;
++#endif
+ };
+ 
+ struct GlobalConfig {
+diff --git a/src/tool_getparam.c b/src/tool_getparam.c
+index b80d65792..0c0c706d1 100644
+--- a/src/tool_getparam.c
++++ b/src/tool_getparam.c
+@@ -340,8 +340,13 @@ static const struct LongShort aliases[]= {
+   {"R",  "remote-time",              ARG_BOOL},
+   {"s",  "silent",                   ARG_BOOL},
+   {"S",  "show-error",               ARG_BOOL},
++#ifdef HAVE_NTLS
++  {"Sc", "sign-cert",                ARG_FILENAME},
++  {"Sk", "sign-key",                 ARG_FILENAME},
++#endif
+   {"t",  "telnet-option",            ARG_STRING},
+   {"T",  "upload-file",              ARG_FILENAME},
++  {"Tp", "tlcp",                     ARG_BOOL},
+   {"u",  "user",                     ARG_STRING},
+   {"U",  "proxy-user",               ARG_STRING},
+   {"v",  "verbose",                  ARG_BOOL},
+@@ -351,6 +356,10 @@ static const struct LongShort aliases[]= {
+   {"xa", "preproxy",                 ARG_STRING},
+   {"X",  "request",                  ARG_STRING},
+   {"Y",  "speed-limit",              ARG_STRING},
++#ifdef HAVE_NTLS
++  {"Yc", "enc-cert",                ARG_FILENAME},
++  {"Yk", "enc-key",                 ARG_FILENAME},
++#endif
+   {"y",  "speed-time",               ARG_STRING},
+   {"z",  "time-cond",                ARG_STRING},
+   {"Z",  "parallel",                 ARG_BOOL},
+@@ -2469,49 +2478,69 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
+     case 's': /* --silent */
+       global->silent = toggle;
+       break;
+-    case 'S': /* --show-error */
+-      global->showerror = toggle;
++    case 'S':
++      switch(subletter) {
++        case '\0': /* show errors */
++          global->showerror = toggle; /* --show-error */
++          break;
++#ifdef HAVE_NTLS
++        case 'c': /* sign certificate */
++          GetStr(&config->sign_cert, nextarg);
++          break;
++        case 'k': /* sign key */
++          GetStr(&config->sign_key, nextarg);
++          break;
++#endif
++      }
+       break;
+     case 't':
+       /* Telnet options */
+       err = add2list(&config->telnet_options, nextarg);
+       break;
+     case 'T':
+-      /* we are uploading */
+-    {
+-      struct getout *url;
+-      if(!config->url_ul)
+-        config->url_ul = config->url_list;
+-      if(config->url_ul) {
+-        /* there's a node here, if it already is filled-in continue to find
+-           an "empty" node */
+-        while(config->url_ul && (config->url_ul->flags & GETOUT_UPLOAD))
+-          config->url_ul = config->url_ul->next;
+-      }
++      switch(subletter) {
++        case '\0': /* we are uploading */
++        {
++          struct getout *url;
++          if(!config->url_ul)
++            config->url_ul = config->url_list;
++          if(config->url_ul) {
++            /* there's a node here, if it already is filled-in continue to find
++              an "empty" node */
++            while(config->url_ul && (config->url_ul->flags & GETOUT_UPLOAD))
++              config->url_ul = config->url_ul->next;
++          }
+ 
+-      /* now there might or might not be an available node to fill in! */
++          /* now there might or might not be an available node to fill in! */
+ 
+-      if(config->url_ul)
+-        /* existing node */
+-        url = config->url_ul;
+-      else
+-        /* there was no free node, create one! */
+-        config->url_ul = url = new_getout(config);
++          if(config->url_ul)
++            /* existing node */
++            url = config->url_ul;
++          else
++            /* there was no free node, create one! */
++            config->url_ul = url = new_getout(config);
+ 
+-      if(!url) {
+-        err = PARAM_NO_MEM;
+-        break;
+-      }
++          if(!url) {
++            err = PARAM_NO_MEM;
++            break;
++          }
+ 
+-      url->flags |= GETOUT_UPLOAD; /* mark -T used */
+-      if(!*nextarg)
+-        url->flags |= GETOUT_NOUPLOAD;
+-      else {
+-        /* "-" equals stdin, but keep the string around for now */
+-        GetStr(&url->infile, nextarg);
++          url->flags |= GETOUT_UPLOAD; /* mark -T used */
++          if(!*nextarg)
++            url->flags |= GETOUT_NOUPLOAD;
++          else {
++            /* "-" equals stdin, but keep the string around for now */
++            GetStr(&url->infile, nextarg);
++          }
++        }
++        break;
++#ifdef HAVE_NTLS
++      case 'p': /* TLCP */
++        config->ssl_version = CURL_SSLVERSION_NTLSv1_1;
++        break;
++#endif
+       }
+-    }
+-    break;
++      break;
+     case 'u':
+       /* user:password  */
+       GetStr(&config->userpwd, nextarg);
+@@ -2606,12 +2635,23 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
+         config->low_speed_limit = 1;
+       break;
+     case 'Y':
+-      /* low speed limit */
+-      err = str2unum(&config->low_speed_limit, nextarg);
+-      if(err)
+-        break;
+-      if(!config->low_speed_time)
+-        config->low_speed_time = 30;
++      switch(subletter) {
++        case '\0': /* low speed limit */
++          err = str2unum(&config->low_speed_limit, nextarg);
++          if(err)
++            break;
++          if(!config->low_speed_time)
++            config->low_speed_time = 30;
++          break;
++#ifdef HAVE_NTLS
++        case 'c': /* enc certificate */
++          GetStr(&config->enc_cert, nextarg);
++          break;
++        case 'k': /* enc key */
++          GetStr(&config->enc_key, nextarg);
++          break;
++#endif
++      }
+       break;
+     case 'Z':
+       switch(subletter) {
+diff --git a/src/tool_listhelp.c b/src/tool_listhelp.c
+index 4e7a6dd63..351b0dac1 100644
+--- a/src/tool_listhelp.c
++++ b/src/tool_listhelp.c
+@@ -69,6 +69,23 @@ const struct helptxt helptext[] = {
+   {"    --cert-type <type>",
+    "Certificate type (DER/PEM/ENG/P12)",
+    CURLHELP_TLS},
++#ifdef HAVE_NTLS
++  {"    --sign-cert <certificate>",
++   "Client sign certificate file",
++   CURLHELP_TLS},
++  {"    --enc-cert <certificate>",
++   "Client enc certificate file",
++   CURLHELP_TLS},
++  {"    --sign-key <key>",
++   "Client sign key file",
++   CURLHELP_TLS},
++  {"    --enc-key <key>",
++   "Client enc key file",
++   CURLHELP_TLS},
++  {"    --tlcp",
++   "Use TLCPv1.1",
++   CURLHELP_TLS},
++#endif
+   {"    --ciphers <list of ciphers>",
+    "SSL ciphers to use",
+    CURLHELP_TLS},
+diff --git a/src/tool_operate.c b/src/tool_operate.c
+index 697b64e38..eb6a643f1 100644
+--- a/src/tool_operate.c
++++ b/src/tool_operate.c
+@@ -1927,6 +1927,12 @@ static CURLcode single_transfer(struct GlobalConfig *global,
+             free(certdata);
+           }
+           else
++#endif
++#ifdef HAVE_NTLS
++          my_setopt_str(curl, CURLOPT_SSLSIGNCERT, config->sign_cert);
++          my_setopt_str(curl, CURLOPT_SSLSIGNKEY, config->sign_key);
++          my_setopt_str(curl, CURLOPT_SSLENCCERT, config->enc_cert);
++          my_setopt_str(curl, CURLOPT_SSLENCKEY, config->enc_key);
+ #endif
+           my_setopt_str(curl, CURLOPT_SSLKEY, config->key);
+           my_setopt_str(curl, CURLOPT_PROXY_SSLKEY, config->proxy_key);
+diff --git a/tests/manpage-scan.pl b/tests/manpage-scan.pl
+index c09e979d0..6ad4e9e8b 100755
+--- a/tests/manpage-scan.pl
++++ b/tests/manpage-scan.pl
+@@ -171,6 +171,13 @@ my %opts = (
+     # for tests and debug only, can remain hidden
+     '--test-event' => 6,
+     '--wdebug' => 6,
++
++    # ignore
++    '--enc-key' => 7,
++    '--sign-cert' => 7,
++    '--enc-cert' => 7,
++    '--sign-key' => 7,
++    '--tlcp' => 7,
+     );
+ 
+ 
