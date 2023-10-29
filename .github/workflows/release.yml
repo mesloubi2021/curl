@@ -37,7 +37,9 @@ jobs:
         builder: [macos-latest, ubuntu-20.04]
     name: "build-${{ matrix.builder }}"
     steps:
-      - run: brew install libtool autoconf automake pkg-config
+      - run: |
+          brew install libtool autoconf automake pkg-config
+          mv /usr/local/include/openssl /usr/local/include/openssl.bak
         if: ${{ matrix.builder == 'macos-latest' }}
       - name: build Tongsuo
         run: |
