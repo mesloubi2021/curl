@@ -207,10 +207,11 @@ static size_t unitytls_on_read(void* userData, UInt8* buf, size_t blen, unitytls
   ssize_t nread;
   CURLcode result;
 
-  DEBUGASSERT(data);
   /* OpenSSL catches this case, so should we. */
   if(!buf)
     return 0;
+
+  DEBUGASSERT(data);
 
   nread = Curl_conn_cf_recv(cf->next, data, (char *)buf, blen, &result);
   if(nread < 0 && CURLE_AGAIN == result) {
