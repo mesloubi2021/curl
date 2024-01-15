@@ -269,7 +269,7 @@ static unitytls_x509verify_result unitytls_on_verify(void* userData, unitytls_x5
   struct ssl_primary_config *conn_config = Curl_ssl_cf_get_primary_config(cf);
   const bool verifypeer = conn_config->verifypeer;
   const bool verifyhost = conn_config->verifyhost;
-  const char* const hostname = connssl->hostname;
+  const char* const hostname = connssl->peer.hostname;
   unitytls_x509verify_result verify_result = UNITYTLS_X509VERIFY_SUCCESS;
 
   /* According to documentation the options verifypeer and verifyhost are independent of each other! */
@@ -364,7 +364,7 @@ static CURLcode unitytls_connect_step1(struct Curl_cfilter *cf, struct Curl_easy
   const bool verifypeer = conn_config->verifypeer;
   const char* const ssl_capath = conn_config->CApath;
   char* const ssl_cert = ssl_config->primary.clientcert;
-  const char* const hostname = connssl->hostname;
+  const char* const hostname = connssl->peer.hostname;
 
   unitytls_errorstate err = unitytls->unitytls_errorstate_create();
 
@@ -687,7 +687,7 @@ const struct Curl_ssl Curl_ssl_unitytls = {
   Curl_none_cert_status_request,    /* cert_status_request */
   Curl_unitytls_connect,            /* connect_blocking */
   Curl_unitytls_connect_nonblocking,/* connect_nonblocking */
-  Curl_ssl_get_select_socks,        /* getsock */
+  Curl_ssl_adjust_pollset,          /* adjust_pollset */
   Curl_unitytls_get_internals,      /* get_internals */
   Curl_unitytls_close,              /* close_one */
   Curl_none_close_all,              /* close_all */
