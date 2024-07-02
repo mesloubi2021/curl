@@ -72,8 +72,6 @@ static void unit_stop(void)
   curl_global_cleanup();
 }
 
-#ifdef DEBUGBUILD
-
 struct test_case {
   int id;
   const char *url;
@@ -124,7 +122,7 @@ static void cf_test_destroy(struct Curl_cfilter *cf, struct Curl_easy *data)
   struct cf_test_ctx *ctx = cf->ctx;
 #ifndef CURL_DISABLE_VERBOSE_STRINGS
   infof(data, "%04dms: cf[%s] destroyed",
-       (int)Curl_timediff(Curl_now(), current_tr->started), ctx->id);
+        (int)Curl_timediff(Curl_now(), current_tr->started), ctx->id);
 #else
   (void)data;
 #endif
@@ -145,13 +143,22 @@ static CURLcode cf_test_connect(struct Curl_cfilter *cf,
   duration_ms = Curl_timediff(Curl_now(), ctx->started);
   if(duration_ms >= ctx->fail_delay_ms) {
     infof(data, "%04dms: cf[%s] fail delay reached",
-         (int)duration_ms, ctx->id);
+          (int)duration_ms, ctx->id);
     return CURLE_COULDNT_CONNECT;
   }
   if(duration_ms)
     infof(data, "%04dms: cf[%s] continuing", (int)duration_ms, ctx->id);
   Curl_expire(data, ctx->fail_delay_ms - duration_ms, EXPIRE_RUN_NOW);
   return CURLE_OK;
+}
+
+static void cf_test_adjust_pollset(struct Curl_cfilter *cf,
+                                   struct Curl_easy *data,
+                                   struct easy_pollset *ps)
+{
+  /* just for testing, give one socket with events back */
+  (void)cf;
+  Curl_pollset_set(data, ps, 1, TRUE, TRUE);
 }
 
 static struct Curl_cftype cft_test = {
@@ -161,8 +168,9 @@ static struct Curl_cftype cft_test = {
   cf_test_destroy,
   cf_test_connect,
   Curl_cf_def_close,
+  Curl_cf_def_shutdown,
   Curl_cf_def_get_host,
-  Curl_cf_def_get_select_socks,
+  cf_test_adjust_pollset,
   Curl_cf_def_data_pending,
   Curl_cf_def_send,
   Curl_cf_def_recv,
@@ -185,7 +193,7 @@ static CURLcode cf_test_create(struct Curl_cfilter **pcf,
 
   (void)data;
   (void)conn;
-  ctx = calloc(sizeof(*ctx), 1);
+  ctx = calloc(1, sizeof(*ctx));
   if(!ctx) {
     result = CURLE_OUT_OF_MEMORY;
     goto out;
@@ -193,7 +201,7 @@ static CURLcode cf_test_create(struct Curl_cfilter **pcf,
   ctx->ai_family = ai->ai_family;
   ctx->transport = transport;
   ctx->started = Curl_now();
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
   if(ctx->ai_family == AF_INET6) {
     ctx->stats = &current_tr->cf6;
     ctx->fail_delay_ms = current_tc->cf6_fail_delay_ms;
@@ -329,8 +337,6 @@ static void test_connect(struct test_case *tc)
   check_result(tc, &tr);
 }
 
-#endif /* DEBUGBUILD */
-
 /*
  * How these test cases work:
  * - replace the creation of the TCP socket filter with our test filter
@@ -358,7 +364,7 @@ static struct test_case TEST_CASES[] = {
   { 2, TURL, "test.com:123:192.0.2.1,192.0.2.2", CURL_IPRESOLVE_WHATEVER,
     CNCT_TMOT, 150, 200,  200,    2,  0,      400,  TC_TMOT,  R_FAIL, NULL },
   /* 2 ipv4, fails after ~400ms, reports COULDNT_CONNECT   */
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
   { 3, TURL, "test.com:123:::1", CURL_IPRESOLVE_WHATEVER,
     CNCT_TMOT, 150, 200,  200,    0,  1,      200,  TC_TMOT,  R_FAIL, NULL },
   /* 1 ipv6, fails after ~200ms, reports COULDNT_CONNECT   */
@@ -385,15 +391,10 @@ static struct test_case TEST_CASES[] = {
 
 UNITTEST_START
 
-#if defined(DEBUGBUILD)
   size_t i;
 
   for(i = 0; i < sizeof(TEST_CASES)/sizeof(TEST_CASES[0]); ++i) {
     test_connect(&TEST_CASES[i]);
   }
-#else
-  (void)TEST_CASES;
-  (void)test_connect;
-#endif
 
 UNITTEST_STOP

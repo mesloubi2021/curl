@@ -107,6 +107,7 @@ if test "x$OPT_WOLFSSL" != xno; then
          WOLFSSL_ENABLED=1
          USE_WOLFSSL="yes"
          ssl_msg="WolfSSL"
+         QUIC_ENABLED=yes
          test wolfssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
        ],
        [
@@ -163,6 +164,7 @@ if test "x$OPT_WOLFSSL" != xno; then
           AC_MSG_NOTICE([Added $wolfssllibpath to CURL_LIBRARY_PATH])
         fi
       fi
+      LIBCURL_PC_REQUIRES_PRIVATE="$LIBCURL_PC_REQUIRES_PRIVATE wolfssl"
     else
         AC_MSG_ERROR([--with-wolfssl but wolfSSL was not found or doesn't work])
     fi

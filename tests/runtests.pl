@@ -23,6 +23,8 @@
 #
 ###########################################################################
 
+# For documentation, run `man ./runtests.1` and see README.md.
+
 # Experimental hooks are available to run tests remotely on machines that
 # are able to run curl but are unable to run the test harness.
 # The following sections need to be modified:
@@ -58,6 +60,7 @@ use strict;
 # Promote all warnings to fatal
 use warnings FATAL => 'all';
 use 5.006;
+use POSIX qw(strftime);
 
 # These should be the only variables that might be needed to get edited:
 
@@ -446,6 +449,13 @@ sub compare {
 }
 
 #######################################################################
+# Numeric-sort words in a string
+sub numsortwords {
+    my ($string)=@_;
+    return join(' ', sort { $a <=> $b } split(' ', $string));
+}
+
+#######################################################################
 # Parse and store the protocols in curl's Protocols: line
 sub parseprotocols {
     my ($line)=@_;
@@ -490,6 +500,8 @@ sub checksystemfeatures {
     $versretval = runclient($versioncmd);
     $versnoexec = $!;
 
+    $DATE = strftime "%Y-%m-%d", localtime;
+
     open(my $versout, "<", "$curlverout");
     @version = <$versout>;
     close($versout);
@@ -510,6 +522,8 @@ sub checksystemfeatures {
         if($_ =~ /^curl ([^ ]*)/) {
             $curl = $_;
             $CURLVERSION = $1;
+            $CURLVERNUM = $CURLVERSION;
+            $CURLVERNUM =~ s/^([0-9.]+)(.*)/$1/; # leading dots and numbers
             $curl =~ s/^(.*)(libcurl.*)/$1/g || die "Failure determining curl binary version";
 
             $libcurl = $2;
@@ -794,6 +808,7 @@ sub checksystemfeatures {
     $feature{"headers-api"} = 1;
     $feature{"xattr"} = 1;
     $feature{"large-time"} = 1;
+    $feature{"sha512-256"} = 1;
 
     # make each protocol an enabled "feature"
     for my $p (@protocols) {
@@ -1233,6 +1248,8 @@ sub singletest_check {
             # text mode when running on windows: fix line endings
             s/\r\n/\n/g for @validstdout;
             s/\n/\r\n/g for @validstdout;
+            s/\r\n/\n/g for @actual;
+            s/\n/\r\n/g for @actual;
         }
 
         if($hash{'nonewline'}) {
@@ -1297,6 +1314,10 @@ sub singletest_check {
             # Yes, we must cut off the final newline from the final line
             # of the protocol data
             chomp($validstderr[-1]);
+        }
+
+        if($hash{'crlf'}) {
+            subnewlines(0, \$_) for @validstderr;
         }
 
         $res = compare($runnerid, $testnum, $testname, "stderr", \@actual, \@validstderr);
@@ -1503,7 +1524,7 @@ sub singletest_check {
 
     }
     else {
-        $ok .= "-"; # protocol not checked
+        $ok .= "-"; # proxy not checked
     }
 
     my $outputok;
@@ -2212,6 +2233,10 @@ while(@ARGV) {
     elsif ($ARGV[0] eq "-g") {
         # run this test with gdb
         $gdbthis=1;
+    }
+    elsif ($ARGV[0] eq "-gl") {
+        # run this test with lldb
+        $gdbthis=2;
     }
     elsif ($ARGV[0] eq "-gw") {
         # run this test with windowed gdb
@@ -3013,13 +3038,15 @@ if(%skipped && !$short) {
 
 if($total) {
     if($failedign) {
-        logmsg "IGNORED: failed tests: $failedign\n";
+        my $failedignsorted = numsortwords($failedign);
+        logmsg "IGNORED: failed tests: $failedignsorted\n";
     }
     logmsg sprintf("TESTDONE: $ok tests out of $total reported OK: %d%%\n",
                    $ok/$total*100);
 
     if($failed && ($ok != $total)) {
-        logmsg "\nTESTFAIL: These test cases failed: $failed\n\n";
+        my $failedsorted = numsortwords($failed);
+        logmsg "\nTESTFAIL: These test cases failed: $failedsorted\n\n";
     }
 }
 else {

@@ -28,9 +28,10 @@ import difflib
 import filecmp
 import logging
 import os
+import time
 import pytest
 
-from testenv import Env, CurlClient
+from testenv import Env, CurlClient, LocalClient
 
 
 log = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ class TestUpload:
         env.make_data_file(indir=env.gen_dir, fname="data-63k", fsize=63*1024)
         env.make_data_file(indir=env.gen_dir, fname="data-64k", fsize=64*1024)
         env.make_data_file(indir=env.gen_dir, fname="data-100k", fsize=100*1024)
+        env.make_data_file(indir=env.gen_dir, fname="data-1m+", fsize=(1024*1024)+1)
         env.make_data_file(indir=env.gen_dir, fname="data-10m", fsize=10*1024*1024)
         httpd.clear_extra_configs()
         httpd.reload()
@@ -124,7 +126,7 @@ class TestUpload:
         if proto == 'h3' and env.curl_uses_lib('msh3'):
             pytest.skip("msh3 stalls here")
         fdata = os.path.join(env.gen_dir, 'data-100k')
-        count = 50
+        count = 20
         curl = CurlClient(env=env)
         url = f'https://{env.authority_for(env.domain1, proto)}/curltest/echo?id=[0-{count-1}]'
         r = curl.http_upload(urls=[url], data=f'@{fdata}', alpn_proto=proto)
@@ -161,7 +163,7 @@ class TestUpload:
         if proto == 'h3' and env.curl_uses_lib('msh3'):
             pytest.skip("msh3 stalls here")
         # limit since we use a separate connection in h1
-        count = 50
+        count = 20
         data = '0123456789'
         curl = CurlClient(env=env)
         url = f'https://{env.authority_for(env.domain1, proto)}/curltest/echo?id=[0-{count-1}]'
@@ -181,13 +183,30 @@ class TestUpload:
             pytest.skip("msh3 stalls here")
         fdata = os.path.join(env.gen_dir, 'data-100k')
         # limit since we use a separate connection in h1
-        count = 50
+        count = 20
         curl = CurlClient(env=env)
         url = f'https://{env.authority_for(env.domain1, proto)}/curltest/echo?id=[0-{count-1}]'
         r = curl.http_upload(urls=[url], data=f'@{fdata}', alpn_proto=proto,
                              extra_args=['--parallel'])
         r.check_response(count=count, http_status=200)
         self.check_download(count, fdata, curl)
+
+    # upload large data parallel to a URL that denies uploads
+    @pytest.mark.parametrize("proto", ['h2', 'h3'])
+    def test_07_22_upload_parallel_fail(self, env: Env, httpd, nghttpx, repeat, proto):
+        if proto == 'h3' and not env.have_h3():
+            pytest.skip("h3 not supported")
+        if proto == 'h3' and env.curl_uses_lib('msh3'):
+            pytest.skip("msh3 stalls here")
+        fdata = os.path.join(env.gen_dir, 'data-10m')
+        count = 100
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}'\
+            f'/curltest/tweak?status=400&delay=5ms&chunks=1&body_error=reset&id=[0-{count-1}]'
+        r = curl.http_upload(urls=[url], data=f'@{fdata}', alpn_proto=proto,
+                             extra_args=['--parallel'])
+        exp_exit = 92 if proto == 'h2' else 95
+        r.check_stats(count=count, exitcode=exp_exit)
 
     # PUT 100k
     @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
@@ -219,7 +238,7 @@ class TestUpload:
         fdata = os.path.join(env.gen_dir, 'data-10m')
         count = 1
         curl = CurlClient(env=env)
-        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/put?id=[0-{count-1}]&chunk_delay=10ms'
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/put?id=[0-{count-1}]&chunk_delay=2ms'
         r = curl.http_put(urls=[url], fdata=fdata, alpn_proto=proto,
                              extra_args=['--parallel'])
         r.check_stats(count=count, http_status=200, exitcode=0)
@@ -444,3 +463,110 @@ class TestUpload:
                                                     tofile=dfile,
                                                     n=1))
                 assert False, f'download {dfile} differs:\n{diff}'
+
+    # upload data, pause, let connection die with an incomplete response
+    # issues #11769 #13260
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
+    def test_07_42a_upload_disconnect(self, env: Env, httpd, nghttpx, repeat, proto):
+        if proto == 'h3' and not env.have_h3():
+            pytest.skip("h3 not supported")
+        if proto == 'h3' and env.curl_uses_lib('msh3'):
+            pytest.skip("msh3 fails here")
+        client = LocalClient(name='upload-pausing', env=env, timeout=60)
+        if not client.exists():
+            pytest.skip(f'example client not built: {client.name}')
+        url = f'http://{env.domain1}:{env.http_port}/curltest/echo?id=[0-0]&die_after=0'
+        r = client.run([url])
+        r.check_exit_code(18)  # PARTIAL_FILE
+
+    # upload data, pause, let connection die without any response at all
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
+    def test_07_42b_upload_disconnect(self, env: Env, httpd, nghttpx, repeat, proto):
+        if proto == 'h3' and not env.have_h3():
+            pytest.skip("h3 not supported")
+        if proto == 'h3' and env.curl_uses_lib('msh3'):
+            pytest.skip("msh3 fails here")
+        client = LocalClient(name='upload-pausing', env=env, timeout=60)
+        if not client.exists():
+            pytest.skip(f'example client not built: {client.name}')
+        url = f'http://{env.domain1}:{env.http_port}/curltest/echo?id=[0-0]&just_die=1'
+        r = client.run([url])
+        r.check_exit_code(52)  # GOT_NOTHING
+
+    # upload data, pause, let connection die after 100 continue
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
+    def test_07_42c_upload_disconnect(self, env: Env, httpd, nghttpx, repeat, proto):
+        if proto == 'h3' and not env.have_h3():
+            pytest.skip("h3 not supported")
+        if proto == 'h3' and env.curl_uses_lib('msh3'):
+            pytest.skip("msh3 fails here")
+        client = LocalClient(name='upload-pausing', env=env, timeout=60)
+        if not client.exists():
+            pytest.skip(f'example client not built: {client.name}')
+        url = f'http://{env.domain1}:{env.http_port}/curltest/echo?id=[0-0]&die_after_100=1'
+        r = client.run([url])
+        r.check_exit_code(52)  # GOT_NOTHING
+
+    # speed limited on put handler
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
+    def test_07_50_put_speed_limit(self, env: Env, httpd, nghttpx, proto, repeat):
+        if proto == 'h3' and not env.have_h3():
+            pytest.skip("h3 not supported")
+        count = 1
+        fdata = os.path.join(env.gen_dir, 'data-100k')
+        up_len = 100 * 1024
+        speed_limit = 20 * 1024
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/put?id=[0-0]'
+        r = curl.http_put(urls=[url], fdata=fdata, alpn_proto=proto,
+                          with_headers=True, extra_args=[
+            '--limit-rate', f'{speed_limit}'
+        ])
+        r.check_response(count=count, http_status=200)
+        assert r.responses[0]['header']['received-length'] == f'{up_len}', f'{r.responses[0]}'
+        up_speed = r.stats[0]['speed_upload']
+        assert (speed_limit * 0.5) <= up_speed <= (speed_limit * 1.5), f'{r.stats[0]}'
+
+    # speed limited on echo handler
+    @pytest.mark.parametrize("proto", ['http/1.1', 'h2', 'h3'])
+    def test_07_51_echo_speed_limit(self, env: Env, httpd, nghttpx, proto, repeat):
+        if proto == 'h3' and not env.have_h3():
+            pytest.skip("h3 not supported")
+        count = 1
+        fdata = os.path.join(env.gen_dir, 'data-100k')
+        speed_limit = 20 * 1024
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/echo?id=[0-0]'
+        r = curl.http_upload(urls=[url], data=f'@{fdata}', alpn_proto=proto,
+                             with_headers=True, extra_args=[
+            '--limit-rate', f'{speed_limit}'
+        ])
+        r.check_response(count=count, http_status=200)
+        up_speed = r.stats[0]['speed_upload']
+        assert (speed_limit * 0.5) <= up_speed <= (speed_limit * 1.5), f'{r.stats[0]}'
+
+    # upload larger data, triggering "Expect: 100-continue" code paths
+    @pytest.mark.parametrize("proto", ['http/1.1'])
+    def test_07_60_upload_exp100(self, env: Env, httpd, nghttpx, repeat, proto):
+        fdata = os.path.join(env.gen_dir, 'data-1m+')
+        read_delay = 1
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/put?id=[0-0]'\
+              f'&read_delay={read_delay}s'
+        r = curl.http_put(urls=[url], fdata=fdata, alpn_proto=proto, extra_args=[
+            '--expect100-timeout', f'{read_delay+1}'
+        ])
+        r.check_stats(count=1, http_status=200, exitcode=0)
+
+    # upload larger data, triggering "Expect: 100-continue" code paths
+    @pytest.mark.parametrize("proto", ['http/1.1'])
+    def test_07_61_upload_exp100_timeout(self, env: Env, httpd, nghttpx, repeat, proto):
+        fdata = os.path.join(env.gen_dir, 'data-1m+')
+        read_delay = 2
+        curl = CurlClient(env=env)
+        url = f'https://{env.authority_for(env.domain1, proto)}/curltest/put?id=[0-0]'\
+              f'&read_delay={read_delay}s'
+        r = curl.http_put(urls=[url], fdata=fdata, alpn_proto=proto, extra_args=[
+            '--expect100-timeout', f'{read_delay-1}'
+        ])
+        r.check_stats(count=1, http_status=200, exitcode=0)

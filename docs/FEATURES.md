@@ -1,3 +1,9 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # Features -- what curl can do
 
 ## curl tool
@@ -12,11 +18,11 @@
 
 ## libcurl
 
- - full URL syntax with no length limit
+ - URL RFC 3986 syntax
  - custom maximum download time
  - custom least download speed acceptable
  - custom output result after completion
- - guesses protocol from host name unless specified
+ - guesses protocol from hostname unless specified
  - uses .netrc
  - progress bar with time statistics while downloading
  - "standard" proxy environment variables support
@@ -26,7 +32,7 @@
  - happy eyeballs dual-stack connects
  - persistent connections
  - SOCKS 4 + 5 support, with or without local name resolving
- - supports user name and password in proxy environment variables
+ - supports username and password in proxy environment variables
  - operations through HTTP proxy "tunnel" (using CONNECT)
  - replaceable memory functions (malloc, free, realloc, etc)
  - asynchronous name resolving (6)
@@ -82,8 +88,8 @@
  - active/passive using PORT, EPRT, PASV or EPSV
  - single file size information (compare to HTTP HEAD)
  - 'type=' URL support
- - dir listing
- - dir listing names-only
+ - directory listing
+ - directory listing names-only
  - upload
  - upload append
  - upload via http-proxy as HTTP PUT
@@ -94,7 +100,7 @@
  - via HTTP proxy, HTTPS proxy or SOCKS proxy
  - all operations can be tunneled through proxy
  - customizable to retrieve file modification date
- - no dir depth limit
+ - no directory depth limit
 
 ## FTPS (1)
 
