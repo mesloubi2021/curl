@@ -285,6 +285,7 @@ typedef enum {
   C_SERVICE_NAME,
   C_SESSIONID,
   C_SHOW_ERROR,
+  C_SHOW_HEADERS,
   C_SILENT,
   C_SKIP_EXITING,
   C_SOCKS4,
@@ -457,7 +458,7 @@ static const struct LongShort aliases[]= {
   {"http3",                      ARG_NONE, ' ', C_HTTP3},
   {"http3-only",                 ARG_NONE, ' ', C_HTTP3_ONLY},
   {"ignore-content-length",      ARG_BOOL, ' ', C_IGNORE_CONTENT_LENGTH},
-  {"include",                    ARG_BOOL, 'i', C_INCLUDE},
+  {"include",                    ARG_BOOL, ' ', C_INCLUDE},
   {"insecure",                   ARG_BOOL, 'k', C_INSECURE},
   {"interface",                  ARG_STRG, ' ', C_INTERFACE},
   {"ip-tos",                     ARG_STRG, ' ', C_IP_TOS},
@@ -573,6 +574,7 @@ static const struct LongShort aliases[]= {
   {"service-name",               ARG_STRG, ' ', C_SERVICE_NAME},
   {"sessionid",                  ARG_BOOL, ' ', C_SESSIONID},
   {"show-error",                 ARG_BOOL, 'S', C_SHOW_ERROR},
+  {"show-headers",               ARG_BOOL, 'i', C_SHOW_HEADERS},
   {"silent",                     ARG_BOOL, 's', C_SILENT},
   {"skip-existing",              ARG_BOOL, ' ', C_SKIP_EXITING},
   {"socks4",                     ARG_STRG, ' ', C_SOCKS4},
@@ -2479,6 +2481,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       }
       break;
     case C_INCLUDE: /* --include */
+    case C_SHOW_HEADERS: /* --show-headers */
       config->show_headers = toggle; /* show the headers as well in the
                                         general output stream */
       break;
