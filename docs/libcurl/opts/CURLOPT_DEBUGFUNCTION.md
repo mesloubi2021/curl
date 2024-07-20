@@ -12,6 +12,7 @@ See-also:
   - curl_global_trace (3)
 Protocol:
   - All
+Added-in: 7.9.6
 ---
 
 # NAME
@@ -102,6 +103,8 @@ CURLOPT_PRIVATE(3) on your handle.
 # DEFAULT
 
 NULL
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -207,9 +210,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

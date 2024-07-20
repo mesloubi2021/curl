@@ -1,7 +1,7 @@
 ---
 c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
-Title: curl_strequal
+Title: curl_strnequal
 Section: 3
 Source: libcurl
 See-also:
@@ -10,6 +10,7 @@ See-also:
   - strcmp (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -41,6 +42,8 @@ This function is provided by libcurl to enable applications to compare strings
 in a truly portable manner. There are no standard portable case insensitive
 string comparison functions. This function works on all platforms.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -52,9 +55,7 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

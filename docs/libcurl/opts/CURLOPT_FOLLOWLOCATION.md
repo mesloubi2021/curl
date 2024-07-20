@@ -12,6 +12,7 @@ See-also:
   - CURLOPT_REDIR_PROTOCOLS_STR (3)
 Protocol:
   - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -65,6 +66,8 @@ would otherwise select internally.
 
 0, disabled
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -82,9 +85,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Along with HTTP
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -10,6 +10,7 @@ See-also:
   - CURLOPT_TCP_KEEPINTVL (3)
 Protocol:
   - TCP
+Added-in: 8.9.0
 ---
 
 # NAME
@@ -38,6 +39,8 @@ Any larger value is capped to this amount.
 
 9
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -64,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in v8.9.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

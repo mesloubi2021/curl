@@ -858,7 +858,7 @@ ossl_log_tls12_secret(const SSL *ssl, bool *keylog_done)
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L &&    \
   !(defined(LIBRESSL_VERSION_NUMBER) &&         \
     LIBRESSL_VERSION_NUMBER < 0x20700000L)
-  /* ssl->s3 is not checked in openssl 1.1.0-pre6, but let's assume that
+  /* ssl->s3 is not checked in OpenSSL 1.1.0-pre6, but let's assume that
    * we have a valid SSL context if we have a non-NULL session. */
   SSL_get_client_random(ssl, client_random, SSL3_RANDOM_SIZE);
   master_key_length = (int)
@@ -2867,42 +2867,25 @@ CURLcode Curl_ossl_add_session(struct Curl_cfilter *cf,
                                SSL_SESSION *session)
 {
   const struct ssl_config_data *config;
-  bool isproxy;
-  bool added = FALSE;
+  CURLcode result = CURLE_OK;
 
   if(!cf || !data)
     goto out;
 
-  isproxy = Curl_ssl_cf_is_proxy(cf);
-
   config = Curl_ssl_cf_get_config(cf, data);
-  if(config->primary.sessionid) {
-    bool incache;
-    void *old_session = NULL;
+  if(config->primary.cache_session) {
 
     Curl_ssl_sessionid_lock(data);
-    if(isproxy)
-      incache = FALSE;
-    else
-      incache = !(Curl_ssl_getsessionid(cf, data, peer,
-                                        &old_session, NULL));
-    if(incache && (old_session != session)) {
-      infof(data, "old SSL session ID is stale, removing");
-      Curl_ssl_delsessionid(data, old_session);
-      incache = FALSE;
-    }
-
-    if(!incache) {
-      added = TRUE;
-      Curl_ssl_addsessionid(cf, data, peer, session, 0, ossl_session_free);
-    }
+    result = Curl_ssl_set_sessionid(cf, data, peer, session, 0,
+                                    ossl_session_free);
+    session = NULL; /* call has taken ownership */
     Curl_ssl_sessionid_unlock(data);
   }
 
 out:
-  if(!added)
+  if(session)
     ossl_session_free(session, 0);
-  return CURLE_OK;
+  return result;
 }
 
 /* The "new session" callback must return zero if the session can be removed
@@ -3233,7 +3216,7 @@ static CURLcode populate_x509_store(struct Curl_cfilter *cf,
     if(!ssl_cafile && !ssl_capath &&
        !imported_native_ca && !imported_ca_info_blob) {
       /* verifying the peer without any CA certificates will not
-         work so use openssl's built-in default as fallback */
+         work so use OpenSSL's built-in default as fallback */
       X509_STORE_set_default_paths(store);
     }
 #endif
@@ -3417,7 +3400,7 @@ CURLcode Curl_ssl_setup_x509_store(struct Curl_cfilter *cf,
   bool cache_criteria_met;
 
   /* Consider the X509 store cacheable if it comes exclusively from a CAfile,
-     or no source is provided and we are falling back to openssl's built-in
+     or no source is provided and we are falling back to OpenSSL's built-in
      default. */
   cache_criteria_met = (data->set.general_ssl.ca_cache_timeout != 0) &&
     conn_config->verifypeer &&
@@ -3918,7 +3901,7 @@ CURLcode Curl_ossl_ctx_init(struct ossl_ctx *octx,
     }
 # ifdef OPENSSL_IS_BORINGSSL
     if(trying_ech_now && outername) {
-      infof(data, "ECH: setting public_name not supported with boringssl");
+      infof(data, "ECH: setting public_name not supported with BoringSSL");
       return CURLE_SSL_CONNECT_ERROR;
     }
 # else
@@ -3945,7 +3928,7 @@ CURLcode Curl_ossl_ctx_init(struct ossl_ctx *octx,
 #endif
 
   octx->reused_session = FALSE;
-  if(ssl_config->primary.sessionid && transport == TRNSPRT_TCP) {
+  if(ssl_config->primary.cache_session && transport == TRNSPRT_TCP) {
     Curl_ssl_sessionid_lock(data);
     if(!Curl_ssl_getsessionid(cf, data, peer, &ssl_sessionid, NULL)) {
       /* we got a session id, use it! */
@@ -4006,7 +3989,7 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
   /* with OpenSSL v1.1.1 we get an alternative to SSL_set_bio() that works
    * without backward compat quirks. Every call takes one reference, so we
    * up it and pass. SSL* then owns it and will free.
-   * We check on the function in configure, since libressl and friends
+   * We check on the function in configure, since LibreSSL and friends
    * each have their own versions to add support for this. */
   BIO_up_ref(bio);
   SSL_set0_rbio(octx->ssl, bio);

@@ -11,6 +11,7 @@ See-also:
   - curl_multi_fdset (3)
 Protocol:
   - All
+Added-in: 8.8.0
 ---
 
 # NAME
@@ -50,6 +51,8 @@ be checked for being ready to read or write.
 The client code can pass *size* equal to zero just to get the number of the
 descriptors and allocate appropriate storage for them to be used in a
 subsequent function call.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -99,9 +102,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 8.8.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

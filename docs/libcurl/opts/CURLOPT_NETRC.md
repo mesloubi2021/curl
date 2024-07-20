@@ -10,6 +10,7 @@ See-also:
   - CURLOPT_USERPWD (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -117,6 +118,8 @@ done with "macdef" that it finds.
 
 CURL_NETRC_IGNORED
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -132,9 +135,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

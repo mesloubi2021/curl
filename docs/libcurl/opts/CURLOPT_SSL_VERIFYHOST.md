@@ -12,6 +12,7 @@ Protocol:
   - TLS
 TLS-backend:
   - All
+Added-in: 7.8.1
 ---
 
 # NAME
@@ -86,6 +87,8 @@ may be inaccessible if SNI is not sent.
 
 2
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -103,9 +106,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-If built TLS enabled.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -13,6 +13,7 @@ See-also:
   - curl_url_strerror (3)
 Protocol:
   - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -215,6 +216,8 @@ A not-present fragment returns *part* set to NULL.
 
 A zero-length fragment returns *part* as NULL unless CURLU_GET_EMPTY is set.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -235,9 +238,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0. CURLUPART_ZONEID was added in 7.65.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -43,14 +43,12 @@
 
 #ifdef __clang__
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+#pragma clang diagnostic ignored "-Wunreachable-code"
 #endif /* __clang__ */
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waddress"
-#pragma GCC diagnostic ignored "-Wundef"
-#pragma GCC diagnostic ignored "-Wunreachable-code"
 #endif
 
 #include <limits.h>
@@ -377,14 +375,14 @@ CF_INLINE CFStringRef getsubject(SecCertificateRef cert)
 #else
 #if CURL_BUILD_MAC_10_7
   /* Lion & later: Get the long description if we can. */
-  if(SecCertificateCopyLongDescription)
+  if(&SecCertificateCopyLongDescription)
     server_cert_summary =
       SecCertificateCopyLongDescription(NULL, cert, NULL);
   else
 #endif /* CURL_BUILD_MAC_10_7 */
 #if CURL_BUILD_MAC_10_6
   /* Snow Leopard: Get the certificate summary. */
-  if(SecCertificateCopySubjectSummary)
+  if(&SecCertificateCopySubjectSummary)
     server_cert_summary = SecCertificateCopySubjectSummary(cert);
   else
 #endif /* CURL_BUILD_MAC_10_6 */
@@ -497,7 +495,7 @@ static OSStatus CopyIdentityWithLabel(char *label,
   /* SecItemCopyMatching() was introduced in iOS and Snow Leopard.
      kSecClassIdentity was introduced in Lion. If both exist, let's use them
      to find the certificate. */
-  if(SecItemCopyMatching && kSecClassIdentity) {
+  if(&SecItemCopyMatching && kSecClassIdentity) {
     CFTypeRef keys[5];
     CFTypeRef values[5];
     CFDictionaryRef query_dict;
@@ -735,13 +733,14 @@ static CURLcode sectransp_version_from_curl(SSLProtocol *darwinver,
       return CURLE_OK;
     case CURL_SSLVERSION_TLSv1_3:
       /* TLS 1.3 support first appeared in iOS 11 and macOS 10.13 */
-#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
+#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && \
+    defined(HAVE_BUILTIN_AVAILABLE)
       if(__builtin_available(macOS 10.13, iOS 11.0, *)) {
         *darwinver = kTLSProtocol13;
         return CURLE_OK;
       }
 #endif /* (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) &&
-          HAVE_BUILTIN_AVAILABLE == 1 */
+          defined(HAVE_BUILTIN_AVAILABLE) */
       break;
   }
   return CURLE_SSL_CONNECT_ERROR;
@@ -764,7 +763,8 @@ static CURLcode set_ssl_version_min_max(struct Curl_cfilter *cf,
   /* macOS 10.5-10.7 supported TLS 1.0 only.
      macOS 10.8 and later, and iOS 5 and later, added TLS 1.1 and 1.2.
      macOS 10.13 and later, and iOS 11 and later, added TLS 1.3. */
-#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
+#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && \
+    defined(HAVE_BUILTIN_AVAILABLE)
   if(__builtin_available(macOS 10.13, iOS 11.0, *)) {
     max_supported_version_by_os = CURL_SSLVERSION_MAX_TLSv1_3;
   }
@@ -774,7 +774,7 @@ static CURLcode set_ssl_version_min_max(struct Curl_cfilter *cf,
 #else
   max_supported_version_by_os = CURL_SSLVERSION_MAX_TLSv1_2;
 #endif /* (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) &&
-          HAVE_BUILTIN_AVAILABLE == 1 */
+          defined(HAVE_BUILTIN_AVAILABLE) */
 
   switch(ssl_version) {
     case CURL_SSLVERSION_DEFAULT:
@@ -791,7 +791,7 @@ static CURLcode set_ssl_version_min_max(struct Curl_cfilter *cf,
   }
 
 #if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
-  if(SSLSetProtocolVersionMax) {
+  if(&SSLSetProtocolVersionMax) {
     SSLProtocol darwin_ver_min = kTLSProtocol1;
     SSLProtocol darwin_ver_max = kTLSProtocol1;
     CURLcode result = sectransp_version_from_curl(&darwin_ver_min,
@@ -1099,7 +1099,7 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
 #endif /* CURL_BUILD_MAC */
 
 #if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
-  if(SSLCreateContext) {  /* use the newer API if available */
+  if(&SSLCreateContext) {  /* use the newer API if available */
     if(backend->ssl_ctx)
       CFRelease(backend->ssl_ctx);
     backend->ssl_ctx = SSLCreateContext(NULL, kSSLClientSide, kSSLStreamType);
@@ -1133,11 +1133,12 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
 
   /* check to see if we have been told to use an explicit SSL/TLS version */
 #if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
-  if(SSLSetProtocolVersionMax) {
+  if(&SSLSetProtocolVersionMax) {
     switch(conn_config->version) {
     case CURL_SSLVERSION_TLSv1:
       (void)SSLSetProtocolVersionMin(backend->ssl_ctx, kTLSProtocol1);
-#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
+#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && \
+    defined(HAVE_BUILTIN_AVAILABLE)
       if(__builtin_available(macOS 10.13, iOS 11.0, *)) {
         (void)SSLSetProtocolVersionMax(backend->ssl_ctx, kTLSProtocol13);
       }
@@ -1147,7 +1148,7 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
 #else
       (void)SSLSetProtocolVersionMax(backend->ssl_ctx, kTLSProtocol12);
 #endif /* (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) &&
-          HAVE_BUILTIN_AVAILABLE == 1 */
+          defined(HAVE_BUILTIN_AVAILABLE) */
       break;
     case CURL_SSLVERSION_DEFAULT:
     case CURL_SSLVERSION_TLSv1_0:
@@ -1237,7 +1238,8 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
   }
 #endif /* CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS */
 
-#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
+#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && \
+    defined(HAVE_BUILTIN_AVAILABLE)
   if(connssl->alpn) {
     if(__builtin_available(macOS 10.13.4, iOS 11, tvOS 11, *)) {
       struct alpn_proto_buf proto;
@@ -1382,9 +1384,9 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
   Darwin 15.x.x is El Capitan (10.11)
   */
 #if CURL_BUILD_MAC
-  if(SSLSetSessionOption && darwinver_maj >= 13) {
+  if(&SSLSetSessionOption && darwinver_maj >= 13) {
 #else
-  if(SSLSetSessionOption) {
+  if(&SSLSetSessionOption) {
 #endif /* CURL_BUILD_MAC */
     bool break_on_auth = !conn_config->verifypeer ||
       ssl_cafile || ssl_cablob;
@@ -1465,7 +1467,7 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
 #if CURL_BUILD_MAC_10_9 || CURL_BUILD_IOS_7
   /* We want to enable 1/n-1 when using a CBC cipher unless the user
      specifically does not want us doing that: */
-  if(SSLSetSessionOption) {
+  if(&SSLSetSessionOption) {
     SSLSetSessionOption(backend->ssl_ctx, kSSLSessionOptionSendOneByteRecord,
                         !ssl_config->enable_beast);
     SSLSetSessionOption(backend->ssl_ctx, kSSLSessionOptionFalseStart,
@@ -1474,7 +1476,7 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
 #endif /* CURL_BUILD_MAC_10_9 || CURL_BUILD_IOS_7 */
 
   /* Check if there is a cached ID we can/should use here! */
-  if(ssl_config->primary.sessionid) {
+  if(ssl_config->primary.cache_session) {
     char *ssl_sessionid;
     size_t ssl_sessionid_len;
 
@@ -1508,9 +1510,9 @@ static CURLcode sectransp_connect_step1(struct Curl_cfilter *cf,
         return CURLE_SSL_CONNECT_ERROR;
       }
 
-      result = Curl_ssl_addsessionid(cf, data, &connssl->peer, ssl_sessionid,
-                                     ssl_sessionid_len,
-                                     sectransp_session_free);
+      result = Curl_ssl_set_sessionid(cf, data, &connssl->peer, ssl_sessionid,
+                                      ssl_sessionid_len,
+                                      sectransp_session_free);
       Curl_ssl_sessionid_unlock(data);
       if(result)
         return result;
@@ -2228,7 +2230,8 @@ check_handshake:
         break;
     }
 
-#if(CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
+#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && \
+    defined(HAVE_BUILTIN_AVAILABLE)
     if(connssl->alpn) {
       if(__builtin_available(macOS 10.13.4, iOS 11, tvOS 11, *)) {
         CFArrayRef alpnArr = NULL;
@@ -2361,7 +2364,7 @@ static CURLcode collect_server_cert(struct Curl_cfilter *cf,
      private API and does not work as expected. So we have to look for
      a different symbol to make sure this code is only executed under
      Lion or later. */
-  if(SecTrustCopyPublicKey) {
+  if(&SecTrustCopyPublicKey) {
 #pragma unused(server_certs)
     err = SSLCopyPeerTrust(backend->ssl_ctx, &trust);
     /* For some reason, SSLCopyPeerTrust() can return noErr and yet return
@@ -2656,7 +2659,7 @@ static void sectransp_close(struct Curl_cfilter *cf, struct Curl_easy *data)
   if(backend->ssl_ctx) {
     CURL_TRC_CF(data, cf, "close");
 #if CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS
-    if(SSLCreateContext)
+    if(&SSLCreateContext)
       CFRelease(backend->ssl_ctx);
 #if CURL_SUPPORT_MAC_10_8
     else
@@ -2731,7 +2734,7 @@ static CURLcode sectransp_sha256sum(const unsigned char *tmp, /* input */
 static bool sectransp_false_start(void)
 {
 #if CURL_BUILD_MAC_10_9 || CURL_BUILD_IOS_7
-  if(SSLSetSessionOption)
+  if(&SSLSetSessionOption)
     return TRUE;
 #endif
   return FALSE;

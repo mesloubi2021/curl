@@ -1,7 +1,7 @@
 ---
 c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
-Title: curl_multi_socket
+Title: curl_multi_socket_all
 Section: 3
 Source: libcurl
 See-also:
@@ -12,6 +12,7 @@ See-also:
   - the hiperfifo.c example
 Protocol:
   - All
+Added-in: 7.15.4
 ---
 
 # NAME
@@ -40,6 +41,8 @@ Force libcurl to (re-)check all its internal sockets and transfers instead of
 just a single one by calling curl_multi_socket_all(3). Note that there should
 not be any reason to use this function.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -52,12 +55,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-This function was added in libcurl 7.15.4, and is deemed stable since 7.16.0.
-
-curl_multi_socket_all(3) is deprecated, use
-curl_multi_socket_action(3) instead!
+# %AVAILABILITY%
 
 # RETURN VALUE
 

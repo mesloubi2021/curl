@@ -10,6 +10,7 @@ See-also:
   - CURLOPT_SOCKOPTFUNCTION (3)
   - CURLOPT_TCP_NODELAY (3)
   - CURLOPT_LOCALPORT (3)
+Added-in: 7.3
 ---
 
 # NAME
@@ -54,6 +55,8 @@ option.
 
 NULL, use whatever the TCP stack finds suitable
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -73,11 +76,13 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 The `if!` and `host!` syntax was added in 7.24.0.
 
 The `ifhost!` syntax was added in 8.9.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

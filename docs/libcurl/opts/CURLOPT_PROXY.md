@@ -11,6 +11,7 @@ See-also:
   - CURLOPT_PROXYTYPE (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -89,6 +90,9 @@ user + password.
 Unix domain sockets are supported for socks proxies since 7.84.0. Set
 localhost for the host part. e.g. socks5h://localhost/path/to/socket.sock
 
+When you set a hostname to use, do not assume that there is any particular
+single port number used widely for proxies. Specify it.
+
 When a proxy is used, the active FTP mode as set with *CUROPT_FTPPORT(3)*,
 cannot be used.
 
@@ -107,10 +111,9 @@ variables.
 
 # DEFAULT
 
-Default is NULL, meaning no proxy is used.
+NULL
 
-When you set a hostname to use, do not assume that there is any particular
-single port number used widely for proxies. Specify it!
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -126,7 +129,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 Since 7.14.1 the proxy environment variable names can include the protocol
 scheme.
@@ -135,6 +138,8 @@ Since 7.21.7 the proxy string supports the socks protocols as "schemes".
 
 Since 7.50.2, unsupported schemes in proxy strings cause libcurl to return
 error.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

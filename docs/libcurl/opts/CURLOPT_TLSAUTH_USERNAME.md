@@ -12,6 +12,7 @@ Protocol:
 TLS-backend:
   - OpenSSL
   - GnuTLS
+Added-in: 7.21.4
 ---
 
 # NAME
@@ -42,6 +43,8 @@ This feature relies on TLS SRP which does not work with TLS 1.3.
 
 NULL
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -60,9 +63,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.21.4, for the OpenSSL and GnuTLS backends only
+# %AVAILABILITY%
 
 # RETURN VALUE
 

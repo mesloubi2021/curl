@@ -10,6 +10,7 @@ See-also:
   - strcmp (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -38,6 +39,8 @@ This function is provided by libcurl to enable applications to compare strings
 in a truly portable manner. There are no standard portable case insensitive
 string comparison functions. This function works on all platforms.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -49,9 +52,7 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

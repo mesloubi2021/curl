@@ -1,7 +1,7 @@
 ---
 c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
-Title: CURLINFO_FILETIME
+Title: CURLINFO_FILETIME_T
 Section: 3
 Source: libcurl
 See-also:
@@ -12,6 +12,7 @@ Protocol:
   - HTTP
   - FTP
   - SFTP
+Added-in: 7.59.0
 ---
 
 # NAME
@@ -41,6 +42,8 @@ by using the CURLOPT_FILETIME(3) option or you unconditionally get a -1 back.
 This option is an alternative to CURLINFO_FILETIME(3) to allow systems with 32
 bit long variables to extract dates outside of the 32-bit timestamp range.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -67,9 +70,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.59.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

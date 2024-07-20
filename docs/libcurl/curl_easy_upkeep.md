@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_TCP_KEEPIDLE (3)
 Protocol:
   - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -37,6 +38,8 @@ is called, an HTTP/2 PING frame is sent on the connection.
 This function must be explicitly called in order to perform the upkeep work.
 The connection upkeep interval is set with
 CURLOPT_UPKEEP_INTERVAL_MS(3).
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -68,9 +71,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

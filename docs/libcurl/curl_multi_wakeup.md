@@ -9,6 +9,7 @@ See-also:
   - curl_multi_wait (3)
 Protocol:
   - All
+Added-in: 7.68.0
 ---
 
 # NAME
@@ -37,6 +38,8 @@ there is no current) curl_multi_poll(3) call, which means it is possible
 that multiple calls to this function wake up the same waiting operation.
 
 This function has no effect on curl_multi_wait(3) calls.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -84,9 +87,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.68.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

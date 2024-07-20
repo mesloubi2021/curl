@@ -9,6 +9,7 @@ See-also:
   - curl_share_init (3)
 Protocol:
   - All
+Added-in: 7.10
 ---
 
 # NAME
@@ -49,6 +50,8 @@ See CURLSHOPT_UNSHARE(3).
 
 See CURLSHOPT_USERDATA(3).
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -62,9 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.10
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -13,6 +13,7 @@ Protocol:
   - TLS
 TLS-backend:
   - All
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -65,7 +66,7 @@ TLSv1.3
 The maximum TLS version can be set by using *one* of the CURL_SSLVERSION_MAX_
 macros below. It is also possible to OR *one* of the CURL_SSLVERSION_ macros
 with *one* of the CURL_SSLVERSION_MAX_ macros. The MAX macros are not
-supported for WolfSSL.
+supported for wolfSSL.
 
 ## CURL_SSLVERSION_MAX_DEFAULT
 
@@ -103,6 +104,8 @@ inconsistent depending on the TLS library.
 
 CURL_SSLVERSION_DEFAULT
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -121,9 +124,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.52.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

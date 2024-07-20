@@ -10,6 +10,7 @@ See-also:
   - CURLOPT_TIMEOUT_MS (3)
 Protocol:
   - All
+Added-in: 7.16.2
 ---
 
 # NAME
@@ -60,6 +61,8 @@ signals to be used unless CURLOPT_NOSIGNAL(3) is set.
 
 300000
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -77,9 +80,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

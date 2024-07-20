@@ -12,6 +12,7 @@ Protocol:
   - HTTP
   - FTP
   - SFTP
+Added-in: 7.5
 ---
 
 # NAME
@@ -40,6 +41,8 @@ by using the CURLOPT_FILETIME(3) option or you unconditionally get a -1 back.
 Consider CURLINFO_FILETIME_T(3) instead to be able to extract dates beyond the
 year 2038 on systems using 32-bit longs (Windows).
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -66,9 +69,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.5
+# %AVAILABILITY%
 
 # RETURN VALUE
 

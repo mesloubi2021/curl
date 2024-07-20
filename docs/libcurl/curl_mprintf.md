@@ -11,6 +11,7 @@ See-also:
   - vprintf (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -263,6 +264,8 @@ by the corresponding argument.
 
 A '%' symbol is written. No argument is converted.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -275,10 +278,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-These functions might be removed from the public libcurl API in the future. Do
-not use them in new programs or projects.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

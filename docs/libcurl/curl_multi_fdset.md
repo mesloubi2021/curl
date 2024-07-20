@@ -14,6 +14,7 @@ See-also:
   - select (2)
 Protocol:
   - All
+Added-in: 7.9.6
 ---
 
 # NAME
@@ -78,6 +79,8 @@ which can cause crashes, or worse. The effect of NOT storing it might possibly
 save you from the crash, but makes your program NOT wait for sockets it should
 wait for...
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -112,9 +115,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.9.6
+# %AVAILABILITY%
 
 # RETURN VALUE
 

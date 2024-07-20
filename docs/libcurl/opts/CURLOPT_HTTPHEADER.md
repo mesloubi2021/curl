@@ -15,6 +15,7 @@ See-also:
   - CURLOPT_MIMEPOST (3)
   - CURLOPT_PROXYHEADER (3)
   - curl_mime_init (3)
+Added-in: 7.1
 ---
 
 # NAME
@@ -150,6 +151,8 @@ with the CURLOPT_UNRESTRICTED_AUTH(3) option.
 
 NULL
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -174,9 +177,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
-As long as HTTP is enabled. Use in MIME mail added in 7.56.0.
+Use for MIME mail added in 7.56.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

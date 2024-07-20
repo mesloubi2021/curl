@@ -1198,7 +1198,8 @@ static void multi_getsock(struct Curl_easy *data,
   }
 
   if(expect_sockets && !ps->num &&
-     !(data->req.keepon & (KEEP_RECV_PAUSE|KEEP_SEND_PAUSE))) {
+     !(data->req.keepon & (KEEP_RECV_PAUSE|KEEP_SEND_PAUSE)) &&
+     Curl_conn_is_ip_connected(data, FIRSTSOCKET)) {
     infof(data, "WARNING: no socket in pollset, transfer may stall!");
     DEBUGASSERT(0);
   }
@@ -2798,6 +2799,9 @@ CURLMcode curl_multi_cleanup(struct Curl_multi *multi)
     /* First remove all remaining easy handles */
     data = multi->easyp;
     while(data) {
+      if(!GOOD_EASY_HANDLE(data))
+        return CURLM_BAD_HANDLE;
+
       nextdata = data->next;
       if(!data->state.done && data->conn)
         /* if DONE was never called for this handle */

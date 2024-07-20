@@ -48,7 +48,7 @@ env:
   # renovate: datasource=github-tags depName=ARMmbed/mbedtls versioning=semver registryUrl=https://github.com
   mbedtls-version: 3.6.0
   # renovate: datasource=github-tags depName=icing/mod_h2 versioning=semver registryUrl=https://github.com
-  mod_h2-version: 2.0.27
+  mod_h2-version: 2.0.29
   # renovate: datasource=github-tags depName=nibanks/msh3 versioning=semver registryUrl=https://github.com
   msh3-version: 0.6.0
   # handled in renovate.json
@@ -297,7 +297,7 @@ jobs:
         run: |
           git clone --quiet --depth=1 -b ${{ env.openssl3-version }} https://github.com/openssl/openssl
           cd openssl
-          ./config --prefix=$HOME/openssl3 --libdir=$HOME/openssl3/lib
+          ./config --prefix=$HOME/openssl3 --libdir=lib
           make -j1 install_sw
 
       - name: cache quictls
@@ -315,7 +315,7 @@ jobs:
         run: |
           git clone --quiet --depth=1 -b openssl-${{ env.quictls-version }} https://github.com/quictls/openssl
           cd openssl
-          ./config --prefix=$HOME/quictls --libdir=$HOME/quictls/lib
+          ./config --prefix=$HOME/quictls --libdir=lib
           make -j1 install_sw
 
       - name: cache msh3

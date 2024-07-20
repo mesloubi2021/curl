@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_TIMEVALUE_LARGE (3)
 Protocol:
   - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -37,6 +38,8 @@ instead.
 
 0
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -58,9 +61,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

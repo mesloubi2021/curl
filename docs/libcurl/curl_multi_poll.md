@@ -11,6 +11,7 @@ See-also:
   - curl_multi_wakeup (3)
 Protocol:
   - All
+Added-in: 7.66.0
 ---
 
 # NAME
@@ -86,6 +87,8 @@ priority read events such as out of band data.
 Bit flag to curl_waitfd.events indicating the socket should poll on write
 events such as the socket being clear to write without blocking.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -132,9 +135,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.66.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

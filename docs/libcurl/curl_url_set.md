@@ -13,6 +13,7 @@ See-also:
   - curl_url_strerror (3)
 Protocol:
   - All
+Added-in: 7.78.0
 ---
 
 # NAME
@@ -239,6 +240,8 @@ If set, the URL parser does not accept embedded credentials for the
 **CURLUPART_URL**, and instead returns **CURLUE_USER_NOT_ALLOWED** for
 such URLs.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -255,9 +258,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0. CURLUPART_ZONEID was added in 7.65.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

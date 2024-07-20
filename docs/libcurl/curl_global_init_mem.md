@@ -9,6 +9,7 @@ See-also:
   - curl_global_init (3)
 Protocol:
   - All
+Added-in: 7.12.0
 ---
 
 # NAME
@@ -70,6 +71,8 @@ to that man page for documentation.
 Manipulating these gives considerable powers to the application to severely
 screw things up for libcurl. Take care!
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -87,9 +90,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.12.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

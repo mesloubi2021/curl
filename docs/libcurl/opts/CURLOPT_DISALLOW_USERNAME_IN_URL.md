@@ -11,6 +11,7 @@ See-also:
   - libcurl-security (3)
 Protocol:
   - All
+Added-in: 7.61.0
 ---
 
 # NAME
@@ -36,7 +37,9 @@ curl_url_set(3) function.
 
 # DEFAULT
 
-0 (disabled) - usernames are allowed by default.
+0 (disabled)
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -54,9 +57,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.61.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

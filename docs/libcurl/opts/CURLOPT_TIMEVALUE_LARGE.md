@@ -10,6 +10,7 @@ See-also:
   - CURLOPT_TIMEVALUE (3)
 Protocol:
   - HTTP
+Added-in: 7.59.0
 ---
 
 # NAME
@@ -39,6 +40,8 @@ used to set dates beyond the year 2038.
 
 0
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -60,9 +63,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.59.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -275,7 +275,7 @@ AS_HELP_STRING([--with-mbedtls=PATH],[where to look for mbedTLS, PATH points to 
 
 OPT_WOLFSSL=no
 AC_ARG_WITH(wolfssl,dnl
-AS_HELP_STRING([--with-wolfssl=PATH],[where to look for WolfSSL, PATH points to the installation root (default: system lib default)]),[
+AS_HELP_STRING([--with-wolfssl=PATH],[where to look for wolfSSL, PATH points to the installation root (default: system lib default)]),[
   OPT_WOLFSSL=$withval
   if test X"$withval" != Xno; then
     TLSCHOICE="${TLSCHOICE:+$TLSCHOICE, }wolfSSL"
@@ -418,7 +418,7 @@ Select from these:
   --with-bearssl
   --with-gnutls
   --with-mbedtls
-  --with-openssl (also works for BoringSSL and libressl)
+  --with-openssl (also works for BoringSSL and LibreSSL)
   --with-rustls
   --with-schannel
   --with-secure-transport
@@ -540,6 +540,8 @@ if test X"$want_werror" = Xyes; then
     if test "$compiler_num" -ge "500"; then
       CURL_CFLAG_EXTRAS="$CURL_CFLAG_EXTRAS -pedantic-errors"
     fi
+  elif test "$compiler_id" = "CLANG"; then
+    CURL_CFLAG_EXTRAS="$CURL_CFLAG_EXTRAS -pedantic-errors"
   fi
 fi
 AC_SUBST(CURL_CFLAG_EXTRAS)
@@ -548,8 +550,6 @@ CURL_CHECK_COMPILER_HALT_ON_ERROR
 CURL_CHECK_COMPILER_ARRAY_SIZE_NEGATIVE
 CURL_CHECK_COMPILER_PROTOTYPE_MISMATCH
 CURL_CHECK_COMPILER_SYMBOL_HIDING
-
-CURL_CHECK_CURLDEBUG
 
 supports_unittests=yes
 # cross-compilation of unit tests static library/programs fails when
@@ -597,7 +597,6 @@ CURL_CHECK_WIN32_LARGEFILE
 CURL_CHECK_WIN32_CRYPTO
 
 CURL_DARWIN_CFLAGS
-CURL_DARWIN_SYSTEMCONFIGURATION
 CURL_SUPPORTS_BUILTIN_AVAILABLE
 
 AM_CONDITIONAL([HAVE_WINDRES],
@@ -2188,10 +2187,10 @@ AC_ARG_WITH(libmetalink,,
   AC_MSG_ERROR([--with-libmetalink and --without-libmetalink no longer work!]))
 
 dnl **********************************************************************
-dnl Check for the presence of LIBSSH2 libraries and headers
+dnl Check for the presence of libssh2 libraries and headers
 dnl **********************************************************************
 
-dnl Default to compiler & linker defaults for LIBSSH2 files & libraries.
+dnl Default to compiler & linker defaults for libssh2 files & libraries.
 OPT_LIBSSH2=off
 AC_ARG_WITH(libssh2,dnl
 AS_HELP_STRING([--with-libssh2=PATH],[Where to look for libssh2, PATH points to the libssh2 installation; when possible, set the PKG_CONFIG_PATH environment variable instead of using this option])
@@ -2256,15 +2255,15 @@ if test X"$OPT_LIBSSH2" != Xno; then
   AC_CHECK_LIB(ssh2, libssh2_session_block_directions)
 
   AC_CHECK_HEADER(libssh2.h,
-    curl_ssh_msg="enabled (libSSH2)"
+    curl_ssh_msg="enabled (libssh2)"
     LIBSSH2_ENABLED=1
-    AC_DEFINE(USE_LIBSSH2, 1, [if libSSH2 is in use])
+    AC_DEFINE(USE_LIBSSH2, 1, [if libssh2 is in use])
     AC_SUBST(USE_LIBSSH2, [1])
   )
 
   if test X"$OPT_LIBSSH2" != Xoff &&
      test "$LIBSSH2_ENABLED" != "1"; then
-    AC_MSG_ERROR([libSSH2 libs and/or directories were not found where specified!])
+    AC_MSG_ERROR([libssh2 libs and/or directories were not found where specified!])
   fi
 
   if test "$LIBSSH2_ENABLED" = "1"; then
@@ -2330,15 +2329,15 @@ elif test X"$OPT_LIBSSH" != Xno; then
   AC_CHECK_LIB(ssh, ssh_new)
 
   AC_CHECK_HEADER(libssh/libssh.h,
-    curl_ssh_msg="enabled (libSSH)"
+    curl_ssh_msg="enabled (libssh)"
     LIBSSH_ENABLED=1
-    AC_DEFINE(USE_LIBSSH, 1, [if libSSH is in use])
+    AC_DEFINE(USE_LIBSSH, 1, [if libssh is in use])
     AC_SUBST(USE_LIBSSH, [1])
   )
 
   if test X"$OPT_LIBSSH" != Xoff &&
      test "$LIBSSH_ENABLED" != "1"; then
-    AC_MSG_ERROR([libSSH libs and/or directories were not found where specified!])
+    AC_MSG_ERROR([libssh libs and/or directories were not found where specified!])
   fi
 
   if test "$LIBSSH_ENABLED" = "1"; then
@@ -3546,7 +3545,7 @@ case "$OPT_FISH_FPATH" in
     dnl --with-fish-functions-dir option used without path
     CURL_CHECK_PKGCONFIG(fish)
     if test "$PKGCONFIG" != "no" ; then
-      FISH_FUNCTIONS_DIR="$($PKGCONFIG --variable completionsdir fish)"
+      FISH_FUNCTIONS_DIR=`$PKGCONFIG --variable completionsdir fish`
     else
       FISH_FUNCTIONS_DIR="$datarootdir/fish/vendor_completions.d"
     fi
@@ -3875,6 +3874,10 @@ AM_CONDITIONAL(BUILD_LIBHOSTNAME, test x$build_libhostname = xyes)
 
 if test "x$want_ares" != xyes; then
   CURL_CHECK_OPTION_THREADED_RESOLVER
+
+  if test "$ipv6" = yes; then
+    CURL_DARWIN_SYSTEMCONFIGURATION
+  fi
 fi
 
 dnl ************************************************************
@@ -3922,7 +3925,7 @@ if test "$want_pthreads" != "no"; then
   AC_CHECK_HEADER(pthread.h,
     [ AC_DEFINE(HAVE_PTHREAD_H, 1, [if you have <pthread.h>])
       save_CFLAGS="$CFLAGS"
-      dnl When statically linking against boringssl, -lpthread is added to LIBS.
+      dnl When statically linking against BoringSSL, -lpthread is added to LIBS.
       dnl Make sure to that this does not pass the check below, we really want
       dnl -pthread in CFLAGS as recommended for GCC. This also ensures that
       dnl lib1541 and lib1565 tests are built with these options. Otherwise
@@ -4576,15 +4579,15 @@ if test "x$want_ech" != "xno"; then
       ECH_SUPPORT="ECH support available via OpenSSL with SSL_ech_set1_echconfig"
       ECH_ENABLED=1)
   fi
-  dnl check for boringssl equivalent
+  dnl check for BoringSSL equivalent
   if test "x$OPENSSL_ENABLED" = "x1"; then
     AC_CHECK_FUNCS(SSL_set1_ech_config_list,
-      ECH_SUPPORT="ECH support available via boringssl with SSL_set1_ech_config_list"
+      ECH_SUPPORT="ECH support available via BoringSSL with SSL_set1_ech_config_list"
       ECH_ENABLED=1)
   fi
   if test "x$WOLFSSL_ENABLED" = "x1"; then
     AC_CHECK_FUNCS(wolfSSL_CTX_GenerateEchConfig,
-      ECH_SUPPORT="ECH support available via WolfSSL with wolfSSL_CTX_GenerateEchConfig"
+      ECH_SUPPORT="ECH support available via wolfSSL with wolfSSL_CTX_GenerateEchConfig"
       ECH_ENABLED=1)
   fi
 
@@ -4817,6 +4820,12 @@ else
   AC_MSG_RESULT([no])
 fi
 
+if test "x$OPENSSL_ENABLED" = "x1" -o -n "$SSL_ENABLED"; then
+  if test "x$ECH_ENABLED" = "x1"; then
+    SUPPORT_FEATURES="$SUPPORT_FEATURES ECH"
+  fi
+fi
+
 if test ${ac_cv_sizeof_curl_off_t} -gt 4; then
   if test ${ac_cv_sizeof_off_t} -gt 4 -o \
      "$curl_win32_file_api" = "win32_large_files"; then
@@ -4844,10 +4853,21 @@ else
   ])
 fi
 
+if test "x$want_debug" = "xyes"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES Debug"
+fi
+if test "x$want_curldebug" = "xyes"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES TrackMemory"
+fi
+
 dnl replace spaces with newlines
 dnl sort the lines
 dnl replace the newlines back to spaces
-SUPPORT_FEATURES=`echo $SUPPORT_FEATURES | tr ' ' '\012' | sort | tr '\012' ' '`
+if sort -f </dev/null >/dev/null 2>&1; then
+  SUPPORT_FEATURES=`echo $SUPPORT_FEATURES | tr ' ' '\012' | sort -f | tr '\012' ' '`
+else
+  SUPPORT_FEATURES=`echo $SUPPORT_FEATURES | tr ' ' '\012' | sort | tr '\012' ' '`
+fi
 AC_SUBST(SUPPORT_FEATURES)
 
 dnl For supported protocols in pkg-config file
@@ -5000,12 +5020,15 @@ AC_OUTPUT
 
 CURL_GENERATE_CONFIGUREHELP_PM
 
+SUPPORT_PROTOCOLS_LOWER=`echo "$SUPPORT_PROTOCOLS" | tr A-Z a-z`
+
 AC_MSG_NOTICE([Configured to build curl/libcurl:
 
   Host setup:       ${host}
   Install prefix:   ${prefix}
   Compiler:         ${CC}
    CFLAGS:          ${CFLAGS}
+   CFLAGS extras:   ${CURL_CFLAG_EXTRAS}
    CPPFLAGS:        ${CPPFLAGS}
    LDFLAGS:         ${LDFLAGS}
    LIBS:            ${LIBS}
@@ -5046,7 +5069,7 @@ AC_MSG_NOTICE([Configured to build curl/libcurl:
   HTTP3:            ${curl_h3_msg}
   ECH:              ${curl_ech_msg}
   WebSockets:       ${curl_ws_msg}
-  Protocols:        ${SUPPORT_PROTOCOLS}
+  Protocols:        ${SUPPORT_PROTOCOLS_LOWER}
   Features:         ${SUPPORT_FEATURES}
 ])
 

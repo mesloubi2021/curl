@@ -11,6 +11,7 @@ Protocol:
 TLS-backend:
   - OpenSSL
   - wolfSSL
+Added-in: 8.8.0
 ---
 
 # NAME
@@ -73,6 +74,8 @@ ECHConfigList that is used for ECH.
 
 NULL, meaning ECH is disabled.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -84,9 +87,7 @@ if(curl) {
   curl_easy_perform(curl);
 }
 ~~~
-# AVAILABILITY
-
-Added in 8.8.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

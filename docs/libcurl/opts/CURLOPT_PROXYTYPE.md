@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_PROXYPORT (3)
 Protocol:
   - All
+Added-in: 7.10
 ---
 
 # NAME
@@ -72,6 +73,8 @@ the CURLOPT_PROXY(3) string.
 
 CURLPROXY_HTTP
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -90,9 +93,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

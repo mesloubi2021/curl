@@ -368,12 +368,6 @@
 /* Define to 1 if you have the idn2.h header file. */
 #cmakedefine HAVE_IDN2_H 1
 
-/* Define to 1 if you have the `socket' library (-lsocket). */
-#cmakedefine HAVE_LIBSOCKET 1
-
-/* Define to 1 if you have the `ssh2' library (-lssh2). */
-#cmakedefine HAVE_LIBSSH2 1
-
 /* if zlib is available */
 #cmakedefine HAVE_LIBZ 1
 
@@ -707,13 +701,13 @@ ${SIZEOF_TIME_T_CODE}
 /* if wolfSSL has the wolfSSL_BIO_set_shutdown function. */
 #cmakedefine HAVE_WOLFSSL_FULL_BIO 1
 
-/* if libSSH is in use */
+/* if libssh is in use */
 #cmakedefine USE_LIBSSH 1
 
-/* if libSSH2 is in use */
+/* if libssh2 is in use */
 #cmakedefine USE_LIBSSH2 1
 
-/* if libPSL is in use */
+/* if libpsl is in use */
 #cmakedefine USE_LIBPSL 1
 
 /* if you want to use OpenLDAP code instead of legacy ldap implementation */

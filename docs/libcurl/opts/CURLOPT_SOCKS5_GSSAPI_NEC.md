@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_PROXY_SERVICE_NAME (3)
 Protocol:
   - All
+Added-in: 7.19.4
 ---
 
 # NAME
@@ -35,6 +36,8 @@ negotiation.
 
 ?
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -52,9 +55,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.19.4
+# %AVAILABILITY%
 
 # RETURN VALUE
 

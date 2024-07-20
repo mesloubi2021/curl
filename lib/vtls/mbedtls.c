@@ -654,7 +654,7 @@ mbed_connect_step1(struct Curl_cfilter *cf, struct Curl_easy *data)
 
     if(ret) {
       mbedtls_strerror(ret, errorbuf, sizeof(errorbuf));
-      failf(data, "Error reading private key %s - mbedTLS: (-0x%04X) %s",
+      failf(data, "Error reading client cert data %s - mbedTLS: (-0x%04X) %s",
             ssl_config->key, -ret, errorbuf);
       return CURLE_SSL_CERTPROBLEM;
     }
@@ -838,7 +838,7 @@ mbed_connect_step1(struct Curl_cfilter *cf, struct Curl_easy *data)
 #endif
 
   /* Check if there is a cached ID we can/should use here! */
-  if(ssl_config->primary.sessionid) {
+  if(ssl_config->primary.cache_session) {
     void *old_session = NULL;
 
     Curl_ssl_sessionid_lock(data);
@@ -1012,8 +1012,10 @@ mbed_connect_step2(struct Curl_cfilter *cf, struct Curl_easy *data)
   }
   else if(ret) {
     char errorbuf[128];
+#if MBEDTLS_VERSION_NUMBER >= 0x03020000
     CURL_TRC_CF(data, cf, "TLS version %04X",
                 mbedtls_ssl_get_version_number(&backend->ssl));
+#endif
     mbedtls_strerror(ret, errorbuf, sizeof(errorbuf));
     failf(data, "ssl_handshake returned: (-0x%04X) %s",
           -ret, errorbuf);
@@ -1189,10 +1191,9 @@ mbed_connect_step3(struct Curl_cfilter *cf, struct Curl_easy *data)
   DEBUGASSERT(ssl_connect_3 == connssl->connecting_state);
   DEBUGASSERT(backend);
 
-  if(ssl_config->primary.sessionid) {
+  if(ssl_config->primary.cache_session) {
     int ret;
     mbedtls_ssl_session *our_ssl_sessionid;
-    void *old_ssl_sessionid = NULL;
 
     our_ssl_sessionid = malloc(sizeof(mbedtls_ssl_session));
     if(!our_ssl_sessionid)
@@ -1211,13 +1212,9 @@ mbed_connect_step3(struct Curl_cfilter *cf, struct Curl_easy *data)
 
     /* If there is already a matching session in the cache, delete it */
     Curl_ssl_sessionid_lock(data);
-    if(!Curl_ssl_getsessionid(cf, data, &connssl->peer,
-                              &old_ssl_sessionid, NULL))
-      Curl_ssl_delsessionid(data, old_ssl_sessionid);
-
-    retcode = Curl_ssl_addsessionid(cf, data, &connssl->peer,
-                                    our_ssl_sessionid, 0,
-                                    mbedtls_session_free);
+    retcode = Curl_ssl_set_sessionid(cf, data, &connssl->peer,
+                                     our_ssl_sessionid, 0,
+                                     mbedtls_session_free);
     Curl_ssl_sessionid_unlock(data);
     if(retcode)
       return retcode;

@@ -9,6 +9,7 @@ See-also:
   - CURLOPT_WRITEFUNCTION (3)
 Protocol:
   - HTTP
+Added-in: 7.64.0
 ---
 
 # NAME
@@ -59,6 +60,8 @@ without any interruptions.
 
 NULL
 
+# %PROTOCOLS%
+
 # EXAMPLE
 ~~~c
 static int trailer_cb(struct curl_slist **tr, void *data)
@@ -99,9 +102,8 @@ int main(void)
   }
 }
 ~~~
-# AVAILABILITY
 
-This option was added in curl 7.64.0 and is present if HTTP support is enabled.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

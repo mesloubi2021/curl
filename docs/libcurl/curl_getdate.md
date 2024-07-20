@@ -11,6 +11,7 @@ See-also:
   - curl_easy_unescape (3)
 Protocol:
   - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -74,6 +75,8 @@ If a decimal number of the form YYYYMMDD appears, then YYYY is read as the
 year, MM as the month number and DD as the day of the month, for the specified
 calendar date.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -113,9 +116,7 @@ RFC 1036) and ANSI C's *asctime()* format.
 
 These formats are the only ones RFC 7231 says HTTP applications may use.
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

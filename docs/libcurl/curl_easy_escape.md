@@ -10,6 +10,7 @@ See-also:
   - curl_url_get (3)
 Protocol:
   - All
+Added-in: 7.15.4
 ---
 
 # NAME
@@ -63,6 +64,8 @@ To create a proper URL from strings that are not already URL encoded, we
 recommend using libcurl's URL API: set the pieces with curl_url_set(3) and get
 the final correct URL with curl_url_get(3).
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -80,9 +83,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.4 and replaces the old curl_escape(3) function.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

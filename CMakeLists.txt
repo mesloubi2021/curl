@@ -487,6 +487,7 @@ if(CURL_USE_OPENSSL)
   if(CURL_DEFAULT_SSL_BACKEND AND CURL_DEFAULT_SSL_BACKEND STREQUAL "openssl")
     set(valid_default_ssl_backend TRUE)
   endif()
+  set(curl_ca_bundle_supported TRUE)
 
   set(CMAKE_REQUIRED_INCLUDES ${OPENSSL_INCLUDE_DIR})
   if(NOT DEFINED HAVE_BORINGSSL)
@@ -508,6 +509,7 @@ if(CURL_USE_MBEDTLS)
   if(CURL_DEFAULT_SSL_BACKEND AND CURL_DEFAULT_SSL_BACKEND STREQUAL "mbedtls")
     set(valid_default_ssl_backend TRUE)
   endif()
+  set(curl_ca_bundle_supported TRUE)
 endif()
 
 if(CURL_USE_BEARSSL)
@@ -520,6 +522,7 @@ if(CURL_USE_BEARSSL)
   if(CURL_DEFAULT_SSL_BACKEND AND CURL_DEFAULT_SSL_BACKEND STREQUAL "bearssl")
     set(valid_default_ssl_backend TRUE)
   endif()
+  set(curl_ca_bundle_supported TRUE)
 endif()
 
 if(CURL_USE_WOLFSSL)
@@ -533,6 +536,7 @@ if(CURL_USE_WOLFSSL)
   if(CURL_DEFAULT_SSL_BACKEND AND CURL_DEFAULT_SSL_BACKEND STREQUAL "wolfssl")
     set(valid_default_ssl_backend TRUE)
   endif()
+  set(curl_ca_bundle_supported TRUE)
 endif()
 
 if(CURL_USE_GNUTLS)
@@ -546,6 +550,7 @@ if(CURL_USE_GNUTLS)
   if(CURL_DEFAULT_SSL_BACKEND AND CURL_DEFAULT_SSL_BACKEND STREQUAL "gnutls")
     set(valid_default_ssl_backend TRUE)
   endif()
+  set(curl_ca_bundle_supported TRUE)
 
   if(NOT DEFINED HAVE_GNUTLS_SRP AND NOT CURL_DISABLE_SRP)
     cmake_push_check_state()
@@ -910,9 +915,21 @@ option(USE_LIBIDN2 "Use libidn2 for IDN support" ON)
 if(USE_LIBIDN2)
   check_library_exists("idn2" "idn2_lookup_ul" "" HAVE_LIBIDN2)
   if(HAVE_LIBIDN2)
-    set(CURL_LIBS "idn2;${CURL_LIBS}")
-    set(LIBCURL_PC_REQUIRES_PRIVATE "libidn2;${LIBCURL_PC_REQUIRES_PRIVATE}")
+    set(LIBIDN2_LINK_LIBRARIES "idn2")
     check_include_file_concat("idn2.h" HAVE_IDN2_H)
+  endif()
+  if(NOT HAVE_LIBIDN2 OR NOT HAVE_IDN2_H)
+    find_package(PkgConfig QUIET)
+    pkg_check_modules(LIBIDN2 "libidn2")
+    if(LIBIDN2_FOUND)
+      include_directories(${LIBIDN2_INCLUDE_DIRS})
+      set(HAVE_LIBIDN2 ON)
+      set(HAVE_IDN2_H ON)
+    endif()
+  endif()
+  if(HAVE_LIBIDN2 AND HAVE_IDN2_H)
+    set(CURL_LIBS "${LIBIDN2_LINK_LIBRARIES};${CURL_LIBS}")
+    set(LIBCURL_PC_REQUIRES_PRIVATE "libidn2;${LIBCURL_PC_REQUIRES_PRIVATE}")
   endif()
 else()
   set(HAVE_LIBIDN2 OFF)
@@ -1090,86 +1107,79 @@ else()
   unset(USE_UNIX_SOCKETS CACHE)
 endif()
 
-
 #
 # CA handling
 #
-set(CURL_CA_BUNDLE "auto" CACHE STRING
-    "Path to the CA bundle. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
-set(CURL_CA_FALLBACK OFF CACHE BOOL
-    "Set ON to use built-in CA store of TLS backend. Defaults to OFF")
-set(CURL_CA_PATH "auto" CACHE STRING
-    "Location of default CA path. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
+if(curl_ca_bundle_supported)
+  set(CURL_CA_BUNDLE "auto" CACHE STRING
+      "Path to the CA bundle. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
+  set(CURL_CA_FALLBACK OFF CACHE BOOL
+      "Set ON to use built-in CA store of TLS backend. Defaults to OFF")
+  set(CURL_CA_PATH "auto" CACHE STRING
+      "Location of default CA path. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
 
-if("${CURL_CA_BUNDLE}" STREQUAL "")
-  message(FATAL_ERROR "Invalid value of CURL_CA_BUNDLE. Use 'none', 'auto' or file path.")
-elseif("${CURL_CA_BUNDLE}" STREQUAL "none")
-  unset(CURL_CA_BUNDLE CACHE)
-elseif("${CURL_CA_BUNDLE}" STREQUAL "auto")
-  unset(CURL_CA_BUNDLE CACHE)
-  if(NOT CMAKE_CROSSCOMPILING)
-    set(CURL_CA_BUNDLE_AUTODETECT TRUE)
+  if(CURL_CA_BUNDLE STREQUAL "")
+    message(FATAL_ERROR "Invalid value of CURL_CA_BUNDLE. Use 'none', 'auto' or file path.")
+  elseif(CURL_CA_BUNDLE STREQUAL "none")
+    unset(CURL_CA_BUNDLE CACHE)
+  elseif(CURL_CA_BUNDLE STREQUAL "auto")
+    unset(CURL_CA_BUNDLE CACHE)
+    if(NOT CMAKE_CROSSCOMPILING AND NOT WIN32)
+      set(CURL_CA_BUNDLE_AUTODETECT TRUE)
+    endif()
+  else()
+    set(CURL_CA_BUNDLE_SET TRUE)
   endif()
-else()
-  set(CURL_CA_BUNDLE_SET TRUE)
-endif()
 
-if("${CURL_CA_PATH}" STREQUAL "")
-  message(FATAL_ERROR "Invalid value of CURL_CA_PATH. Use 'none', 'auto' or directory path.")
-elseif("${CURL_CA_PATH}" STREQUAL "none")
-  unset(CURL_CA_PATH CACHE)
-elseif("${CURL_CA_PATH}" STREQUAL "auto")
-  unset(CURL_CA_PATH CACHE)
-  if(NOT CMAKE_CROSSCOMPILING)
-    set(CURL_CA_PATH_AUTODETECT TRUE)
+  if(CURL_CA_PATH STREQUAL "")
+    message(FATAL_ERROR "Invalid value of CURL_CA_PATH. Use 'none', 'auto' or directory path.")
+  elseif(CURL_CA_PATH STREQUAL "none")
+    unset(CURL_CA_PATH CACHE)
+  elseif(CURL_CA_PATH STREQUAL "auto")
+    unset(CURL_CA_PATH CACHE)
+    if(NOT CMAKE_CROSSCOMPILING AND NOT WIN32)
+      set(CURL_CA_PATH_AUTODETECT TRUE)
+    endif()
+  else()
+    set(CURL_CA_PATH_SET TRUE)
   endif()
-else()
-  set(CURL_CA_PATH_SET TRUE)
-endif()
 
-if(CURL_CA_BUNDLE_SET AND CURL_CA_PATH_AUTODETECT)
-  # Skip autodetection of unset CA path because CA bundle is set explicitly
-elseif(CURL_CA_PATH_SET AND CURL_CA_BUNDLE_AUTODETECT)
-  # Skip autodetection of unset CA bundle because CA path is set explicitly
-elseif(CURL_CA_PATH_AUTODETECT OR CURL_CA_BUNDLE_AUTODETECT)
-  # first try autodetecting a CA bundle, then a CA path
+  if(CURL_CA_BUNDLE_SET AND CURL_CA_PATH_AUTODETECT)
+    # Skip auto-detection of unset CA path because CA bundle is set explicitly
+  elseif(CURL_CA_PATH_SET AND CURL_CA_BUNDLE_AUTODETECT)
+    # Skip auto-detection of unset CA bundle because CA path is set explicitly
+  elseif(CURL_CA_BUNDLE_AUTODETECT OR CURL_CA_PATH_AUTODETECT)
+    # First try auto-detecting a CA bundle, then a CA path
 
-  if(CURL_CA_BUNDLE_AUTODETECT)
-    set(SEARCH_CA_BUNDLE_PATHS
-        /etc/ssl/certs/ca-certificates.crt
-        /etc/pki/tls/certs/ca-bundle.crt
-        /usr/share/ssl/certs/ca-bundle.crt
-        /usr/local/share/certs/ca-root-nss.crt
-        /etc/ssl/cert.pem)
+    if(CURL_CA_BUNDLE_AUTODETECT)
+      foreach(SEARCH_CA_BUNDLE_PATH IN ITEMS
+          "/etc/ssl/certs/ca-certificates.crt"
+          "/etc/pki/tls/certs/ca-bundle.crt"
+          "/usr/share/ssl/certs/ca-bundle.crt"
+          "/usr/local/share/certs/ca-root-nss.crt"
+          "/etc/ssl/cert.pem")
+        if(EXISTS "${SEARCH_CA_BUNDLE_PATH}")
+          message(STATUS "Found CA bundle: ${SEARCH_CA_BUNDLE_PATH}")
+          set(CURL_CA_BUNDLE "${SEARCH_CA_BUNDLE_PATH}" CACHE STRING
+              "Path to the CA bundle. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
+          set(CURL_CA_BUNDLE_SET TRUE CACHE BOOL "Path to the CA bundle has been set")
+          break()
+        endif()
+      endforeach()
+    endif()
 
-    foreach(SEARCH_CA_BUNDLE_PATH ${SEARCH_CA_BUNDLE_PATHS})
-      if(EXISTS "${SEARCH_CA_BUNDLE_PATH}")
-        message(STATUS "Found CA bundle: ${SEARCH_CA_BUNDLE_PATH}")
-        set(CURL_CA_BUNDLE "${SEARCH_CA_BUNDLE_PATH}" CACHE STRING
-            "Path to the CA bundle. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
-        set(CURL_CA_BUNDLE_SET TRUE CACHE BOOL "Path to the CA bundle has been set")
-        break()
+    if(CURL_CA_PATH_AUTODETECT AND NOT CURL_CA_PATH_SET)
+      set(SEARCH_CA_PATH "/etc/ssl/certs")
+      file(GLOB curl_ca_files_found "${SEARCH_CA_PATH}/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].0")
+      if(curl_ca_files_found)
+        unset(curl_ca_files_found)
+        message(STATUS "Found CA path: ${SEARCH_CA_PATH}")
+        set(CURL_CA_PATH "${SEARCH_CA_PATH}" CACHE STRING
+            "Location of default CA path. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
+        set(CURL_CA_PATH_SET TRUE CACHE BOOL "Path to the CA bundle has been set")
       endif()
-    endforeach()
-  endif()
-
-  if(CURL_CA_PATH_AUTODETECT AND (NOT CURL_CA_PATH_SET))
-    if(EXISTS "/etc/ssl/certs")
-      set(CURL_CA_PATH "/etc/ssl/certs" CACHE STRING
-          "Location of default CA path. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
-      set(CURL_CA_PATH_SET TRUE CACHE BOOL "Path to the CA bundle has been set")
     endif()
   endif()
-endif()
-
-if(CURL_CA_PATH_SET AND
-   NOT USE_OPENSSL AND
-   NOT USE_WOLFSSL AND
-   NOT USE_GNUTLS AND
-   NOT USE_MBEDTLS)
-  message(STATUS
-          "CA path only supported by OpenSSL, wolfSSL, GnuTLS or mbedTLS. "
-          "Set CURL_CA_PATH=none or enable one of those TLS backends.")
 endif()
 
 # Check for header files
@@ -1484,8 +1494,10 @@ if(NOT WIN32)
   curl_internal_test(HAVE_CLOCK_GETTIME_MONOTONIC)
 endif()
 
-# Check compiler support of __builtin_available()
-curl_internal_test(HAVE_BUILTIN_AVAILABLE)
+if(APPLE)
+  # Check compiler support of __builtin_available()
+  curl_internal_test(HAVE_BUILTIN_AVAILABLE)
+endif()
 
 # Some other minor tests
 
@@ -1667,8 +1679,6 @@ if(NOT CURL_DISABLE_INSTALL)
   _add_if("IPFS"          NOT CURL_DISABLE_HTTP)
   _add_if("IPNS"          NOT CURL_DISABLE_HTTP)
   _add_if("HTTPS"         NOT CURL_DISABLE_HTTP AND SSL_ENABLED)
-  _add_if("ECH"           HAVE_ECH)
-  _add_if("HTTPSRR"       HAVE_ECH)
   _add_if("FTP"           NOT CURL_DISABLE_FTP)
   _add_if("FTPS"          NOT CURL_DISABLE_FTP AND SSL_ENABLED)
   _add_if("FILE"          NOT CURL_DISABLE_FILE)
@@ -1704,7 +1714,7 @@ if(NOT CURL_DISABLE_INSTALL)
   endif()
   string(REPLACE ";" " " SUPPORT_PROTOCOLS "${_items}")
   string(TOLOWER "${SUPPORT_PROTOCOLS}" SUPPORT_PROTOCOLS_LOWER)
-  message(STATUS "Enabled protocols: ${SUPPORT_PROTOCOLS_LOWER}")
+  message(STATUS "Protocols: ${SUPPORT_PROTOCOLS_LOWER}")
 
   # Clear list and try to detect available features
   set(_items)
@@ -1716,7 +1726,9 @@ if(NOT CURL_DISABLE_INSTALL)
   _add_if("gsasl"         USE_GSASL)
   _add_if("zstd"          HAVE_ZSTD)
   _add_if("AsynchDNS"     USE_ARES OR USE_THREADS_POSIX OR USE_THREADS_WIN32)
-  _add_if("IDN"           HAVE_LIBIDN2 OR USE_WIN32_IDN OR USE_APPLE_IDN)
+  _add_if("IDN"           (HAVE_LIBIDN2 AND HAVE_IDN2_H) OR
+                          USE_WIN32_IDN OR
+                          USE_APPLE_IDN)
   _add_if("Largefile"     (SIZEOF_CURL_OFF_T GREATER 4) AND
                           ((SIZEOF_OFF_T GREATER 4) OR USE_WIN32_LARGE_FILES))
   _add_if("SSPI"          USE_WINDOWS_SSPI)
@@ -1737,10 +1749,13 @@ if(NOT CURL_DISABLE_INSTALL)
                           OR USE_SCHANNEL OR USE_RUSTLS OR USE_BEARSSL OR
                           USE_MBEDTLS OR USE_SECTRANSP OR
                           (USE_WOLFSSL AND HAVE_WOLFSSL_FULL_BIO)))
-  _add_if("unicode"       ENABLE_UNICODE)
+  _add_if("Unicode"       ENABLE_UNICODE)
   _add_if("threadsafe"    HAVE_ATOMIC OR
                           (USE_THREADS_POSIX AND HAVE_PTHREAD_H) OR
                           (WIN32 AND HAVE_WIN32_WINNT GREATER_EQUAL 0x600))
+  _add_if("Debug"         ENABLE_DEBUG)
+  _add_if("TrackMemory"   ENABLE_CURLDEBUG)
+  _add_if("ECH"           SSL_ENABLED AND HAVE_ECH)
   _add_if("PSL"           USE_LIBPSL)
   if(_items)
     if(NOT CMAKE_VERSION VERSION_LESS 3.13)
@@ -1750,7 +1765,7 @@ if(NOT CURL_DISABLE_INSTALL)
     endif()
   endif()
   string(REPLACE ";" " " SUPPORT_FEATURES "${_items}")
-  message(STATUS "Enabled features: ${SUPPORT_FEATURES}")
+  message(STATUS "Features: ${SUPPORT_FEATURES}")
 
   # Clear list and collect SSL backends
   set(_items)
@@ -1763,7 +1778,11 @@ if(NOT CURL_DISABLE_INSTALL)
   _add_if("GnuTLS"           SSL_ENABLED AND USE_GNUTLS)
 
   if(_items)
-    list(SORT _items)
+    if(NOT CMAKE_VERSION VERSION_LESS 3.13)
+      list(SORT _items CASE INSENSITIVE)
+    else()
+      list(SORT _items)
+    endif()
   endif()
   string(REPLACE ";" " " SSL_BACKENDS "${_items}")
   message(STATUS "Enabled SSL backends: ${SSL_BACKENDS}")

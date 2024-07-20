@@ -14,6 +14,7 @@ TLS-backend:
   - mbedTLS
   - Schannel
   - wolfSSL
+Added-in: 7.17.0
 ---
 
 # NAME
@@ -42,6 +43,8 @@ option.
 
 NULL
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -60,10 +63,12 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 This option was known as CURLOPT_SSLKEYPASSWD up to 7.16.4 and
 CURLOPT_SSLCERTPASSWD up to 7.9.2.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

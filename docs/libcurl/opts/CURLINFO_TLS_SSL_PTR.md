@@ -18,6 +18,7 @@ TLS-backend:
   - Schannel
   - Secure Transport
   - wolfSSL
+Added-in: 7.48.0
 ---
 
 # NAME
@@ -133,6 +134,8 @@ How are you using this option? Are you affected by any of these limitations?
 Please let us know by making a comment at
 https://github.com/curl/curl/issues/685
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -166,12 +169,12 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.48.0.
+# HISTORY
 
 This option supersedes CURLINFO_TLS_SESSION(3) which was added in 7.34.0.
 This option is exactly the same as that option except in the case of OpenSSL.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -12,6 +12,7 @@ Protocol:
 TLS-backend:
   - OpenSSL
   - GnuTLS
+Added-in: 7.21.4
 ---
 
 # NAME
@@ -44,6 +45,8 @@ TLS SRP does not work with TLS 1.3.
 
 blank
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -62,10 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-You need to build libcurl with GnuTLS or OpenSSL with TLS-SRP support for this
-to work. Added in 7.21.4
+# %AVAILABILITY%
 
 # RETURN VALUE
 
