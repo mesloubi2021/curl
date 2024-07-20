@@ -73,13 +73,14 @@ static int multiply(curl_off_t *amount, curl_off_t with)
     sum = 0;
   }
   else {
-#ifdef __GNUC__
+#if defined(__GNUC__) && \
+  ((__GNUC__ > 5) || ((__GNUC__ == 5) && (__GNUC_MINOR__ >= 1)))
     if(__builtin_mul_overflow(*amount, with, &sum))
       return 1;
 #else
     sum = *amount * with;
     if(sum/with != *amount)
-      return 1; /* didn't fit, bail out */
+      return 1; /* did not fit, bail out */
 #endif
   }
   *amount = sum;
@@ -122,11 +123,11 @@ static CURLcode glob_set(struct URLGlob *glob, char **patternp,
         return GLOBERROR("empty string within braces", *posp,
                          CURLE_URL_MALFORMAT);
 
-      /* add 1 to size since it'll be incremented below */
+      /* add 1 to size since it will be incremented below */
       if(multiply(amount, pat->content.Set.size + 1))
         return GLOBERROR("range overflow", 0, CURLE_URL_MALFORMAT);
 
-      /* FALLTHROUGH */
+      FALLTHROUGH();
     case ',':
 
       *buf = '\0';
@@ -170,7 +171,7 @@ static CURLcode glob_set(struct URLGlob *glob, char **patternp,
         ++pattern;
         ++(*posp);
       }
-      /* FALLTHROUGH */
+      FALLTHROUGH();
     default:
       *buf++ = *pattern++;              /* copy character to set element */
       ++(*posp);
@@ -701,7 +702,7 @@ CURLcode glob_match_url(char **result, char *filename, struct URLGlob *glob)
   if(curlx_dyn_addn(&dyn, "", 0))
     return CURLE_OUT_OF_MEMORY;
 
-#if defined(MSDOS) || defined(WIN32)
+#if defined(_WIN32) || defined(MSDOS)
   {
     char *sanitized;
     SANITIZEcode sc = sanitize_file_name(&sanitized, curlx_dyn_ptr(&dyn),
@@ -716,5 +717,5 @@ CURLcode glob_match_url(char **result, char *filename, struct URLGlob *glob)
 #else
   *result = curlx_dyn_ptr(&dyn);
   return CURLE_OK;
-#endif /* MSDOS || WIN32 */
+#endif /* _WIN32 || MSDOS */
 }

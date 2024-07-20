@@ -8,7 +8,7 @@ on:
   # this must not ever run on any other branch than master
   push:
     branches:
-    - master
+      - master
 
 concurrency:
   # this should not run in parallel, so just run one at a time
@@ -26,7 +26,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
         with:
           fetch-depth: 100
 
