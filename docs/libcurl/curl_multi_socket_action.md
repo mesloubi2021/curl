@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_multi_socket_action
 Section: 3
@@ -10,11 +10,14 @@ See-also:
   - curl_multi_info_read (3)
   - curl_multi_init (3)
   - the hiperfifo.c example
+Protocol:
+  - All
+Added-in: 7.15.4
 ---
 
 # NAME
 
-curl_multi_socket_action - reads/writes available data given an action
+curl_multi_socket_action - read/write available data given an action
 
 # SYNOPSIS
 
@@ -93,6 +96,8 @@ callback has been told.
 socket(s) that got action. If no activity is detected and the timeout expires,
 call curl_multi_socket_action(3) with *CURL_SOCKET_TIMEOUT*.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -110,9 +115,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-This function was added in libcurl 7.15.4, and is deemed stable since 7.16.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

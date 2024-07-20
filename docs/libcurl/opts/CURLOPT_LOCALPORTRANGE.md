@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_LOCALPORTRANGE
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_INTERFACE (3)
   - CURLOPT_LOCALPORT (3)
+Protocol:
+  - All
+Added-in: 7.15.2
 ---
 
 # NAME
@@ -36,9 +39,7 @@ setup failures.
 
 1
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -58,9 +59,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.2
+# %AVAILABILITY%
 
 # RETURN VALUE
 

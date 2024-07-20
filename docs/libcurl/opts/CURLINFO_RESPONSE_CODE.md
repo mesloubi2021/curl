@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_RESPONSE_CODE
 Section: 3
@@ -8,6 +8,12 @@ See-also:
   - CURLINFO_HTTP_CONNECTCODE (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - HTTP
+  - FTP
+  - SMTP
+  - LDAP
+Added-in: 7.10.8
 ---
 
 # NAME
@@ -32,9 +38,7 @@ no server response code has been received.
 Note that a proxy's CONNECT response should be read with
 CURLINFO_HTTP_CONNECTCODE(3) and not this.
 
-# PROTOCOLS
-
-HTTP, FTP, SMTP and LDAP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -55,10 +59,12 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# NOTES
 
-Added in 7.10.8. CURLINFO_HTTP_CODE was added in 7.4.1.
-Support for SMTP responses added in 7.25.0, for OpenLDAP in 7.81.0.
+The former name, CURLINFO_HTTP_CODE, was added in 7.4.1. Support for SMTP
+responses added in 7.25.0, for OpenLDAP in 7.81.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

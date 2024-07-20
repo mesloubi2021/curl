@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_easy_perform
 Section: 3
@@ -10,11 +10,14 @@ See-also:
   - curl_multi_add_handle (3)
   - curl_multi_perform (3)
   - libcurl-errors (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
 
-curl_easy_perform - perform a blocking file transfer
+curl_easy_perform - perform a blocking network transfer
 
 # SYNOPSIS
 
@@ -56,6 +59,8 @@ CURLOPT_POSTFIELDS(3).
 While the **easy_handle** is added to a multi handle, it cannot be used by
 curl_easy_perform(3).
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -71,13 +76,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 
 CURLE_OK (0) means everything was OK, non-zero means an error occurred as
-*<curl/curl.h>* defines - see libcurl-errors(3). If the CURLOPT_ERRORBUFFER(3)
-was set with curl_easy_setopt(3) there is a readable error message stored in
-the error buffer when non-zero is returned.
+*\<curl/curl.h\>* defines - see libcurl-errors(3). If CURLOPT_ERRORBUFFER(3)
+was set with curl_easy_setopt(3) there is an error message stored in the error
+buffer when non-zero is returned.

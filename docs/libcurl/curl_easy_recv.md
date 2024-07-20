@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_easy_recv
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - curl_easy_perform (3)
   - curl_easy_send (3)
   - curl_easy_setopt (3)
+Protocol:
+  - All
+Added-in: 7.18.2
 ---
 
 # NAME
@@ -55,6 +58,8 @@ Furthermore if you wait on the socket and it tells you there is data to read,
 curl_easy_recv(3) may return **CURLE_AGAIN** if the only data that was
 read was for internal SSL processing, and no other data is available.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -83,9 +88,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.18.2.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

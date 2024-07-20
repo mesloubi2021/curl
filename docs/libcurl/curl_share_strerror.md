@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_share_strerror
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - curl_multi_strerror (3)
   - curl_url_strerror (3)
   - libcurl-errors (3)
+Protocol:
+  - All
+Added-in: 7.12.0
 ---
 
 # NAME
@@ -28,6 +31,8 @@ const char *curl_share_strerror(CURLSHcode errornum);
 The curl_share_strerror(3) function returns a string describing the
 *CURLSHcode* error code passed in the argument *errornum*.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -41,9 +46,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-This function was added in libcurl 7.12.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

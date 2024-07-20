@@ -4,8 +4,8 @@ SPDX-License-Identifier: curl
 Long: pubkey
 Arg: <key>
 Protocols: SFTP SCP
-Help: SSH Public key file name
-Category: sftp scp auth
+Help: SSH Public key filename
+Category: sftp scp ssh auth
 Added: 7.16.2
 Multi: single
 See-also:
@@ -16,7 +16,7 @@ Example:
 
 # `--pubkey`
 
-Public key file name. Allows you to provide your public key in this separate
+Public key filename. Allows you to provide your public key in this separate
 file.
 
 curl attempts to automatically extract the public key from the private key

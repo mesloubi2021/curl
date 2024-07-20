@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_share_setopt
 Section: 3
@@ -7,11 +7,14 @@ Source: libcurl
 See-also:
   - curl_share_cleanup (3)
   - curl_share_init (3)
+Protocol:
+  - All
+Added-in: 7.10
 ---
 
 # NAME
 
-curl_share_setopt - Set options for a shared object
+curl_share_setopt - set options for a shared object
 
 # SYNOPSIS
 
@@ -47,6 +50,8 @@ See CURLSHOPT_UNSHARE(3).
 
 See CURLSHOPT_USERDATA(3).
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -60,12 +65,10 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.10
+# %AVAILABILITY%
 
 # RETURN VALUE
 
 CURLSHE_OK (zero) means that the option was set properly, non-zero means an
-error occurred as *<curl/curl.h>* defines. See the libcurl-errors(3)
-man page for the full list with descriptions.
+error occurred as *\<curl/curl.h\>* defines. See the libcurl-errors(3) man
+page for the full list with descriptions.

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_REDIRECT_COUNT
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_FOLLOWLOCATION (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - All
+Added-in: 7.9.7
 ---
 
 # NAME
@@ -29,9 +32,7 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_REDIRECT_COUNT,
 Pass a pointer to a long to receive the total number of redirections that were
 actually followed.
 
-# PROTOCOLS
-
-HTTP(S)
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -53,9 +54,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.9.7
+# %AVAILABILITY%
 
 # RETURN VALUE
 

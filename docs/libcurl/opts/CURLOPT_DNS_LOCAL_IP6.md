@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_DNS_LOCAL_IP6
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_DNS_INTERFACE (3)
   - CURLOPT_DNS_LOCAL_IP4 (3)
   - CURLOPT_DNS_SERVERS (3)
+Protocol:
+  - All
+Added-in: 7.33.0
 ---
 
 # NAME
@@ -36,9 +39,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,12 +57,12 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# NOTES
 
 This option requires that libcurl was built with a resolver backend that
 supports this operation. The c-ares backend is the only such one.
 
-Added in 7.33.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

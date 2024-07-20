@@ -41,8 +41,10 @@ concurrency:
 permissions: {}
 
 env:
-  MAKEFLAGS: -j 3
-  awslc-version: 1.13.0
+  MAKEFLAGS: -j 5
+
+  # renovate: datasource=github-tags depName=awslabs/aws-lc versioning=semver registryUrl=https://github.com
+  awslc-version: 1.31.0
 
 jobs:
   autoconf:
@@ -52,7 +54,8 @@ jobs:
 
     steps:
       - run: |
-          sudo apt-get update --yes
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get update
           sudo apt-get install --yes libtool autoconf automake pkg-config stunnel4 libpsl-dev
           # ensure we don't pick up openssl in this build
           sudo apt remove --yes libssl-dev
@@ -60,7 +63,7 @@ jobs:
         name: 'install prereqs and impacket'
 
       - name: cache awslc
-        uses: actions/cache@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
         id: cache-awslc
         env:
           cache-name: cache-awslc
@@ -80,7 +83,7 @@ jobs:
           cmake --build . --parallel
           cmake --install .
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - run: autoreconf -fi
         name: 'autoreconf'
@@ -88,7 +91,7 @@ jobs:
       - run: |
           mkdir build
           cd build
-          ../configure --enable-warnings --enable-werror --with-openssl=$HOME/awslc
+          ../configure --disable-dependency-tracking --enable-warnings --enable-werror --with-openssl=$HOME/awslc
           cd ..
         name: 'configure out-of-tree'
 
@@ -111,6 +114,7 @@ jobs:
 
     steps:
       - run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update
           sudo apt-get install cmake stunnel4
           # ensure we don't pick up openssl in this build
@@ -119,7 +123,7 @@ jobs:
         name: 'install prereqs and impacket'
 
       - name: cache awslc
-        uses: actions/cache@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
         id: cache-awslc
         env:
           cache-name: cache-awslc
@@ -139,10 +143,9 @@ jobs:
           cmake --build . --parallel
           cmake --install .
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
-      # CMAKE_COMPILE_WARNING_AS_ERROR is available in cmake 3.24 or later
-      - run: cmake -Bbuild -DOPENSSL_ROOT_DIR=$HOME/awslc -DBUILD_SHARED_LIBS=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON .
+      - run: cmake -Bbuild -DCMAKE_UNITY_BUILD=ON -DCURL_WERROR=ON -DOPENSSL_ROOT_DIR=$HOME/awslc -DBUILD_SHARED_LIBS=ON .
         name: 'cmake generate out-of-tree'
 
       - run: cmake --build build --parallel

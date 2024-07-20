@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_DOH_SSL_VERIFYHOST
 Section: 3
@@ -10,6 +10,11 @@ See-also:
   - CURLOPT_PROXY_SSL_VERIFYPEER (3)
   - CURLOPT_SSL_VERIFYHOST (3)
   - CURLOPT_SSL_VERIFYPEER (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - All
+Added-in: 7.76.0
 ---
 
 # NAME
@@ -55,9 +60,7 @@ of the DoH server certificate.
 
 2
 
-# PROTOCOLS
-
-DoH
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -79,11 +82,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.76.0
-
-If built TLS enabled.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

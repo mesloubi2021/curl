@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_MAXREDIRS
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_REDIRECT_COUNT (3)
   - CURLINFO_REDIRECT_URL (3)
   - CURLOPT_FOLLOWLOCATION (3)
+Protocol:
+  - HTTP
+Added-in: 7.5
 ---
 
 # NAME
@@ -38,9 +41,7 @@ to get stuck in never-ending redirect loops.
 
 30 (since 8.3.0), it was previously unlimited.
 
-# PROTOCOLS
-
-HTTP(S)
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Along with HTTP
+# %AVAILABILITY%
 
 # RETURN VALUE
 

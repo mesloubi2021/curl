@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_multi_wakeup
 Section: 3
@@ -7,11 +7,14 @@ Source: libcurl
 See-also:
   - curl_multi_poll (3)
   - curl_multi_wait (3)
+Protocol:
+  - All
+Added-in: 7.68.0
 ---
 
 # NAME
 
-curl_multi_wakeup - wakes up a sleeping curl_multi_poll call
+curl_multi_wakeup - wake up a sleeping curl_multi_poll call
 
 # SYNOPSIS
 
@@ -35,6 +38,8 @@ there is no current) curl_multi_poll(3) call, which means it is possible
 that multiple calls to this function wake up the same waiting operation.
 
 This function has no effect on curl_multi_wait(3) calls.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -82,9 +87,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.68.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

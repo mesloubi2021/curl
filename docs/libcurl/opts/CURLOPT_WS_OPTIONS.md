@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_WS_OPTIONS
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_CONNECT_ONLY (3)
   - curl_ws_recv (3)
   - curl_ws_send (3)
+Protocol:
+  - WS
+Added-in: 7.86.0
 ---
 
 # NAME
@@ -45,9 +48,7 @@ application.
 
 0
 
-# PROTOCOLS
-
-WebSocket
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -66,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.86.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

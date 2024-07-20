@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLMOPT_MAX_TOTAL_CONNECTIONS
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLMOPT_MAXCONNECTS (3)
   - CURLMOPT_MAX_HOST_CONNECTIONS (3)
+Protocol:
+  - All
+Added-in: 7.30.0
 ---
 
 # NAME
@@ -43,12 +46,10 @@ timeout is however treated as a per-connect timeout.
 
 # DEFAULT
 
-The default value is 0, which means that there is no limit. It is then simply
-controlled by the number of easy handles added.
+0, which means that there is no limit. It is then simply controlled by the
+number of easy handles added.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +62,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.30.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

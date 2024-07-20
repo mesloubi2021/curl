@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_SERVICE_NAME
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_PROXY (3)
   - CURLOPT_PROXYTYPE (3)
   - CURLOPT_SERVICE_NAME (3)
+Protocol:
+  - All
+Added-in: 7.43.0
 ---
 
 # NAME
@@ -36,9 +39,7 @@ option.
 
 See above
 
-# PROTOCOLS
-
-All network protocols
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -55,9 +56,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.43.0 for HTTP proxies, 7.49.0 for SOCKS5 proxies.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,11 +1,14 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_HAPROXYPROTOCOL
 Section: 3
 Source: libcurl
 See-also:
   - CURLOPT_PROXY (3)
+Protocol:
+  - All
+Added-in: 7.60.0
 ---
 
 # NAME
@@ -36,9 +39,7 @@ Most applications do not need this option.
 
 0, do not send any HAProxy PROXY protocol header
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -55,9 +56,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Along with HTTP. Added in 7.60.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

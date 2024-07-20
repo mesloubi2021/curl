@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_REDIRECT_TIME_T
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - CURLINFO_REDIRECT_URL (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - HTTP
+Added-in: 7.61.0
 ---
 
 # NAME
@@ -35,9 +38,7 @@ multiple redirections.
 
 See also the TIMES overview in the curl_easy_getinfo(3) man page.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.61.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -30,18 +30,14 @@
 #include <string.h>
 #include <errno.h>
 
-/* somewhat unix-specific */
-#include <sys/time.h>
-#include <unistd.h>
-
 /* curl stuff */
 #include <curl/curl.h>
 #include <curl/mprintf.h>
 
 #ifndef CURLPIPE_MULTIPLEX
-/* This little trick will just make sure that we do not enable pipelining for
-   libcurls old enough to not have this symbol. It is _not_ defined to zero in
-   a recent libcurl header. */
+/* This little trick makes sure that we do not enable pipelining for libcurls
+   old enough to not have this symbol. It is _not_ defined to zero in a recent
+   libcurl header. */
 #define CURLPIPE_MULTIPLEX 0
 #endif
 

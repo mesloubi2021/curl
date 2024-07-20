@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_easy_strerror
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - curl_share_strerror (3)
   - curl_url_strerror (3)
   - libcurl-errors (3)
+Protocol:
+  - All
+Added-in: 7.12.0
 ---
 
 # NAME
@@ -31,6 +34,8 @@ CURLcode error code passed in the argument *errornum*.
 Typically applications also appreciate CURLOPT_ERRORBUFFER(3) for more
 specific error descriptions generated at runtime.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -50,9 +55,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-This function was added in libcurl 7.12.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

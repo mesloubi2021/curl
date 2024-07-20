@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_free
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - curl_easy_escape (3)
   - curl_easy_unescape (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -30,6 +33,8 @@ differences in memory management between your application and libcurl.
 Passing in a NULL pointer in *ptr* makes this function return immediately
 with no action.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -43,9 +48,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

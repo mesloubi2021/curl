@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_POSTFIELDSIZE
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_POSTFIELDS (3)
   - CURLOPT_POSTFIELDSIZE_LARGE (3)
+Protocol:
+  - HTTP
+Added-in: 7.2
 ---
 
 # NAME
@@ -35,9 +38,7 @@ If you post more than 2GB, use CURLOPT_POSTFIELDSIZE_LARGE(3).
 
 -1
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -62,9 +63,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Along with HTTP
+# %AVAILABILITY%
 
 # RETURN VALUE
 

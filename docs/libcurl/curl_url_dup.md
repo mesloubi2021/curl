@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_url_dup
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - curl_url_cleanup (3)
   - curl_url_get (3)
   - curl_url_set (3)
+Protocol:
+  - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -30,6 +33,8 @@ Duplicates the URL object the input *CURLU* *inhandle* identifies and
 returns a pointer to the copy as a new *CURLU* handle. The new handle also
 needs to be freed with curl_url_cleanup(3).
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -47,9 +52,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

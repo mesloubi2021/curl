@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PREREQDATA
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_PRIMARY_IP (3)
   - CURLINFO_PRIMARY_PORT (3)
   - CURLOPT_PREREQFUNCTION (3)
+Protocol:
+  - All
+Added-in: 7.80.0
 ---
 
 # NAME
@@ -31,9 +34,7 @@ argument in the pre-request callback set with CURLOPT_PREREQFUNCTION(3).
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -64,9 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.80.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

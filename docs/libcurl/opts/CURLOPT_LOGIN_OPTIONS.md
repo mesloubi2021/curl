@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_LOGIN_OPTIONS
 Section: 3
@@ -7,6 +7,12 @@ Source: libcurl
 See-also:
   - CURLOPT_PASSWORD (3)
   - CURLOPT_USERNAME (3)
+Protocol:
+  - IMAP
+  - LDAP
+  - POP3
+  - SMTP
+Added-in: 7.34.0
 ---
 
 # NAME
@@ -46,9 +52,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-Only IMAP, LDAP, POP3 and SMTP support login options.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -66,9 +70,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
-Added in 7.34.0. Support for OpenLDAP added in 7.82.0.
+Support for OpenLDAP added in 7.82.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

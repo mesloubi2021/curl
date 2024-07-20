@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_REQUEST_SIZE
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLINFO_SIZE_DOWNLOAD_T (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - All
+Added-in: 7.4.1
 ---
 
 # NAME
@@ -29,9 +32,7 @@ Pass a pointer to a long to receive the total size of the issued
 requests. This is so far only for HTTP requests. Note that this may be more
 than one request if CURLOPT_FOLLOWLOCATION(3) is enabled.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -54,9 +55,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.4.1
+# %AVAILABILITY%
 
 # RETURN VALUE
 

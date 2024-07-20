@@ -29,10 +29,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - name: install prereqs
-        run: sudo apt-get install python3-proselint
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get install python3-proselint
 
       # config file help: https://github.com/amperser/proselint/
       - name: create proselint config
@@ -49,7 +51,7 @@ jobs:
           JSON
 
       - name: check prose
-        run: a=`git ls-files '*.md' | grep -v docs/CHECKSRC.md` && proselint $a README
+        run: git ls-files '*.md' | grep -Ev 'CHECKSRC.md|DISTROS.md|CURLOPT_INTERFACE.md' | xargs proselint README
 
       # This is for CHECKSRC and files with aggressive exclamation mark needs
       - name: create second proselint config
@@ -66,4 +68,4 @@ jobs:
           JSON
 
       - name: check special prose
-        run: a=docs/CHECKSRC.md && proselint $a
+        run: proselint docs/CHECKSRC.md docs/libcurl/opts/CURLOPT_INTERFACE.md

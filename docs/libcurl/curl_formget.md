@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_formget
 Section: 3
@@ -7,11 +7,14 @@ Source: libcurl
 See-also:
   - curl_formadd (3)
   - curl_mime_init (3)
+Protocol:
+  - HTTP
+Added-in: 7.15.5
 ---
 
 # NAME
 
-curl_formget - serialize a previously built multipart form POST chain
+curl_formget - serialize a multipart form POST chain
 
 # SYNOPSIS
 
@@ -24,9 +27,11 @@ int curl_formget(struct curl_httppost * form, void *userp,
 
 # DESCRIPTION
 
+The form API (including this function) is deprecated since libcurl 7.56.0.
+
 curl_formget() serializes data previously built with curl_formadd(3). It
-accepts a void pointer as second argument named *userp* which is passed as
-the first argument to the curl_formget_callback function.
+accepts a void pointer as second argument named *userp* which is passed as the
+first argument to the curl_formget_callback function.
 
 ~~~c
  typedef size_t (*curl_formget_callback)(void *userp, const char *buf,
@@ -38,9 +43,10 @@ character buffer passed to the callback must not be freed. The callback should
 return the buffer length passed to it on success.
 
 If the **CURLFORM_STREAM** option is used in the formpost, it prevents
-curl_formget(3) from working until you have performed the actual HTTP
-request. This, because first then does libcurl known which actual read
-callback to use!
+curl_formget(3) from working until you have performed the actual HTTP request.
+This, because first then does libcurl known which actual read callback to use!
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -62,10 +68,7 @@ size_t print_httppost(struct curl_httppost *post)
 }
 ~~~
 
-# AVAILABILITY
-
-This function was added in libcurl 7.15.5. The form API is deprecated in
-libcurl 7.56.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

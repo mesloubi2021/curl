@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_easy_nextheader
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - curl_easy_header (3)
   - curl_easy_perform (3)
+Protocol:
+  - HTTP
+Added-in: 7.83.0
 ---
 
 # NAME
@@ -58,6 +61,8 @@ The memory for the struct this points to, is owned and managed by libcurl and
 is associated with the easy handle. Applications must copy the data if they
 want it to survive subsequent API calls or the life-time of the easy handle.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -87,9 +92,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.83.0. Officially supported since 7.84.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

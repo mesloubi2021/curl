@@ -1,14 +1,17 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_FTP_ALTERNATIVE_TO_USER
 Section: 3
 Source: libcurl
+Protocol:
+  - FTP
 See-also:
   - CURLOPT_FTP_ACCOUNT (3)
   - CURLOPT_FTP_SKIP_PASV_IP (3)
   - CURLOPT_SERVER_RESPONSE_TIMEOUT (3)
   - CURLOPT_USERNAME (3)
+Added-in: 7.15.5
 ---
 
 # NAME
@@ -39,9 +42,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -60,9 +61,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.5
+# %AVAILABILITY%
 
 # RETURN VALUE
 

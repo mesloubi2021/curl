@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_RESOLVER_START_DATA
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_PREREQFUNCTION (3)
   - CURLOPT_RESOLVER_START_FUNCTION (3)
+Protocol:
+  - All
+Added-in: 7.59.0
 ---
 
 # NAME
@@ -32,9 +35,7 @@ CURLOPT_RESOLVER_START_FUNCTION(3).
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +62,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.59.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

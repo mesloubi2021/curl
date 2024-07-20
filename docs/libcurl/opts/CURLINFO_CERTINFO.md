@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_CERTINFO
 Section: 3
@@ -8,6 +8,14 @@ See-also:
   - CURLINFO_CAPATH (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+  - Schannel
+  - Secure Transport
+Added-in: 7.19.1
 ---
 
 # NAME
@@ -43,9 +51,7 @@ items with textual information in the format "name:content" such as
 "Subject:Foo", "Issuer:Bar", etc. The items in each list varies depending on
 the SSL backend and the certificate.
 
-# PROTOCOLS
-
-All TLS-based
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -88,13 +94,12 @@ int main(void)
 
 See also the *certinfo.c* example.
 
-# AVAILABILITY
+# HISTORY
 
-This option is only working in libcurl built with OpenSSL, GnuTLS, Schannel or
-Secure Transport. GnuTLS support added in 7.42.0. Schannel support added in
-7.50.0. Secure Transport support added in 7.79.0.
+GnuTLS support added in 7.42.0. Schannel support added in 7.50.0. Secure
+Transport support added in 7.79.0. mbedTLS support added in 8.9.0.
 
-Added in 7.19.1
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_REDIR_PROTOCOLS_STR
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - CURLOPT_PROTOCOLS (3)
   - CURLOPT_PROTOCOLS_STR (3)
   - CURLOPT_REDIR_PROTOCOLS (3)
+Protocol:
+  - HTTP
+Added-in: 7.85.0
 ---
 
 # NAME
@@ -60,9 +63,7 @@ HTTP, HTTPS, FTP and FTPS (Added in 7.65.2).
 Older versions defaulted to all protocols except FILE, SCP and since 7.40.0
 SMB and SMBS.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -83,9 +84,7 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.85.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

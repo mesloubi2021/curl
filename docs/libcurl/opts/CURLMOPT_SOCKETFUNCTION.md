@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLMOPT_SOCKETFUNCTION
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLMOPT_SOCKETDATA (3)
   - CURLMOPT_TIMERFUNCTION (3)
   - curl_multi_socket_action (3)
+Protocol:
+  - All
+Added-in: 7.15.4
 ---
 
 # NAME
@@ -87,9 +90,7 @@ active transfer. It might soon be added again.
 
 NULL (no callback)
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -126,9 +127,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.4
+# %AVAILABILITY%
 
 # RETURN VALUE
 

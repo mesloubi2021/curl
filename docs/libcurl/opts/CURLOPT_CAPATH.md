@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_CAPATH
 Section: 3
@@ -9,6 +9,14 @@ See-also:
   - CURLOPT_CAINFO (3)
   - CURLOPT_DEBUGFUNCTION (3)
   - CURLOPT_STDERR (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+  - mbedTLS
+  - wolfSSL
+Added-in: 7.9.8
 ---
 
 # NAME
@@ -41,11 +49,9 @@ The default value for this can be figured out with CURLINFO_CAPATH(3).
 
 # DEFAULT
 
-A default path detected at build time.
+A path detected at build time.
 
-# PROTOCOLS
-
-All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,10 +69,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-This option is supported by the OpenSSL, GnuTLS and mbedTLS (since 7.56.0)
-backends.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

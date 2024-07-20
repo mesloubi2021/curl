@@ -2,9 +2,9 @@
 c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: trace-ids
-Help: Add transfer and connection identifiers to trace/verbose output
+Help: Transfer + connection ids in verbose output
 Added: 8.2.0
-Category: verbose
+Category: verbose global
 Multi: boolean
 Scope: global
 See-also:

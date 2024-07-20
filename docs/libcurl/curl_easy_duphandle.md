@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_easy_duphandle
 Section: 3
@@ -9,11 +9,14 @@ See-also:
   - curl_easy_init (3)
   - curl_easy_reset (3)
   - curl_global_init (3)
+Protocol:
+  - All
+Added-in: 7.9
 ---
 
 # NAME
 
-curl_easy_duphandle - Clone a libcurl session handle
+curl_easy_duphandle - clone an easy handle
 
 # SYNOPSIS
 
@@ -44,6 +47,8 @@ data from the main filename to populate the cache.
 In multi-threaded programs, this function must be called in a synchronous way,
 the input handle may not be in use when cloned.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -62,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.9
+# %AVAILABILITY%
 
 # RETURN VALUE
 

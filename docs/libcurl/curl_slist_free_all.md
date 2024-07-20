@@ -1,11 +1,14 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_slist_free_all
 Section: 3
 Source: libcurl
 See-also:
   - curl_slist_append (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -28,6 +31,8 @@ linked list.
 Passing in a NULL pointer in *list* makes this function return immediately
 with no action.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -49,9 +54,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

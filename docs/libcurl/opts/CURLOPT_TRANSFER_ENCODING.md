@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_TRANSFER_ENCODING
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_ACCEPT_ENCODING (3)
   - CURLOPT_HTTP_TRANSFER_DECODING (3)
+Protocol:
+  - HTTP
+Added-in: 7.21.6
 ---
 
 # NAME
@@ -41,9 +44,7 @@ by both HTTP clients and HTTP servers.
 
 0
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -59,9 +60,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.21.6
+# %AVAILABILITY%
 
 # RETURN VALUE
 

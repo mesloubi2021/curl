@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_HTTP_CONNECTCODE
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_RESPONSE_CODE (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - HTTP
+Added-in: 7.10.7
 ---
 
 # NAME
@@ -28,9 +31,7 @@ Pass a pointer to a long to receive the last received HTTP proxy response code
 to a CONNECT request. The returned value is zero if no such response code was
 available.
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,9 +57,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.10.7
+# %AVAILABILITY%
 
 # RETURN VALUE
 

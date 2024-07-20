@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_NETRC_FILE
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_NETRC (3)
   - CURLOPT_PASSWORD (3)
   - CURLOPT_USERNAME (3)
+Protocol:
+  - All
+Added-in: 7.11.0
 ---
 
 # NAME
@@ -36,9 +39,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,9 +57,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.10.9
+# %AVAILABILITY%
 
 # RETURN VALUE
 

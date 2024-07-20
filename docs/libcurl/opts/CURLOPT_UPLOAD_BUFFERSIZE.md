@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_UPLOAD_BUFFERSIZE
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_BUFFERSIZE (3)
   - CURLOPT_READFUNCTION (3)
   - CURLOPT_TCP_NODELAY (3)
+Protocol:
+  - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -47,9 +50,7 @@ transfer as that may lead to unintended consequences.
 
 65536 bytes
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -71,9 +72,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

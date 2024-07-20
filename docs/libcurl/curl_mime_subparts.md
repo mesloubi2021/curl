@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_mime_subparts
 Section: 3
@@ -7,6 +7,11 @@ Source: libcurl
 See-also:
   - curl_mime_addpart (3)
   - curl_mime_init (3)
+Protocol:
+  - HTTP
+  - IMAP
+  - SMTP
+Added-in: 7.56.0
 ---
 
 # NAME
@@ -36,6 +41,8 @@ subsequent calls to mime API functions.
 Setting a part's contents multiple times is valid: only the value set by the
 last call is retained. It is possible to unassign previous part's contents by
 setting *subparts* to NULL.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -74,9 +81,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-As long as at least one of HTTP, SMTP or IMAP is enabled. Added in 7.56.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

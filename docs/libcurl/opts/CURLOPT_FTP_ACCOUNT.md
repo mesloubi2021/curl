@@ -1,12 +1,15 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_FTP_ACCOUNT
 Section: 3
 Source: libcurl
+Protocol:
+  - FTP
 See-also:
   - CURLOPT_PASSWORD (3)
   - CURLOPT_USERNAME (3)
+Added-in: 7.13.0
 ---
 
 # NAME
@@ -24,7 +27,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_FTP_ACCOUNT, char *account);
 # DESCRIPTION
 
 Pass a pointer to a null-terminated string (or NULL to disable). When an FTP
-server asks for "account data" after user name and password has been provided,
+server asks for "account data" after username and password has been provided,
 this data is sent off using the ACCT command.
 
 The application does not have to keep the string around after setting this
@@ -34,9 +37,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +58,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.13.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

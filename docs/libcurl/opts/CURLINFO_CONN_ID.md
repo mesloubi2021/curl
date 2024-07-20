@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_CONN_ID
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_XFER_ID (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - All
+Added-in: 8.2.0
 ---
 
 # NAME
@@ -32,9 +35,7 @@ The connection id is unique among all connections using the same
 connection cache. This is implicitly the case for all connections in the
 same multi handle.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +62,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 8.2.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

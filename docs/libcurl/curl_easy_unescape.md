@@ -1,17 +1,20 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_easy_unescape
 Section: 3
 Source: libcurl
 See-also:
   - curl_easy_escape (3)
-  - curl_free (3)
+  - curl_url_get (3)
+Protocol:
+  - All
+Added-in: 7.15.4
 ---
 
 # NAME
 
-curl_easy_unescape - URL decodes the given string
+curl_easy_unescape - URL decode a string
 
 # SYNOPSIS
 
@@ -44,6 +47,8 @@ TPF, but it was otherwise ignored.
 
 You must curl_free(3) the returned string when you are done with it.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -64,9 +69,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.4 and replaces the old curl_unescape(3) function.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

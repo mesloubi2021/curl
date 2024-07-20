@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSL_VERIFYSTATUS
 Section: 3
@@ -8,6 +8,12 @@ See-also:
   - CURLOPT_CAINFO (3)
   - CURLOPT_SSL_VERIFYHOST (3)
   - CURLOPT_SSL_VERIFYPEER (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+Added-in: 7.41.0
 ---
 
 # NAME
@@ -36,9 +42,7 @@ extension, the verification fails.
 
 0
 
-# PROTOCOLS
-
-All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,10 +61,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.41.0. This option is currently only supported by the OpenSSL and
-GnuTLS TLS backends.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

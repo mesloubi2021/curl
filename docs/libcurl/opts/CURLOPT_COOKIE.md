@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_COOKIE
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - CURLOPT_COOKIEJAR (3)
   - CURLOPT_COOKIELIST (3)
   - CURLOPT_HTTPHEADER (3)
+Protocol:
+  - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -67,9 +70,7 @@ ability to stop super cookies. PSL support is identified by the
 
 NULL, no cookies
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -87,9 +88,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-If HTTP is enabled
+# %AVAILABILITY%
 
 # RETURN VALUE
 

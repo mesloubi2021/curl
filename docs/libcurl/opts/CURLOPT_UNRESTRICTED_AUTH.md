@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_UNRESTRICTED_AUTH
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - CURLOPT_MAXREDIRS (3)
   - CURLOPT_REDIR_PROTOCOLS_STR (3)
   - CURLOPT_USERPWD (3)
+Protocol:
+  - HTTP
+Added-in: 7.10.4
 ---
 
 # NAME
@@ -50,9 +53,7 @@ again and again as the following hosts can keep redirecting to new hosts.
 
 0
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -69,9 +70,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Along with HTTP
+# %AVAILABILITY%
 
 # RETURN VALUE
 

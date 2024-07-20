@@ -1,9 +1,11 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_HTTPPOST
 Section: 3
 Source: libcurl
+Protocol:
+  - HTTP
 See-also:
   - CURLOPT_MIMEPOST (3)
   - CURLOPT_POST (3)
@@ -11,6 +13,7 @@ See-also:
   - curl_formadd (3)
   - curl_formfree (3)
   - curl_mime_init (3)
+Added-in: 7.1
 ---
 
 # NAME
@@ -47,9 +50,7 @@ CURLOPT_NOBODY(3) to 0.
 
 NULL
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -91,9 +92,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-As long as HTTP is enabled. Deprecated in 7.56.0.
+Deprecated in 7.56.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

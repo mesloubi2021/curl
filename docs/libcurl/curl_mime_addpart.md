@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_mime_addpart
 Section: 3
@@ -15,6 +15,11 @@ See-also:
   - curl_mime_name (3)
   - curl_mime_subparts (3)
   - curl_mime_type (3)
+Protocol:
+  - HTTP
+  - IMAP
+  - SMTP
+Added-in: 7.56.0
 ---
 
 # NAME
@@ -37,6 +42,8 @@ subsequently be populated using functions from the mime API.
 
 *mime* is the handle of the mime structure in which the new part must be
 appended.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +68,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-As long as at least one of HTTP, SMTP or IMAP is enabled. Added in 7.56.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

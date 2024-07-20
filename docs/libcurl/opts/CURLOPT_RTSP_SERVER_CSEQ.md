@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_RTSP_SERVER_CSEQ
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_RTSP_SERVER_CSEQ (3)
   - CURLOPT_RTSP_CLIENT_CSEQ (3)
   - CURLOPT_RTSP_STREAM_URI (3)
+Protocol:
+  - RTSP
+Added-in: 7.20.0
 ---
 
 # NAME
@@ -24,17 +27,15 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_RTSP_SERVER_CSEQ, long cseq);
 
 # DESCRIPTION
 
-Pass a long to set the CSEQ number to expect for the next RTSP Server->Client
-request. **NOTE**: this feature (listening for Server requests) is
+Pass a long to set the CSEQ number to expect for the next RTSP Server to
+Client request. **NOTE**: this feature (listening for Server requests) is
 unimplemented.
 
 # DEFAULT
 
 0
 
-# PROTOCOLS
-
-RTSP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -52,9 +53,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.20.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

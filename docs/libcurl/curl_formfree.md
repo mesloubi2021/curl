@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_formfree
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - curl_formadd (3)
   - curl_mime_free (3)
   - curl_mime_init (3)
+Protocol:
+  - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -40,6 +43,8 @@ curl_formadd(3) and may be NULL.
 Passing in a NULL pointer in *form* makes this function return immediately
 with no action.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -67,9 +72,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
 Deprecated in 7.56.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

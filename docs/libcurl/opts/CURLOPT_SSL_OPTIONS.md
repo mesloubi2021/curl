@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSL_OPTIONS
 Section: 3
@@ -8,6 +8,11 @@ See-also:
   - CURLOPT_PROXY_SSL_OPTIONS (3)
   - CURLOPT_SSLVERSION (3)
   - CURLOPT_SSL_CIPHER_LIST (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - All
+Added-in: 7.25.0
 ---
 
 # NAME
@@ -85,9 +90,7 @@ could be a privacy violation and unexpected.
 
 0
 
-# PROTOCOLS
-
-All TLS-based protocols
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -107,9 +110,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.25.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

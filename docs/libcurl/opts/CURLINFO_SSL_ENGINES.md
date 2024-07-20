@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_SSL_ENGINES
 Section: 3
@@ -8,6 +8,11 @@ See-also:
   - CURLOPT_SSLENGINE (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+Added-in: 7.12.3
 ---
 
 # NAME
@@ -32,9 +37,7 @@ available at runtime. **NOTE:** you must call curl_slist_free_all(3)
 on the list pointer once you are done with it, as libcurl does not free this
 data for you.
 
-# PROTOCOLS
-
-All TLS based ones.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,9 +59,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.12.3. Available in OpenSSL builds with "engine" support.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

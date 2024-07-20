@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_QUICK_EXIT
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_FAILONERROR (3)
   - CURLOPT_RESOLVE (3)
+Protocol:
+  - All
+Added-in: 7.87.0
 ---
 
 # NAME
@@ -35,9 +38,7 @@ possible (though short-lived) leak of associated resources.
 
 0
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -53,9 +54,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.87.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

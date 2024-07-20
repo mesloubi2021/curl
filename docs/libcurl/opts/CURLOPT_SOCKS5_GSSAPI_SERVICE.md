@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SOCKS5_GSSAPI_SERVICE
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_PROXY (3)
   - CURLOPT_PROXYTYPE (3)
+Protocol:
+  - All
+Added-in: 7.19.4
 ---
 
 # NAME
@@ -37,9 +40,7 @@ option.
 
 See above
 
-# PROTOCOLS
-
-All network protocols
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -58,9 +59,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-Added in 7.19.4, deprecated in 7.49.0
+Deprecated since 7.49.0
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

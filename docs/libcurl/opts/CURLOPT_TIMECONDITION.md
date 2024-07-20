@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_TIMECONDITION
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLINFO_FILETIME (3)
   - CURLOPT_TIMEVALUE (3)
+Protocol:
+  - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -37,9 +40,7 @@ option can be used after a transfer to learn if a zero-byte successful
 
 CURL_TIMECOND_NONE (0)
 
-# PROTOCOLS
-
-HTTP, FTP, RTSP, and FILE
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_ws_recv
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - curl_easy_setopt (3)
   - curl_ws_send (3)
   - libcurl-ws (3)
+Protocol:
+  - WS
+Added-in: 7.86.0
 ---
 
 # NAME
@@ -41,6 +44,8 @@ The *meta* pointer gets set to point to a *const struct curl_ws_frame*
 that contains information about the received data. See the
 curl_ws_meta(3) for details on that struct.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -58,9 +63,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.86.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

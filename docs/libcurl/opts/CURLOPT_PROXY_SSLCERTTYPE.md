@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_SSLCERTTYPE
 Section: 3
@@ -8,6 +8,16 @@ See-also:
   - CURLOPT_PROXY_SSLCERT (3)
   - CURLOPT_PROXY_SSLKEY (3)
   - CURLOPT_SSLCERTTYPE (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+  - mbedTLS
+  - Schannel
+  - Secure Transport
+  - wolfSSL
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -39,9 +49,7 @@ option.
 
 "PEM"
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,11 +71,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.52.0
-
-If built TLS enabled.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

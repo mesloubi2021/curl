@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_ERRORBUFFER
 Section: 3
@@ -11,6 +11,9 @@ See-also:
   - curl_multi_strerror (3)
   - curl_share_strerror (3)
   - curl_url_strerror (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -49,9 +52,7 @@ debug and trace why errors happen.
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -92,9 +93,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

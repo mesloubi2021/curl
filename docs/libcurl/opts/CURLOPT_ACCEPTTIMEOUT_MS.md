@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_ACCEPTTIMEOUT_MS
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_CONNECTTIMEOUT_MS (3)
   - CURLOPT_DEBUGFUNCTION (3)
   - CURLOPT_STDERR (3)
+Protocol:
+  - FTP
+Added-in: 7.24.0
 ---
 
 # NAME
@@ -31,9 +34,7 @@ server to connect back to libcurl when an active FTP connection is used.
 
 60000 milliseconds
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -52,9 +53,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.24.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

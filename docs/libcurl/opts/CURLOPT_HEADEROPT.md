@@ -1,12 +1,15 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_HEADEROPT
 Section: 3
 Source: libcurl
+Protocol:
+  - HTTP
 See-also:
   - CURLOPT_HTTPHEADER (3)
   - CURLOPT_PROXYHEADER (3)
+Added-in: 7.37.0
 ---
 
 # NAME
@@ -42,9 +45,7 @@ proxy and then CURLOPT_HTTPHEADER(3) headers only to the server.
 
 CURLHEADER_SEPARATE (changed in 7.42.1, used CURLHEADER_UNIFIED before then)
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -72,9 +73,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.37.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

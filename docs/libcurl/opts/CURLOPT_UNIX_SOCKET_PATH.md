@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_UNIX_SOCKET_PATH
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_ABSTRACT_UNIX_SOCKET (3)
   - CURLOPT_OPENSOCKETFUNCTION (3)
   - unix (7)
+Protocol:
+  - All
+Added-in: 7.40.0
 ---
 
 # NAME
@@ -45,12 +48,9 @@ option.
 
 # DEFAULT
 
-Default is NULL, meaning that no Unix domain sockets are used.
+NULL - no Unix domain sockets are used.
 
-# PROTOCOLS
-
-All protocols except for FILE and FTP are supported in theory. HTTP, IMAP,
-POP3 and SMTP should in particular work (including their SSL/TLS variants).
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -78,9 +78,7 @@ you can use the proc filesystem to bypass the limitation:
   /* Be sure to keep dirfd valid until you discard the handle */
 ~~~
 
-# AVAILABILITY
-
-Added in 7.40.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

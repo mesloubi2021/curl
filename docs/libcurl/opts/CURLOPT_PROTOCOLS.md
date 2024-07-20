@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROTOCOLS
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_DEFAULT_PROTOCOL (3)
   - CURLOPT_REDIR_PROTOCOLS (3)
   - CURLOPT_URL (3)
+Protocol:
+  - All
+Added-in: 7.19.4
 ---
 
 # NAME
@@ -71,9 +74,7 @@ CURLPROTO_TFTP
 
 All protocols built-in.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -95,9 +96,11 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-Added in 7.19.4. Deprecated since 7.85.0.
+Deprecated since 7.85.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

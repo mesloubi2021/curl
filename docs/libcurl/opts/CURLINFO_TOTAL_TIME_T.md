@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_TOTAL_TIME_T
 Section: 3
@@ -9,8 +9,10 @@ See-also:
   - CURLOPT_TIMEOUT (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - All
+Added-in: 7.61.0
 ---
-
 # NAME
 
 CURLINFO_TOTAL_TIME_T - get total time of previous transfer in microseconds
@@ -34,9 +36,7 @@ When a redirect is followed, the time from each request is added together.
 
 See also the TIMES overview in the curl_easy_getinfo(3) man page.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -62,9 +62,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.61.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

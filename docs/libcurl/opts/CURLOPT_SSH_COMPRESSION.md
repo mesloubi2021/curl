@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSH_COMPRESSION
 Section: 3
@@ -7,6 +7,10 @@ Source: libcurl
 See-also:
   - CURLOPT_ACCEPT_ENCODING (3)
   - CURLOPT_TRANSFER_ENCODING (3)
+Protocol:
+  - SFTP
+  - SCP
+Added-in: 7.56.0
 ---
 
 # NAME
@@ -32,9 +36,7 @@ may or may not do it.
 
 0, disabled
 
-# PROTOCOLS
-
-All SSH based protocols: SCP, SFTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -54,9 +56,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.56.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_multi_cleanup
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - curl_easy_init (3)
   - curl_multi_get_handles (3)
   - curl_multi_init (3)
+Protocol:
+  - All
+Added-in: 7.9.6
 ---
 
 # NAME
@@ -41,6 +44,8 @@ removed
 Passing in a NULL pointer in *multi_handle* makes this function return
 CURLM_BAD_HANDLE immediately with no other action.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -55,9 +60,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.9.6
+# %AVAILABILITY%
 
 # RETURN VALUE
 

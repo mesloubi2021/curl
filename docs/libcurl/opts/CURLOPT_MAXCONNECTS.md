@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_MAXCONNECTS
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLMOPT_MAX_HOST_CONNECTIONS (3)
   - CURLMOPT_MAX_TOTAL_CONNECTIONS (3)
   - CURLOPT_MAXREDIRS (3)
+Protocol:
+  - All
+Added-in: 7.7
 ---
 
 # NAME
@@ -46,9 +49,7 @@ CURLMOPT_MAXCONNECTS(3) option.
 
 5
 
-# PROTOCOLS
-
-Most
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -66,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

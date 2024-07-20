@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_CONTENT_TYPE
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - curl_easy_getinfo (3)
   - curl_easy_header (3)
   - curl_easy_setopt (3)
+Protocol:
+  - HTTP
+Added-in: 7.9.4
 ---
 
 # NAME
@@ -37,9 +40,7 @@ corresponding CURL handle.
 The modern way to get this header from a response is to instead use the
 curl_easy_header(3) function.
 
-# PROTOCOLS
-
-HTTP(S)
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -66,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.9.4
+# %AVAILABILITY%
 
 # RETURN VALUE
 

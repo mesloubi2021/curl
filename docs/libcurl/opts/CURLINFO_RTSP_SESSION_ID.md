@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_RTSP_SESSION_ID
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_RTSP_CSEQ_RECV (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - RTSP
+Added-in: 7.20.0
 ---
 
 # NAME
@@ -34,9 +37,7 @@ The **id** pointer is NULL or points to private memory. You MUST NOT free -
 it gets freed when you call curl_easy_cleanup(3) on the corresponding
 CURL handle.
 
-# PROTOCOLS
-
-RTSP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +58,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.20.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

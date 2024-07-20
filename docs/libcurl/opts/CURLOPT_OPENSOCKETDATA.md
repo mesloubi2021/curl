@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_OPENSOCKETDATA
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_CLOSESOCKETFUNCTION (3)
   - CURLOPT_OPENSOCKETFUNCTION (3)
   - CURLOPT_SOCKOPTFUNCTION (3)
+Protocol:
+  - All
+Added-in: 7.17.1
 ---
 
 # NAME
@@ -30,11 +33,9 @@ CURLOPT_OPENSOCKETFUNCTION(3).
 
 # DEFAULT
 
-The default value of this parameter is NULL.
+NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -83,9 +84,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.17.1
+# %AVAILABILITY%
 
 # RETURN VALUE
 

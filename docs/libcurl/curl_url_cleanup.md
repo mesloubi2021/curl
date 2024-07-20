@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_url_cleanup
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - curl_url_dup (3)
   - curl_url_get (3)
   - curl_url_set (3)
+Protocol:
+  - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -31,6 +34,8 @@ Frees all the resources associated with the given *CURLU* handle!
 Passing in a NULL pointer in *handle* makes this function return
 immediately with no action.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -42,9 +47,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

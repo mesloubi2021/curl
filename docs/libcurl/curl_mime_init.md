@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_mime_init
 Section: 3
@@ -9,6 +9,11 @@ See-also:
   - curl_mime_addpart (3)
   - curl_mime_free (3)
   - curl_mime_subparts (3)
+Protocol:
+  - HTTP
+  - IMAP
+  - SMTP
+Added-in: 7.56.0
 ---
 
 # NAME
@@ -37,6 +42,8 @@ reporting. Since 7.87.0, it does not need to be the final target handle.
 Using a mime handle is the recommended way to post an HTTP form, format and
 send a multi-part email with SMTP or upload such an email to an IMAP server.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -63,9 +70,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-As long as at least one of HTTP, SMTP or IMAP is enabled. Added in 7.56.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_TRAILERDATA
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_TRAILERFUNCTION (3)
   - CURLOPT_WRITEFUNCTION (3)
+Protocol:
+  - HTTP
+Added-in: 7.64.0
 ---
 
 # NAME
@@ -29,9 +32,7 @@ Data pointer to be passed to the HTTP trailer callback function.
 
 NULL
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -50,9 +51,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-This option was added in curl 7.64.0 and is present if HTTP support is enabled
+# %AVAILABILITY%
 
 # RETURN VALUE
 

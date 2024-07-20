@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_mime_filename
 Section: 3
@@ -8,11 +8,16 @@ See-also:
   - curl_mime_addpart (3)
   - curl_mime_data (3)
   - curl_mime_filedata (3)
+Protocol:
+  - HTTP
+  - IMAP
+  - SMTP
+Added-in: 7.56.0
 ---
 
 # NAME
 
-curl_mime_filename - set a mime part's remote file name
+curl_mime_filename - set a mime part's remote filename
 
 # SYNOPSIS
 
@@ -38,6 +43,8 @@ to NULL to remove a previously attached remote filename.
 The remote filename string is copied into the part, thus the associated
 storage may safely be released or reused after call. Setting a part's file
 name multiple times is valid: only the value set by the last call is retained.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -70,9 +77,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-As long as at least one of HTTP, SMTP or IMAP is enabled. Added in 7.56.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

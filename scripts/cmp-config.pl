@@ -31,7 +31,7 @@ if(!$cmake) {
     exit;
 }
 
-# this lists complete lines that will be removed from the the output if
+# this lists complete lines that will be removed from the output if
 # matching
 my %remove = (
     '#define _FILE_OFFSET_BITS 64' => 1,
@@ -47,6 +47,8 @@ my %remove = (
     '#define HAVE_IOCTL 1' => 1,
     '#define HAVE_LDAP_SSL 1' => 1,
     '#define HAVE_LIBBROTLIDEC 1' => 1,
+    '#define HAVE_LIBSOCKET 1' => 1,
+    '#define HAVE_LIBSSH2 1' => 1,
     '#define HAVE_LIBSSL 1' => 1,
     '#define HAVE_LIBZSTD 1' => 1,
     '#define HAVE_OPENSSL3 1' => 1,

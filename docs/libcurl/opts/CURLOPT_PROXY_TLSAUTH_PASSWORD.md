@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_TLSAUTH_PASSWORD
 Section: 3
@@ -9,6 +9,12 @@ See-also:
   - CURLOPT_PROXY_TLSAUTH_USERNAME (3)
   - CURLOPT_TLSAUTH_TYPE (3)
   - CURLOPT_TLSAUTH_USERNAME (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -38,9 +44,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.52.0, with the OpenSSL and GnuTLS backends only
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_MIME_OPTIONS
 Section: 3
@@ -7,6 +7,11 @@ Source: libcurl
 See-also:
   - CURLOPT_HTTPPOST (3)
   - CURLOPT_MIMEPOST (3)
+Protocol:
+  - HTTP
+  - IMAP
+  - SMTP
+Added-in: 7.81.0
 ---
 
 # NAME
@@ -30,7 +35,7 @@ Available bits are:
 
 ## CURLMIMEOPT_FORMESCAPE
 
-Tells libcurl to escape multipart form field and file names using the
+Tells libcurl to escape multipart form field and filenames using the
 backslash-escaping algorithm rather than percent-encoding (HTTP only).
 
 Backslash-escaping consists in preceding backslashes and double quotes with
@@ -52,9 +57,7 @@ containing multipart form is sent, this is normally transmitted as
 
 0, meaning disabled.
 
-# PROTOCOLS
-
-HTTP, IMAP, SMTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -88,9 +91,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Option added in 7.81.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -5,12 +5,13 @@ Short: c
 Long: cookie-jar
 Arg: <filename>
 Protocols: HTTP
-Help: Write cookies to <filename> after operation
+Help: Save cookies to <filename> after operation
 Category: http
 Added: 7.9
 Multi: single
 See-also:
   - cookie
+  - junk-session-cookies
 Example:
   - -c store-here.txt $URL
   - -c store-here.txt -b read-these $URL
@@ -20,9 +21,10 @@ Example:
 
 Specify to which file you want curl to write all cookies after a completed
 operation. Curl writes all cookies from its in-memory cookie storage to the
-given file at the end of operations. If no cookies are known, no data is
-written. The file is created using the Netscape cookie file format. If you set
-the file name to a single dash, "-", the cookies are written to stdout.
+given file at the end of operations. Even if no cookies are known, a file is
+created so that it removes any formerly existing cookies from the file. The
+file uses the Netscape cookie file format. If you set the filename to a single
+minus, "-", the cookies are written to stdout.
 
 The file specified with --cookie-jar is only used for output. No cookies are
 read from the file. To read cookies, use the --cookie option. Both options

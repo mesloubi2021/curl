@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_XOAUTH2_BEARER
 Section: 3
@@ -7,6 +7,13 @@ Source: libcurl
 See-also:
   - CURLOPT_MAIL_AUTH (3)
   - CURLOPT_USERNAME (3)
+Protocol:
+  - HTTP
+  - IMAP
+  - LDAP
+  - POP3
+  - SMTP
+Added-in: 7.33.0
 ---
 
 # NAME
@@ -27,8 +34,8 @@ Pass a char pointer as parameter, which should point to the null-terminated
 OAuth 2.0 Bearer Access Token for use with HTTP, IMAP, LDAP, POP3 and SMTP
 servers that support the OAuth 2.0 Authorization Framework.
 
-Note: For IMAP, LDAP, POP3 and SMTP, the user name used to generate the
-Bearer Token should be supplied via the CURLOPT_USERNAME(3) option.
+Note: For IMAP, LDAP, POP3 and SMTP, the username used to generate the Bearer
+Token should be supplied via the CURLOPT_USERNAME(3) option.
 
 The application does not have to keep the string around after setting this
 option.
@@ -37,9 +44,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-HTTP, IMAP, LDAP, POP3 and SMTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +62,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
-Added in 7.33.0. Support for OpenLDAP added in 7.82.0.
+Support for OpenLDAP added in 7.82.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

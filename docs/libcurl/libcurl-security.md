@@ -1,11 +1,14 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: libcurl-security
 Section: 3
 Source: libcurl
 See-also:
   - libcurl-thread (3)
+Protocol:
+  - All
+Added-in: n/a
 ---
 <!-- markdown-link-check-disable -->
 # NAME
@@ -119,7 +122,7 @@ user running the libcurl application, SCP: or SFTP: URLs could access password
 or private-key protected resources,
 e.g. **sftp://user@some-internal-server/etc/passwd**
 
-The CURLOPT_REDIR_PROTOCOLS(3) and CURLOPT_NETRC(3) options can be
+The CURLOPT_REDIR_PROTOCOLS_STR(3) and CURLOPT_NETRC(3) options can be
 used to mitigate against this kind of attack.
 
 A redirect can also specify a location available only on the machine running
@@ -130,7 +133,7 @@ E.g. **http://127.0.0.1/** or **http://intranet/delete-stuff.cgi?delete=all** or
 Applications can mitigate against this by disabling
 CURLOPT_FOLLOWLOCATION(3) and handling redirects itself, sanitizing URLs
 as necessary. Alternately, an app could leave CURLOPT_FOLLOWLOCATION(3)
-enabled but set CURLOPT_REDIR_PROTOCOLS(3) and install a
+enabled but set CURLOPT_REDIR_PROTOCOLS_STR(3) and install a
 CURLOPT_OPENSOCKETFUNCTION(3) or CURLOPT_PREREQFUNCTION(3) callback
 function in which addresses are sanitized before use.
 
@@ -162,7 +165,7 @@ non-redirected URLs, if the user is allowed to specify an arbitrary URL that
 could point to a private resource. For example, a web app providing a
 translation service might happily translate **file://localhost/etc/passwd**
 and display the result. Applications can mitigate against this with the
-CURLOPT_PROTOCOLS(3) option as well as by similar mitigation techniques
+CURLOPT_PROTOCOLS_STR(3) option as well as by similar mitigation techniques
 for redirections.
 
 A malicious FTP server could in response to the PASV command return an IP
@@ -218,15 +221,15 @@ information to be sent to an unknown second server. Applications can mitigate
 against this by disabling CURLOPT_FOLLOWLOCATION(3) and handling
 redirects itself, sanitizing where necessary.
 
-Use of the CURLAUTH_ANY option to CURLOPT_HTTPAUTH(3) could result in
-user name and password being sent in clear text to an HTTP server. Instead,
-use CURLAUTH_ANYSAFE which ensures that the password is encrypted over the
+Use of the CURLAUTH_ANY option to CURLOPT_HTTPAUTH(3) could result in username
+and password being sent in clear text to an HTTP server. Instead, use
+CURLAUTH_ANYSAFE which ensures that the password is encrypted over the
 network, or else fail the request.
 
 Use of the CURLUSESSL_TRY option to CURLOPT_USE_SSL(3) could result in
-user name and password being sent in clear text to an FTP server. Instead,
-use CURLUSESSL_CONTROL to ensure that an encrypted connection is used or else
-fail the request.
+username and password being sent in clear text to an FTP server. Instead, use
+CURLUSESSL_CONTROL to ensure that an encrypted connection is used or else fail
+the request.
 
 # Cookies
 
@@ -306,9 +309,9 @@ Remedies:
 
 curl command lines can use *--proto* to limit what URL schemes it accepts
 
-## Use CURLOPT_PROTOCOLS
+## Use CURLOPT_PROTOCOLS_STR
 
-libcurl programs can use CURLOPT_PROTOCOLS(3) to limit what URL schemes it accepts
+libcurl programs can use CURLOPT_PROTOCOLS_STR(3) to limit what URL schemes it accepts
 
 ## consider not allowing the user to set the full URL
 
@@ -363,6 +366,12 @@ instead of back to curl.
 The fact that FTP uses two connections makes it vulnerable in a way that is
 hard to avoid.
 
+# Active FTP passes on the local IP address
+
+If you use curl/libcurl to do *active* FTP transfers, curl passes on the
+address of your local IP to the remote server - even when for example using a
+SOCKS or HTTP proxy in between curl and the target server.
+
 # Denial of Service
 
 A malicious server could cause libcurl to effectively hang by sending data
@@ -372,10 +381,11 @@ CURLOPT_TIMEOUT(3) and/or CURLOPT_LOW_SPEED_LIMIT(3) options can
 be used to mitigate against this.
 
 A malicious server could cause libcurl to download an infinite amount of data,
-potentially causing all of memory or disk to be filled. Setting the
-CURLOPT_MAXFILESIZE_LARGE(3) option is not sufficient to guard against
-this. Instead, applications should monitor the amount of data received within
-the write or progress callback and abort once the limit is reached.
+potentially causing system resources to be exhausted resulting in a system or
+application crash. Setting the CURLOPT_MAXFILESIZE_LARGE(3) option is not
+sufficient to guard against this. Instead, applications should monitor the
+amount of data received within the write or progress callback and abort once
+the limit is reached.
 
 A malicious HTTP server could cause an infinite redirection loop, causing a
 denial-of-service. This can be mitigated by using the
@@ -413,14 +423,14 @@ plain HTTP connection.
 
 Relatedly, be aware that in situations when you have problems with libcurl and
 ask someone for help, everything you reveal in order to get best possible help
-might also impose certain security related risks. Host names, user names,
-paths, operating system specifics, etc. (not to mention passwords of course)
-may in fact be used by intruders to gain additional information of a potential
+might also impose certain security related risks. Hostnames, usernames, paths,
+operating system specifics, etc. (not to mention passwords of course) may in
+fact be used by intruders to gain additional information of a potential
 target.
 
 Be sure to limit access to application logs if they could hold private or
-security-related data. Besides the obvious candidates like user names and
-passwords, things like URLs, cookies or even file names could also hold
+security-related data. Besides the obvious candidates like usernames and
+passwords, things like URLs, cookies or even filenames could also hold
 sensitive data.
 
 To avoid this problem, you must of course use your common sense. Often, you
@@ -454,7 +464,7 @@ only the trusted and reliable helper program is invoked!
 
 # Secrets in memory
 
-When applications pass user names, passwords or other sensitive data to
+When applications pass usernames, passwords or other sensitive data to
 libcurl to be used for upcoming transfers, those secrets are kept around as-is
 in memory. In many cases they are stored in the heap for as long as the handle
 itself for which the options are set.

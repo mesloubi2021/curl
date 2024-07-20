@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_CONNECT_ONLY
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_VERBOSE (3)
   - curl_easy_recv (3)
   - curl_easy_send (3)
+Protocol:
+  - All
+Added-in: 7.15.2
 ---
 
 # NAME
@@ -52,9 +55,7 @@ curl_easy_recv(3) do not function.
 
 0
 
-# PROTOCOLS
-
-HTTP, SMTP, POP3 and IMAP. For WS and WSS starting in 7.86.0.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -74,9 +75,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
-Added in 7.15.2
+WS and WSS support added in 7.86.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

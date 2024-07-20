@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256
 Section: 3
@@ -8,6 +8,10 @@ See-also:
   - CURLOPT_SSH_AUTH_TYPES (3)
   - CURLOPT_SSH_HOST_PUBLIC_KEY_MD5 (3)
   - CURLOPT_SSH_PUBLIC_KEYFILE (3)
+Protocol:
+  - SFTP
+  - SCP
+Added-in: 7.80.0
 ---
 
 # NAME
@@ -33,9 +37,7 @@ does not match the hash the remote host provides.
 
 NULL
 
-# PROTOCOLS
-
-SCP and SFTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -54,10 +56,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# NOTES
 
-Added in 7.80.0
 Requires the libssh2 backend.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

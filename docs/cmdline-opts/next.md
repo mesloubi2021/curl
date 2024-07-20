@@ -7,7 +7,7 @@ Tags:
 Protocols:
 Added: 7.36.0
 Magic: divider
-Help: Make next URL use its separate set of options
+Help: Make next URL use separate options
 Category: curl
 Multi: append
 See-also:
@@ -20,10 +20,9 @@ Example:
 
 # `--next`
 
-Tells curl to use a separate operation for the following URL and associated
-options. This allows you to send several URL requests, each with their own
-specific options, for example, such as different user names or custom requests
-for each.
+Use a separate operation for the following URL and associated options. This
+allows you to send several URL requests, each with their own specific options,
+for example, such as different usernames or custom requests for each.
 
 --next resets all local options and only global ones have their values survive
 over to the operation following the --next instruction. Global options include

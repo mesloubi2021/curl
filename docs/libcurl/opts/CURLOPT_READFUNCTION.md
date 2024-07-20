@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_READFUNCTION
 Section: 3
@@ -11,6 +11,9 @@ See-also:
   - CURLOPT_UPLOAD (3)
   - CURLOPT_UPLOAD_BUFFERSIZE (3)
   - CURLOPT_WRITEFUNCTION (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -70,11 +73,9 @@ and it allows for better error checking.
 
 # DEFAULT
 
-The default internal read callback is fread().
+fread(3)
 
-# PROTOCOLS
-
-This is used for all protocols when doing uploads.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -113,10 +114,12 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 CURL_READFUNC_PAUSE return code was added in 7.18.0 and CURL_READFUNC_ABORT
 was added in 7.12.1.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

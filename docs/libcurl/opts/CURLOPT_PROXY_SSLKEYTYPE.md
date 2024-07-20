@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_SSLKEYTYPE
 Section: 3
@@ -8,6 +8,13 @@ See-also:
   - CURLOPT_PROXY_SSLCERT (3)
   - CURLOPT_PROXY_SSLKEY (3)
   - CURLOPT_SSLKEYTYPE (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - BearSSL
+  - wolfSSL
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -32,9 +39,7 @@ the format of your private key. Supported formats are "PEM", "DER" and "ENG".
 The application does not have to keep the string around after setting this
 option.
 
-# PROTOCOLS
-
-Used with HTTPS proxy
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,9 +61,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.52.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

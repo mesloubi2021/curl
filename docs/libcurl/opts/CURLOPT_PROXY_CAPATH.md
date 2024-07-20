@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_CAPATH
 Section: 3
@@ -10,6 +10,13 @@ See-also:
   - CURLOPT_PROXY_CAINFO (3)
   - CURLOPT_PROXY_SSL_VERIFYHOST (3)
   - CURLOPT_STDERR (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+  - mbedTLS
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -41,9 +48,7 @@ The default value for this can be figured out with CURLINFO_CAPATH(3).
 
 NULL
 
-# PROTOCOLS
-
-Everything used over an HTTPS proxy
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,12 +68,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.52.0
-
-This option is supported by the OpenSSL, GnuTLS, and mbedTLS (since 7.56.0)
-backends.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

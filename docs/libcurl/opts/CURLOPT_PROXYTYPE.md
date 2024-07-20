@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXYTYPE
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_PROXY (3)
   - CURLOPT_PROXYPORT (3)
+Protocol:
+  - All
+Added-in: 7.10
 ---
 
 # NAME
@@ -61,6 +64,8 @@ SOCKS5 Proxy.
 
 SOCKS5 Proxy. Proxy resolves URL hostname.
 
+##
+
 Often it is more convenient to specify the proxy type with the scheme part of
 the CURLOPT_PROXY(3) string.
 
@@ -68,9 +73,7 @@ the CURLOPT_PROXY(3) string.
 
 CURLPROXY_HTTP
 
-# PROTOCOLS
-
-Most
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -90,9 +93,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

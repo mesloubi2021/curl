@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PRIVATE
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_PRIVATE (3)
   - CURLOPT_STDERR (3)
   - CURLOPT_VERBOSE (3)
+Protocol:
+  - All
+Added-in: 7.10.3
 ---
 
 # NAME
@@ -33,9 +36,7 @@ never does anything with this data.
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.10.3
+# %AVAILABILITY%
 
 # RETURN VALUE
 

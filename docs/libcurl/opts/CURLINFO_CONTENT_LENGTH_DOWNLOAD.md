@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_CONTENT_LENGTH_DOWNLOAD
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLINFO_CONTENT_LENGTH_UPLOAD (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - All
+Added-in: 7.6.1
 ---
 
 # NAME
@@ -32,9 +35,7 @@ is the value read from the Content-Length: field. Since 7.19.4, this returns
 CURLINFO_CONTENT_LENGTH_DOWNLOAD_T(3) is a newer replacement that returns a more
 sensible variable type.
 
-# PROTOCOLS
-
-HTTP(S)
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +62,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-Added in 7.6.1. Deprecated since 7.55.0.
+Deprecated since 7.55.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

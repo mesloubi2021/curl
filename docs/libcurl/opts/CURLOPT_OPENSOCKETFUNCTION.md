@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_OPENSOCKETFUNCTION
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_CLOSESOCKETFUNCTION (3)
   - CURLOPT_OPENSOCKETFUNCTION (3)
   - CURLOPT_SOCKOPTFUNCTION (3)
+Protocol:
+  - All
+Added-in: 7.17.1
 ---
 
 # NAME
@@ -68,14 +71,12 @@ CURLOPT_SOCKOPTFUNCTION(3) to signal that it already is connected.
 
 # DEFAULT
 
-The default behavior is the equivalent of this:
+The equivalent of this:
 ~~~c
    return socket(addr->family, addr->socktype, addr->protocol);
 ~~~
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -123,9 +124,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.17.1.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

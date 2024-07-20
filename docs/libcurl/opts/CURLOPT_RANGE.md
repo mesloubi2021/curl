@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_RANGE
 Section: 3
@@ -9,6 +9,13 @@ See-also:
   - CURLOPT_MAXFILESIZE_LARGE (3)
   - CURLOPT_MAX_RECV_SPEED_LARGE (3)
   - CURLOPT_RESUME_FROM (3)
+Protocol:
+  - HTTP
+  - FTP
+  - FILE
+  - RTSP
+  - SFTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -52,9 +59,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-HTTP, FTP, FILE, RTSP and SFTP.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -74,9 +79,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 FILE since 7.18.0, RTSP since 7.20.0
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

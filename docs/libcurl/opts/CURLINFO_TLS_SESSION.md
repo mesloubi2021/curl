@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_TLS_SESSION
 Section: 3
@@ -8,6 +8,12 @@ See-also:
   - CURLINFO_TLS_SSL_PTR (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+Added-in: 7.34.0
 ---
 
 # NAME
@@ -42,9 +48,7 @@ function *SSL_get_SSL_CTX(3)*. Therefore unless you need compatibility
 with older versions of libcurl use CURLINFO_TLS_SSL_PTR(3). Refer to
 that document for more information.
 
-# PROTOCOLS
-
-All TLS-based
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -65,10 +69,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-Added in 7.34.0. Deprecated since 7.48.0 and supported OpenSSL, GnuTLS, and
-NSS only up until this version was released.
+Deprecated since 7.48.0
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXYAUTH
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - CURLOPT_PROXYPORT (3)
   - CURLOPT_PROXYTYPE (3)
   - CURLOPT_PROXYUSERPWD (3)
+Protocol:
+  - All
+Added-in: 7.10.7
 ---
 
 # NAME
@@ -41,9 +44,7 @@ CURLOPT_HTTPAUTH(3) man page.
 
 CURLAUTH_BASIC
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -66,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.10.7
+# %AVAILABILITY%
 
 # RETURN VALUE
 

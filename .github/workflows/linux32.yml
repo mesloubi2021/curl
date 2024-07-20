@@ -44,7 +44,7 @@ concurrency:
 permissions: {}
 
 env:
-  MAKEFLAGS: -j 3
+  MAKEFLAGS: -j 5
 
 jobs:
   linux-i686:
@@ -61,18 +61,19 @@ jobs:
 
     steps:
       - run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo dpkg --add-architecture i386
           sudo apt-get update -y
           sudo apt-get install -y --no-install-suggests --no-install-recommends libtool autoconf automake pkg-config stunnel4 ${{ matrix.build.install_packages }}
           sudo python3 -m pip install impacket
         name: 'install prereqs'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - run: autoreconf -fi
         name: 'autoreconf'
 
-      - run: ./configure --enable-warnings --enable-werror ${{ matrix.build.configure }}
+      - run: ./configure --disable-dependency-tracking --enable-warnings --enable-werror ${{ matrix.build.configure }}
         name: 'configure'
 
       - run: make V=1

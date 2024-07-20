@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_MAX_SEND_SPEED_LARGE
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_LOW_SPEED_LIMIT (3)
   - CURLOPT_MAX_RECV_SPEED_LARGE (3)
+Protocol:
+  - All
+Added-in: 7.15.5
 ---
 
 # NAME
@@ -42,9 +45,7 @@ This option does not affect transfer speeds done with FILE:// URLs.
 
 0, disabled
 
-# PROTOCOLS
-
-All except file://
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.15.5
+# %AVAILABILITY%
 
 # RETURN VALUE
 

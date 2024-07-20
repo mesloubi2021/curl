@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_DOH_URL
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_DNS_CACHE_TIMEOUT (3)
   - CURLOPT_RESOLVE (3)
   - CURLOPT_VERBOSE (3)
+Protocol:
+  - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -61,12 +64,9 @@ CURLOPT_FTPPORT(3), a proxy type set to **CURLPROXY_SOCKS4** or
 
 # DEFAULT
 
-NULL - there is no default DoH URL. If this option is not set, libcurl uses
-the default name resolver.
+NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -82,9 +82,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

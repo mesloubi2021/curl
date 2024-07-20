@@ -4,7 +4,7 @@ SPDX-License-Identifier: curl
 Long: styled-output
 Help: Enable styled output for HTTP headers
 Added: 7.61.0
-Category: verbose
+Category: verbose global
 Multi: boolean
 Scope: global
 See-also:
@@ -16,7 +16,7 @@ Example:
 
 # `--styled-output`
 
-Enables the automatic use of bold font styles when writing HTTP headers to the
+Enable automatic use of bold font styles when writing HTTP headers to the
 terminal. Use --no-styled-output to switch them off.
 
 Styled output requires a terminal that supports bold fonts. This feature is

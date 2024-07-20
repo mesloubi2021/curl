@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PREQUOTE
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_POSTQUOTE (3)
   - CURLOPT_QUOTE (3)
+Protocol:
+  - FTP
+Added-in: 7.9.5
 ---
 
 # NAME
@@ -40,9 +43,7 @@ this option does not.
 
 NULL
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -67,9 +68,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Along with the protocol support
+# %AVAILABILITY%
 
 # RETURN VALUE
 

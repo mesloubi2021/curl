@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_RTSP_CLIENT_CSEQ
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLINFO_RTSP_SERVER_CSEQ (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - RTSP
+Added-in: 7.20.0
 ---
 
 # NAME
@@ -29,9 +32,7 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_RTSP_CLIENT_CSEQ,
 Pass a pointer to a long to receive the next CSeq that is expected to be used
 by the application.
 
-# PROTOCOLS
-
-RTSP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -52,9 +53,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.20.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

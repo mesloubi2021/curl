@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PASSWORD
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_PROXYAUTH (3)
   - CURLOPT_USERNAME (3)
   - CURLOPT_USERPWD (3)
+Protocol:
+  - All
+Added-in: 7.19.1
 ---
 
 # NAME
@@ -38,9 +41,7 @@ option.
 
 blank
 
-# PROTOCOLS
-
-Most
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +62,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.19.1
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_APPEND
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_DIRLISTONLY (3)
   - CURLOPT_RESUME_FROM (3)
   - CURLOPT_UPLOAD (3)
+Protocol:
+  - FTP
+Added-in: 7.17.0
 ---
 
 # NAME
@@ -31,9 +34,7 @@ instead of overwrite it. This is only useful when uploading to an FTP site.
 
 0 (disabled)
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -52,9 +53,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 This option was known as CURLOPT_FTPAPPEND up to 7.16.4
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

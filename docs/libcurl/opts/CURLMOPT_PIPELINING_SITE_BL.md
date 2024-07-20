@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLMOPT_PIPELINING_SITE_BL
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLMOPT_PIPELINING (3)
   - CURLMOPT_PIPELINING_SERVER_BL (3)
+Protocol:
+  - HTTP
+Added-in: 7.30.0
 ---
 
 # NAME
@@ -34,11 +37,9 @@ Pass a NULL pointer to clear the block list.
 
 # DEFAULT
 
-The default value is NULL, which means that there is no block list.
+NULL, which means that there is no block list.
 
-# PROTOCOLS
-
-HTTP(S)
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +58,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.30.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

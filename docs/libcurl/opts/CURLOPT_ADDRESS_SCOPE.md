@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_ADDRESS_SCOPE
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_DEBUGFUNCTION (3)
   - CURLOPT_STDERR (3)
+Protocol:
+  - All
+Added-in: 7.19.0
 ---
 
 # NAME
@@ -29,9 +32,7 @@ Pass a long specifying the scope id value to use when connecting to IPv6 address
 
 0
 
-# PROTOCOLS
-
-All, when using IPv6
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -53,9 +54,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.19.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

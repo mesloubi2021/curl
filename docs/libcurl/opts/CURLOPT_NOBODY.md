@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_NOBODY
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - CURLOPT_POSTFIELDS (3)
   - CURLOPT_REQUEST_TARGET (3)
   - CURLOPT_UPLOAD (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -47,9 +50,7 @@ URL you request).
 
 0, the body is transferred
 
-# PROTOCOLS
-
-Most
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -69,9 +70,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_multi_get_handles
 Section: 3
@@ -9,11 +9,14 @@ See-also:
   - curl_multi_cleanup (3)
   - curl_multi_init (3)
   - curl_multi_remove_handle (3)
+Protocol:
+  - All
+Added-in: 8.4.0
 ---
 
 # NAME
 
-curl_multi_get_handles - returns all added easy handles
+curl_multi_get_handles - return all added easy handles
 
 # SYNOPSIS
 
@@ -39,6 +42,8 @@ are out of sync.
 The order of the easy handles within the array is not guaranteed.
 
 The returned array must be freed with a call to curl_free(3) after use.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -68,9 +73,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 8.4.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,7 +1,7 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
-Title: libcurl
+Title: libcurl-url
 Section: 3
 Source: libcurl
 See-also:
@@ -12,6 +12,9 @@ See-also:
   - curl_url_get (3)
   - curl_url_set (3)
   - curl_url_strerror (3)
+Protocol:
+  - All
+Added-in: 7.62.0
 ---
 
 # NAME
@@ -24,7 +27,7 @@ The URL interface provides functions for parsing and generating URLs.
 
 # INCLUDE
 
-You still only include <curl/curl.h> in your code.
+You still only include \<curl/curl.h\> in your code.
 
 # CREATE
 
@@ -154,9 +157,7 @@ Now the URL looks like
   https://example.com/?shoes=2&hat=1&candy=N%26N
 ~~~
 
-# AVAILABILITY
-
-The URL API was introduced in libcurl 7.62.0.
+# NOTES
 
 A URL with a literal IPv6 address can be parsed even when IPv6 support is not
 enabled.

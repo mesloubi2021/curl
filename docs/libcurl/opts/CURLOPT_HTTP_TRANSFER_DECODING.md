@@ -1,12 +1,15 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_HTTP_TRANSFER_DECODING
 Section: 3
 Source: libcurl
+Protocol:
+  - HTTP
 See-also:
   - CURLOPT_ACCEPT_ENCODING (3)
   - CURLOPT_HTTP_CONTENT_DECODING (3)
+Added-in: 7.16.2
 ---
 
 # NAME
@@ -28,13 +31,16 @@ Pass a long to tell libcurl how to act on transfer decoding. If set to zero,
 transfer decoding is disabled, if set to 1 it is enabled (default). libcurl
 does chunked transfer decoding by default unless this option is set to zero.
 
+# NOTES
+
+This option does not work with the hyper backend as that always has transfer
+decoding enabled.
+
 # DEFAULT
 
 1
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -51,10 +57,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.16.2 Does not work with the hyper backend (it always has transfer
-decoding enabled).
+# %AVAILABILITY%
 
 # RETURN VALUE
 

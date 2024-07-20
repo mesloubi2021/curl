@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLMOPT_TIMERFUNCTION
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLMOPT_SOCKETFUNCTION (3)
   - CURLMOPT_TIMERDATA (3)
+Protocol:
+  - All
+Added-in: 7.16.0
 ---
 
 # NAME
@@ -61,9 +64,7 @@ callback with a zero timeout...
 
 NULL
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -94,9 +95,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.16.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

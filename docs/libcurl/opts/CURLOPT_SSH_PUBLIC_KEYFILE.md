@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSH_PUBLIC_KEYFILE
 Section: 3
@@ -7,6 +7,10 @@ Source: libcurl
 See-also:
   - CURLOPT_SSH_AUTH_TYPES (3)
   - CURLOPT_SSH_PRIVATE_KEYFILE (3)
+Protocol:
+  - SFTP
+  - SCP
+Added-in: 7.16.1
 ---
 
 # NAME
@@ -40,9 +44,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-SFTP and SCP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +63,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 The "" trick was added in 7.26.0
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

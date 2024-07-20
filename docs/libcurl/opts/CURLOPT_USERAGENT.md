@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_USERAGENT
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_HTTPHEADER (3)
   - CURLOPT_REFERER (3)
   - CURLOPT_REQUEST_TARGET (3)
+Protocol:
+  - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -34,11 +37,9 @@ option.
 
 # DEFAULT
 
-NULL, no User-Agent: header is used by default.
+NULL, no User-Agent: header is used.
 
-# PROTOCOLS
-
-HTTP, HTTPS
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,9 +57,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-As long as HTTP is supported
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,12 +1,15 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_FTP_USE_EPSV
 Section: 3
 Source: libcurl
+Protocol:
+  - FTP
 See-also:
   - CURLOPT_FTPPORT (3)
   - CURLOPT_FTP_USE_EPRT (3)
+Added-in: 7.9.2
 ---
 
 # NAME
@@ -39,9 +42,7 @@ If the server is an IPv6 host, this option has no effect.
 
 1
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -64,9 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Along with FTP
+# %AVAILABILITY%
 
 # RETURN VALUE
 

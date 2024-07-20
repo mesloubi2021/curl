@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_TLS13_CIPHERS
 Section: 3
@@ -10,6 +10,12 @@ See-also:
   - CURLOPT_SSLVERSION (3)
   - CURLOPT_SSL_CIPHER_LIST (3)
   - CURLOPT_TLS13_CIPHERS (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - Schannel
+Added-in: 7.61.0
 ---
 
 # NAME
@@ -45,11 +51,9 @@ option.
 
 # DEFAULT
 
-NULL, use internal default
+NULL, use internal built-in list
 
-# PROTOCOLS
-
-All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -68,10 +72,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.61.0.
-Available when built with OpenSSL >= 1.1.1.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

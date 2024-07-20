@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SASL_AUTHZID
 Section: 3
@@ -8,6 +8,9 @@ See-also:
   - CURLOPT_PASSWORD (3)
   - CURLOPT_USERNAME (3)
   - CURLOPT_USERPWD (3)
+Protocol:
+  - IMAP
+Added-in: 7.66.0
 ---
 
 # NAME
@@ -41,9 +44,7 @@ access to, or a shared mailbox for example.
 
 blank
 
-# PROTOCOLS
-
-IMAP, LDAP, POP3 and SMTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.66.0. Support for OpenLDAP added in 7.82.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

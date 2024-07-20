@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_url
 Section: 3
@@ -11,11 +11,14 @@ See-also:
   - curl_url_get (3)
   - curl_url_set (3)
   - curl_url_strerror (3)
+Protocol:
+  - All
+Added-in: 7.62.0
 ---
 
 # NAME
 
-curl_url - returns a new URL handle
+curl_url - create a URL handle
 
 # SYNOPSIS
 
@@ -34,6 +37,8 @@ This is a handle to a URL object that holds or can hold URL components for a
 single URL. When the object is first created, there is of course no components
 stored. They are then set in the object with the curl_url_set(3)
 function.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -55,9 +60,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.62.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

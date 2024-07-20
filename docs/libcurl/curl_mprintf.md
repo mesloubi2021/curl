@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_printf
 Section: 3
@@ -9,11 +9,14 @@ See-also:
   - printf (3)
   - sprintf (3)
   - vprintf (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
 
-curl_maprintf, curl_mfprintf, curl_mprintf, curl_msnprintf, curl_msprintf
+curl_maprintf, curl_mfprintf, curl_mprintf, curl_msnprintf, curl_msprintf,
 curl_mvaprintf, curl_mvfprintf, curl_mvprintf, curl_mvsnprintf,
 curl_mvsprintf - formatted output conversion
 
@@ -261,6 +264,8 @@ by the corresponding argument.
 
 A '%' symbol is written. No argument is converted.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -273,10 +278,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-These functions might be removed from the public libcurl API in the future. Do
-not use them in new programs or projects.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

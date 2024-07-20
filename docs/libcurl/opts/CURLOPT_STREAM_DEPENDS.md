@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_STREAM_DEPENDS
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_HTTP_VERSION (3)
   - CURLOPT_STREAM_DEPENDS_E (3)
   - CURLOPT_STREAM_WEIGHT (3)
+Protocol:
+  - HTTP
+Added-in: 7.46.0
 ---
 
 # NAME
@@ -45,9 +48,7 @@ option to have an actual effect.
 
 NULL
 
-# PROTOCOLS
-
-HTTP/2
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -68,9 +69,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.46.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_MAXAGE_CONN
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_FRESH_CONNECT (3)
   - CURLOPT_MAXLIFETIME_CONN (3)
   - CURLOPT_TIMEOUT (3)
+Protocol:
+  - All
+Added-in: 7.65.0
 ---
 
 # NAME
@@ -39,11 +42,9 @@ cache that is older than this set *age*, it is closed instead.
 
 # DEFAULT
 
-Default maximum age is set to 118 seconds.
+118 seconds
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -62,9 +63,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.65.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

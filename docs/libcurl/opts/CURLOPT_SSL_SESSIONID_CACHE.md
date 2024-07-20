@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSL_SESSIONID_CACHE
 Section: 3
@@ -9,6 +9,11 @@ See-also:
   - CURLOPT_MAXAGE_CONN (3)
   - CURLOPT_MAXLIFETIME_CONN (3)
   - CURLOPT_SSLVERSION (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - All
+Added-in: 7.16.0
 ---
 
 # NAME
@@ -36,9 +41,7 @@ wild that may require you to disable this in order for you to succeed.
 
 1
 
-# PROTOCOLS
-
-All TLS-based
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +60,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.16.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_CRLFILE
 Section: 3
@@ -9,6 +9,13 @@ See-also:
   - CURLOPT_PROXY_SSL_VERIFYPEER (3)
   - CURLOPT_SSL_VERIFYHOST (3)
   - CURLOPT_SSL_VERIFYPEER (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - GnuTLS
+  - mbedTLS
+  - OpenSSL
+Added-in: 7.52.0
 ---
 
 # NAME
@@ -52,9 +59,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-Used with HTTPS proxy.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -73,9 +78,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.52.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

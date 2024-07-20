@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SERVER_RESPONSE_TIMEOUT_MS
 Section: 3
@@ -8,6 +8,14 @@ See-also:
   - CURLOPT_CONNECTTIMEOUT (3)
   - CURLOPT_LOW_SPEED_LIMIT (3)
   - CURLOPT_TIMEOUT (3)
+Protocol:
+  - FTP
+  - IMAP
+  - POP3
+  - SMTP
+  - SFTP
+  - SCP
+Added-in: 8.6.0
 ---
 
 # NAME
@@ -41,9 +49,7 @@ This is the millisecond version of CURLOPT_SERVER_RESPONSE_TIMEOUT(3).
 
 None
 
-# PROTOCOLS
-
-FTP, IMAP, POP3, SMTP, and SSH
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +69,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 8.6.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

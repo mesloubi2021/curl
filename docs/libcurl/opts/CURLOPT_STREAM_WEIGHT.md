@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_STREAM_WEIGHT
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_PIPEWAIT (3)
   - CURLOPT_STREAM_DEPENDS (3)
   - CURLOPT_STREAM_DEPENDS_E (3)
+Protocol:
+  - HTTP
+Added-in: 7.46.0
 ---
 
 # NAME
@@ -45,12 +48,9 @@ streams).
 
 # DEFAULT
 
-If nothing is set, the HTTP/2 protocol itself uses its own default which is
-16.
+16
 
-# PROTOCOLS
-
-HTTP/2
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -72,9 +72,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.46.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

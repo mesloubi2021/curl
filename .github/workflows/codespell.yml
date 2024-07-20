@@ -20,15 +20,18 @@ on:
       - 'src/**'
       - 'include/**'
 
+permissions: {}
+
 jobs:
   codespell:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - name: install
         run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update
           sudo apt-get install codespell
 

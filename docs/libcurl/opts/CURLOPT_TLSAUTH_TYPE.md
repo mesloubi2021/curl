@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_TLSAUTH_TYPE
 Section: 3
@@ -7,6 +7,12 @@ Source: libcurl
 See-also:
   - CURLOPT_TLSAUTH_PASSWORD (3)
   - CURLOPT_TLSAUTH_USERNAME (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - GnuTLS
+Added-in: 7.21.4
 ---
 
 # NAME
@@ -31,11 +37,7 @@ the method of the TLS authentication. Supported method is "SRP".
 TLS-SRP authentication. Secure Remote Password authentication for TLS is
 defined in RFC 5054 and provides mutual authentication if both sides have a
 shared secret. To use TLS-SRP, you must also set the
-CURLOPT_TLSAUTH_USERNAME(3) and CURLOPT_TLSAUTH_PASSWORD(3)
-options.
-
-The application does not have to keep the string around after setting this
-option.
+CURLOPT_TLSAUTH_USERNAME(3) and CURLOPT_TLSAUTH_PASSWORD(3) options.
 
 TLS SRP does not work with TLS 1.3.
 
@@ -43,9 +45,7 @@ TLS SRP does not work with TLS 1.3.
 
 blank
 
-# PROTOCOLS
-
-All TLS-based protocols
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -65,10 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-You need to build libcurl with GnuTLS or OpenSSL with TLS-SRP support for this
-to work. Added in 7.21.4
+# %AVAILABILITY%
 
 # RETURN VALUE
 

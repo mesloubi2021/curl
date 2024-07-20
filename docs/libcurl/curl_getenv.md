@@ -1,11 +1,14 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_getenv
 Section: 3
 Source: libcurl
 See-also:
   - getenv (3C)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -28,6 +31,8 @@ systems libcurl builds on (including win32).
 
 You must curl_free(3) the returned string when you are done with it.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -41,9 +46,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_KRBLEVEL
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_KRBLEVEL (3)
   - CURLOPT_USE_SSL (3)
+Protocol:
+  - FTP
+Added-in: 7.16.4
 ---
 
 # NAME
@@ -36,9 +39,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,9 +57,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 This option was known as CURLOPT_KRB4LEVEL up to 7.16.3
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXYPORT
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_PORT (3)
   - CURLOPT_PROXY (3)
   - CURLOPT_PROXYTYPE (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -28,19 +31,21 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXYPORT, long port);
 We discourage use of this option.
 
 Pass a long with this option to set the proxy port to connect to unless it is
-specified in the proxy string CURLOPT_PROXY(3) or uses 443 for https
-proxies and 1080 for all others as default.
+specified in the proxy string CURLOPT_PROXY(3) or uses 443 for https proxies
+and 1080 for all others as default.
+
+Disabling this option, setting it to zero, makes it not specified which makes
+libcurl use the default proxy port number or the port number specified in the
+proxy URL string.
 
 While this accepts a 'long', the port number is 16 bit so it cannot be larger
 than 65535.
 
 # DEFAULT
 
-0, not specified which makes it use the default port
+0
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -59,9 +64,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

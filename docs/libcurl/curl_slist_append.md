@@ -1,11 +1,14 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_slist_append
 Section: 3
 Source: libcurl
 See-also:
   - curl_slist_free_all (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -31,6 +34,8 @@ returns. curl_slist_append(3) copies the string.
 
 The list should be freed again (after usage) with
 curl_slist_free_all(3).
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +68,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

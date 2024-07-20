@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_NOPROGRESS
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_PROGRESSFUNCTION (3)
   - CURLOPT_VERBOSE (3)
   - CURLOPT_XFERINFOFUNCTION (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
@@ -34,9 +37,7 @@ getting called.
 
 1, meaning it normally runs without a progress meter.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -56,9 +57,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

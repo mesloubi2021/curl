@@ -1,12 +1,15 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_FTPPORT
 Section: 3
 Source: libcurl
+Protocol:
+  - FTP
 See-also:
   - CURLOPT_FTP_USE_EPRT (3)
   - CURLOPT_FTP_USE_EPSV (3)
+Added-in: 7.1
 ---
 
 # NAME
@@ -68,9 +71,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -89,9 +90,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Port range support was added in 7.19.5
+# %AVAILABILITY%
 
 # RETURN VALUE
 

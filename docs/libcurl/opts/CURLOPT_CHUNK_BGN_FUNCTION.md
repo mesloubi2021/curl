@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_CHUNK_BGN_FUNCTION
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_CHUNK_END_FUNCTION (3)
   - CURLOPT_WILDCARDMATCH (3)
+Protocol:
+  - FTP
+Added-in: 7.21.0
 ---
 
 # NAME
@@ -81,9 +84,7 @@ Return *CURL_CHUNK_BGN_FUNC_OK* if everything is fine,
 
 NULL
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -143,9 +144,7 @@ int main()
 }
 ~~~
 
-# AVAILABILITY
-
-This was added in 7.21.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

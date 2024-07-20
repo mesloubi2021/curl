@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SASL_IR
 Section: 3
@@ -8,6 +8,10 @@ See-also:
   - CURLOPT_MAIL_AUTH (3)
   - CURLOPT_MAIL_FROM (3)
   - CURLOPT_SASL_AUTHZID (3)
+Protocol:
+  - SMTP
+  - IMAP
+Added-in: 7.31.0
 ---
 
 # NAME
@@ -43,9 +47,7 @@ SASL-IR CAPABILITY.
 
 0
 
-# PROTOCOLS
-
-IMAP, POP3 and SMTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +65,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.31.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

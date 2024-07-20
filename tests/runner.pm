@@ -648,21 +648,21 @@ sub singletest_setenv {
     my @setenv = getpart("client", "setenv");
     foreach my $s (@setenv) {
         chomp $s;
-        if($s =~ /([^=]*)=(.*)/) {
+        if($s =~ /([^=]*)(.*)/) {
             my ($var, $content) = ($1, $2);
             # remember current setting, to restore it once test runs
             $oldenv{$var} = ($ENV{$var})?"$ENV{$var}":'notset';
-            # set new value
-            if(!$content) {
-                delete $ENV{$var} if($ENV{$var});
-            }
-            else {
+
+            if($content =~ /^=(.*)/) {
+                # assign it
+                $content = $1;
+
                 if($var =~ /^LD_PRELOAD/) {
                     if(exe_ext('TOOL') && (exe_ext('TOOL') eq '.exe')) {
                         logmsg "Skipping LD_PRELOAD due to lack of OS support\n" if($verbose);
                         next;
                     }
-                    if($feature{"debug"} || !$has_shared) {
+                    if($feature{"Debug"} || !$has_shared) {
                         logmsg "Skipping LD_PRELOAD due to no release shared build\n" if($verbose);
                         next;
                     }
@@ -670,6 +670,11 @@ sub singletest_setenv {
                 $ENV{$var} = "$content";
                 logmsg "setenv $var = $content\n" if($verbose);
             }
+            else {
+                # remove it
+                delete $ENV{$var} if($ENV{$var});
+            }
+
         }
     }
     if($proxy_address) {
@@ -852,6 +857,7 @@ sub singletest_run {
         else {
             $cmdargs .= "--trace-ascii $LOGDIR/trace$testnum ";
         }
+        $cmdargs .= "--trace-config all ";
         $cmdargs .= "--trace-time ";
         if($run_event_based) {
             $cmdargs .= "--test-event ";
@@ -915,6 +921,9 @@ sub singletest_run {
 
     if(!$tool) {
         $CMDLINE=shell_quote($CURL);
+        if((!$cmdhash{'option'}) || ($cmdhash{'option'} !~ /no-q/)) {
+            $CMDLINE .= " -q";
+        }
     }
 
     if(use_valgrind() && !$disablevalgrind) {

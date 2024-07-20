@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_HEADERFUNCTION
 Section: 3
@@ -8,6 +8,13 @@ See-also:
   - CURLOPT_HEADERDATA (3)
   - CURLOPT_WRITEFUNCTION (3)
   - curl_easy_header (3)
+Protocol:
+  - HTTP
+  - FTP
+  - POP3
+  - IMAP
+  - SMTP
+Added-in: 7.7.2
 ---
 
 # NAME
@@ -94,10 +101,7 @@ although strictly they are just continuations of the previous lines.
 
 Nothing.
 
-# PROTOCOLS
-
-Used for all protocols with headers or meta-data concept: HTTP, FTP, POP3,
-IMAP, SMTP and more.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -123,9 +127,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Always
+# %AVAILABILITY%
 
 # RETURN VALUE
 

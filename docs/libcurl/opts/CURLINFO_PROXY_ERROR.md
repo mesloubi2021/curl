@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_PROXY_ERROR
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
   - libcurl-errors (3)
+Protocol:
+  - All
+Added-in: 7.73.0
 ---
 
 # NAME
@@ -69,9 +72,7 @@ transfer returned a **CURLE_PROXY** error. That error code matches the
 
 The error code is zero (**CURLPX_OK**) if no response code was available.
 
-# PROTOCOLS
-
-All that can be done over SOCKS
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -96,9 +97,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.73.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_unescape
 Section: 3
@@ -9,11 +9,14 @@ See-also:
   - curl_easy_escape (3)
   - curl_easy_unescape (3)
   - curl_free (3)
+Protocol:
+  - All
+Added-in: 7.1
 ---
 
 # NAME
 
-curl_unescape - URL decodes the given string
+curl_unescape - URL decode a string
 
 # SYNOPSIS
 
@@ -25,7 +28,7 @@ char *curl_unescape(const char *input, int length);
 
 # DESCRIPTION
 
-Obsolete function. Use curl_easy_unescape(3) instead.
+Deprecated. Use curl_easy_unescape(3) instead.
 
 This function converts the URL encoded string **input** to a "plain string"
 and return that as a new allocated string. All input characters that are URL
@@ -36,6 +39,8 @@ If the **length** argument is set to 0, curl_unescape(3) calls
 strlen() on **input** to find out the size.
 
 You must curl_free(3) the returned string when you are done with it.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -55,10 +60,12 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
 Since 7.15.4, curl_easy_unescape(3) should be used. This function might
 be removed in a future release.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

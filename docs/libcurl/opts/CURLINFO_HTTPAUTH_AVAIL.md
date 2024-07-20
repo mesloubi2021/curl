@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_HTTPAUTH_AVAIL
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_HTTPAUTH (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - HTTP
+Added-in: 7.10.8
 ---
 
 # NAME
@@ -27,12 +30,9 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_HTTPAUTH_AVAIL, long *authp);
 
 Pass a pointer to a long to receive a bitmask indicating the authentication
 method(s) available according to the previous response. The meaning of the
-bits is explained in the CURLOPT_HTTPAUTH(3) option for
-curl_easy_setopt(3).
+bits is explained in the CURLOPT_HTTPAUTH(3) option for curl_easy_setopt(3).
 
-# PROTOCOLS
-
-HTTP(S)
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -67,10 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added RFC 2617 in 7.10.8
-Added RFC 7616 in 7.57.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

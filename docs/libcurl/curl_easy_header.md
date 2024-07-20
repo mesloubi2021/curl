@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_easy_header
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - curl_easy_nextheader (3)
   - curl_easy_perform (3)
   - libcurl-errors (3)
+Protocol:
+  - HTTP
+Added-in: 7.83.0
 ---
 
 # NAME
@@ -134,6 +137,8 @@ response that might happen before the "real" response.
 
 The header is an HTTP/2 or HTTP/3 pseudo header
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -151,9 +156,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.83.0. Officially supported since 7.84.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSLENGINE
 Section: 3
@@ -8,6 +8,11 @@ See-also:
   - CURLINFO_SSL_ENGINES (3)
   - CURLOPT_SSLENGINE_DEFAULT (3)
   - CURLOPT_SSLKEY (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+Added-in: 7.9.3
 ---
 
 # NAME
@@ -34,9 +39,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -54,9 +57,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Only if the SSL backend is OpenSSL built with engine support.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_ws_send
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - curl_easy_setopt (3)
   - curl_ws_recv (3)
   - libcurl-ws (3)
+Protocol:
+  - WS
+Added-in: 7.86.0
 ---
 
 # NAME
@@ -87,6 +90,8 @@ fragment like this, the *fragsize* must be provided with the total
 expected fragment size in the first call and it needs to be zero in subsequent
 calls.
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -109,12 +114,10 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.86.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 
 *CURLE_OK* (zero) means that the data was sent properly, non-zero means an
-error occurred as *<curl/curl.h>* defines. See the libcurl-errors(3)
-man page for the full list with descriptions.
+error occurred as *\<curl/curl.h\>* defines. See the libcurl-errors(3) man
+page for the full list with descriptions.

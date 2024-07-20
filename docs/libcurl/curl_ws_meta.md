@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_ws_meta
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - curl_ws_recv (3)
   - curl_ws_send (3)
   - libcurl-ws (3)
+Protocol:
+  - WS
+Added-in: 7.86.0
 ---
 
 # NAME
@@ -51,25 +54,24 @@ struct curl_ws_frame {
 };
 ~~~
 
-## age
+## `age`
 
 This field specify the age of this struct. It is always zero for now.
 
-## flags
+## `flags`
 
-This is a bitmask with individual bits set that describes the WebSocket
-data. See the list below.
+This is a bitmask with individual bits set that describes the WebSocket data.
+See the list below.
 
-## offset
+## `offset`
 
 When this frame is a continuation of fragment data already delivered, this is
 the offset into the final fragment where this piece belongs.
 
-## bytesleft
+## `bytesleft`
 
-If this is not a complete fragment, the *bytesleft* field informs about
-how many additional bytes are expected to arrive before this fragment is
-complete.
+If this is not a complete fragment, the *bytesleft* field informs about how
+many additional bytes are expected to arrive before this fragment is complete.
 
 # FLAGS
 
@@ -95,6 +97,8 @@ This transfer is now closed.
 ## CURLWS_PING
 
 This as an incoming ping message, that expects a pong response.
+
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -131,9 +135,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.86.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

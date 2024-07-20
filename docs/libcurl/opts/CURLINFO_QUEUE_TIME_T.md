@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLINFO_QUEUE_TIME_T
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLOPT_TIMEOUT (3)
   - curl_easy_getinfo (3)
   - curl_easy_setopt (3)
+Protocol:
+  - All
+Added-in: 8.6.0
 ---
 
 # NAME
@@ -33,9 +36,7 @@ connection etc due to set conditions and limits imposed by the application.
 
 See also the TIMES overview in the curl_easy_getinfo(3) man page.
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -61,9 +62,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 8.6.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

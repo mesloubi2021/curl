@@ -95,6 +95,7 @@ man_MANS =                                      \
   CURLINFO_TLS_SSL_PTR.3                        \
   CURLINFO_TOTAL_TIME.3                         \
   CURLINFO_TOTAL_TIME_T.3                       \
+  CURLINFO_USED_PROXY.3                         \
   CURLINFO_XFER_ID.3                            \
   CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE.3          \
   CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE.3        \
@@ -165,6 +166,7 @@ man_MANS =                                      \
   CURLOPT_DOH_SSL_VERIFYPEER.3                  \
   CURLOPT_DOH_SSL_VERIFYSTATUS.3                \
   CURLOPT_DOH_URL.3                             \
+  CURLOPT_ECH.3                                 \
   CURLOPT_EGDSOCKET.3                           \
   CURLOPT_ERRORBUFFER.3                         \
   CURLOPT_EXPECT_100_TIMEOUT_MS.3               \
@@ -382,6 +384,7 @@ man_MANS =                                      \
   CURLOPT_TCP_KEEPALIVE.3                       \
   CURLOPT_TCP_KEEPIDLE.3                        \
   CURLOPT_TCP_KEEPINTVL.3                       \
+  CURLOPT_TCP_KEEPCNT.3                         \
   CURLOPT_TCP_NODELAY.3                         \
   CURLOPT_TELNETOPTIONS.3                       \
   CURLOPT_TFTP_BLKSIZE.3                        \

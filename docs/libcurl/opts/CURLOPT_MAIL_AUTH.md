@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_MAIL_AUTH
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_MAIL_FROM (3)
   - CURLOPT_MAIL_RCPT (3)
+Protocol:
+  - SMTP
+Added-in: 7.25.0
 ---
 
 # NAME
@@ -34,10 +37,10 @@ server acting in such an environment. If the application is operating as such
 and the AUTH address is not known or is invalid, then an empty string should
 be used for this parameter.
 
-Unlike CURLOPT_MAIL_FROM(3) and CURLOPT_MAIL_RCPT(3), the address
-should not be specified within a pair of angled brackets (<>). However, if an
-empty string is used then a pair of brackets are sent by libcurl as required
-by RFC 2554.
+Unlike CURLOPT_MAIL_FROM(3) and CURLOPT_MAIL_RCPT(3), the address should not
+be specified within a pair of angled brackets (\<\>). However, if an empty
+string is used then a pair of brackets are sent by libcurl as required by RFC
+2554.
 
 The application does not have to keep the string around after setting this
 option.
@@ -46,9 +49,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-SMTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -66,9 +67,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.25.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,12 +1,15 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_FTPSSLAUTH
 Section: 3
 Source: libcurl
+Protocol:
+  - FTP
 See-also:
   - CURLOPT_FTP_SSL_CCC (3)
   - CURLOPT_USE_SSL (3)
+Added-in: 7.12.2
 ---
 
 # NAME
@@ -45,9 +48,7 @@ Try "AUTH TLS" first, and only if that fails try "AUTH SSL".
 
 CURLFTPAUTH_DEFAULT
 
-# PROTOCOLS
-
-FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -67,9 +68,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.12.2
+# %AVAILABILITY%
 
 # RETURN VALUE
 

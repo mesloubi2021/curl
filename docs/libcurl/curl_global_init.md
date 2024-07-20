@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: curl_global_init
 Section: 3
@@ -11,11 +11,14 @@ See-also:
   - curl_global_sslset (3)
   - curl_global_trace (3)
   - libcurl (3)
+Protocol:
+  - All
+Added-in: 7.8
 ---
 
 # NAME
 
-curl_global_init - Global libcurl initialization
+curl_global_init - global libcurl initialization
 
 # SYNOPSIS
 
@@ -42,16 +45,15 @@ In normal operation, you must specify CURL_GLOBAL_ALL. Do not use any other
 value unless you are familiar with it and mean to control internal operations
 of libcurl.
 
-This function is thread-safe since libcurl 7.84.0 if
-curl_version_info(3) has the CURL_VERSION_THREADSAFE feature bit set
-(most platforms).
+This function is thread-safe on most platforms. Then curl_version_info(3) has
+the `threadsafe` feature set (added in 7.84.0).
 
-If this is not thread-safe, you must not call this function when any other
-thread in the program (i.e. a thread sharing the same memory) is running.
-This does not just mean no other thread that is using libcurl. Because
-curl_global_init(3) calls functions of other libraries that are
-similarly thread unsafe, it could conflict with any other thread that uses
-these other libraries.
+If this is not thread-safe (the bit mentioned above is not set), you must not
+call this function when any other thread in the program (i.e. a thread sharing
+the same memory) is running. This does not just mean no other thread that is
+using libcurl. Because curl_global_init(3) calls functions of other libraries
+that are similarly thread unsafe, it could conflict with any other thread that
+uses these other libraries.
 
 If you are initializing libcurl from a Windows DLL you should not initialize
 it from *DllMain* or a static initializer because Windows holds the loader
@@ -108,6 +110,8 @@ Before 7.69.0: when this flag is set, curl acknowledges EINTR condition when
 connecting or when waiting for data. Otherwise, curl waits until full timeout
 elapses. (Added in 7.30.0)
 
+# %PROTOCOLS%
+
 # EXAMPLE
 
 ~~~c
@@ -121,9 +125,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.8
+# %AVAILABILITY%
 
 # RETURN VALUE
 

@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROTOCOLS_STR
 Section: 3
@@ -10,6 +10,9 @@ See-also:
   - CURLOPT_REDIR_PROTOCOLS_STR (3)
   - CURLOPT_URL (3)
   - curl_version_info (3)
+Protocol:
+  - All
+Added-in: 7.85.0
 ---
 
 # NAME
@@ -54,9 +57,7 @@ way to figure out the protocol used in a previous transfer.
 
 All protocols built-in
 
-# PROTOCOLS
-
-All
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -77,9 +78,7 @@ int main(int argc, char **argv)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.85.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

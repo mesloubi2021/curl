@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_SSH_AUTH_TYPES
 Section: 3
@@ -8,6 +8,10 @@ See-also:
   - CURLOPT_SSH_HOST_PUBLIC_KEY_MD5 (3)
   - CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256 (3)
   - CURLOPT_SSH_PUBLIC_KEYFILE (3)
+Protocol:
+  - SFTP
+  - SCP
+Added-in: 7.16.1
 ---
 
 # NAME
@@ -37,9 +41,7 @@ authentication.
 
 CURLSSH_AUTH_ANY (all available)
 
-# PROTOCOLS
-
-SFTP and SCP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -58,9 +60,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-CURLSSH_AUTH_HOST was added in 7.16.1, CURLSSH_AUTH_AGENT was added in 7.28.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

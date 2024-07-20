@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_IOCTLDATA
 Section: 3
@@ -7,6 +7,9 @@ Source: libcurl
 See-also:
   - CURLOPT_IOCTLFUNCTION (3)
   - CURLOPT_SEEKFUNCTION (3)
+Protocol:
+  - All
+Added-in: 7.12.3
 ---
 
 # NAME
@@ -28,11 +31,9 @@ argument in the ioctl callback set with CURLOPT_IOCTLFUNCTION(3).
 
 # DEFAULT
 
-By default, the value of this parameter is NULL.
+NULL
 
-# PROTOCOLS
-
-Used with HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -63,9 +64,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# DEPRECATED
 
-Added in 7.12.3. Deprecated since 7.18.0.
+Deprecated since 7.18.0.
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

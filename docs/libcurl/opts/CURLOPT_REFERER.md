@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_REFERER
 Section: 3
@@ -9,6 +9,9 @@ See-also:
   - CURLINFO_REFERER (3)
   - CURLOPT_HTTPHEADER (3)
   - CURLOPT_USERAGENT (3)
+Protocol:
+  - HTTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -36,9 +39,7 @@ option.
 
 NULL
 
-# PROTOCOLS
-
-HTTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -57,9 +58,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-If built with HTTP support
+# %AVAILABILITY%
 
 # RETURN VALUE
 

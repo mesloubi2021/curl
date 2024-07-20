@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_QUOTE
 Section: 3
@@ -9,6 +9,10 @@ See-also:
   - CURLOPT_DIRLISTONLY (3)
   - CURLOPT_POSTQUOTE (3)
   - CURLOPT_PREQUOTE (3)
+Protocol:
+  - FTP
+  - SFTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -57,7 +61,7 @@ path. e.g. rename with sftp using a quote command like this:
 ## atime date file
 
 The atime command sets the last access time of the file named by the file
-operand. The <date expression> can be all sorts of date strings, see the
+operand. The date expression can be all sorts of date strings, see the
 curl_getdate(3) man page for date expression details. (Added in 7.73.0)
 
 ## chgrp group file
@@ -89,7 +93,7 @@ The mkdir command creates the directory named by the directory_name operand.
 ## mtime date file
 
 The mtime command sets the last modification time of the file named by the
-file operand. The <date expression> can be all sorts of date strings, see the
+file operand. The date expression can be all sorts of date strings, see the
 curl_getdate(3) man page for date expression details. (Added in 7.73.0)
 
 ## pwd
@@ -124,9 +128,7 @@ See ln.
 
 NULL
 
-# PROTOCOLS
-
-SFTP and FTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -152,9 +154,11 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
+# HISTORY
 
 SFTP support added in 7.16.3. *-prefix for SFTP added in 7.24.0
+
+# %AVAILABILITY%
 
 # RETURN VALUE
 

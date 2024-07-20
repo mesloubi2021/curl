@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_PROXY_SSLCERT_BLOB
 Section: 3
@@ -9,6 +9,13 @@ See-also:
   - CURLOPT_PROXY_SSLCERTTYPE (3)
   - CURLOPT_PROXY_SSLKEY (3)
   - CURLOPT_SSLCERT_BLOB (3)
+Protocol:
+  - TLS
+TLS-backend:
+  - OpenSSL
+  - Schannel
+  - Secure Transport
+Added-in: 7.71.0
 ---
 
 # NAME
@@ -43,9 +50,7 @@ expects a filename as input.
 
 NULL
 
-# PROTOCOLS
-
-Used with HTTPS proxy
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -74,10 +79,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.71.0. This option is supported by the OpenSSL, Secure Transport and
-Schannel backends.
+# %AVAILABILITY%
 
 # RETURN VALUE
 

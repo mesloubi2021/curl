@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_MIMEPOST
 Section: 3
@@ -9,6 +9,11 @@ See-also:
   - CURLOPT_POSTFIELDS (3)
   - CURLOPT_PUT (3)
   - curl_mime_init (3)
+Protocol:
+  - HTTP
+  - SMTP
+  - IMAP
+Added-in: 7.56.0
 ---
 
 # NAME
@@ -39,9 +44,7 @@ When setting CURLOPT_MIMEPOST(3) to NULL, libcurl resets the request
 type for HTTP to the default to disable the POST. Typically that would mean it
 is reset to GET. Instead you should set a desired request method explicitly.
 
-# PROTOCOLS
-
-HTTP, SMTP, IMAP.
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -72,9 +75,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-Added in 7.56.0
+# %AVAILABILITY%
 
 # RETURN VALUE
 

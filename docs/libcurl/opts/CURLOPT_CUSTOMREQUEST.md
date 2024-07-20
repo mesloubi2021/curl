@@ -1,5 +1,5 @@
 ---
-c: Copyright (C) Daniel Stenberg, <daniel.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Title: CURLOPT_CUSTOMREQUEST
 Section: 3
@@ -9,6 +9,13 @@ See-also:
   - CURLOPT_HTTPHEADER (3)
   - CURLOPT_NOBODY (3)
   - CURLOPT_REQUEST_TARGET (3)
+Protocol:
+  - HTTP
+  - FTP
+  - IMAP
+  - POP3
+  - SMTP
+Added-in: 7.1
 ---
 
 # NAME
@@ -89,16 +96,11 @@ with CURLOPT_MAIL_RCPT(3), to specify an EXPN request. If the
 CURLOPT_NOBODY(3) option is specified then the request can be used to
 issue **NOOP** and **RSET** commands.
 
-The application does not have to keep the string around after setting this
-option.
-
 # DEFAULT
 
 NULL
 
-# PROTOCOLS
-
-HTTP, FTP, IMAP, POP3 and SMTP
+# %PROTOCOLS%
 
 # EXAMPLE
 
@@ -120,9 +122,7 @@ int main(void)
 }
 ~~~
 
-# AVAILABILITY
-
-IMAP is supported since 7.30.0, POP3 since 7.26.0 and SMTP since 7.34.0.
+# %AVAILABILITY%
 
 # RETURN VALUE
 
