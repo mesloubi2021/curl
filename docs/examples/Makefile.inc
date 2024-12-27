@@ -25,8 +25,10 @@
 # These are all libcurl example programs to be test compiled
 check_PROGRAMS = \
   10-at-a-time \
+  address-scope \
   altsvc \
   anyauthput \
+  block_ip \
   certinfo \
   chkspeed \
   connect-to \
@@ -76,7 +78,10 @@ check_PROGRAMS = \
   imap-ssl \
   imap-store \
   imap-tls \
+  interface \
   ipv6 \
+  keepalive \
+  localport \
   maxconnects  \
   multi-app \
   multi-debugcallback \
@@ -85,6 +90,7 @@ check_PROGRAMS = \
   multi-legacy \
   multi-post \
   multi-single \
+  netrc \
   parseurl \
   persistent \
   pop3-authzid \
@@ -104,7 +110,9 @@ check_PROGRAMS = \
   postit2-formadd \
   progressfunc \
   protofeats \
+  range \
   resolve \
+  rtsp-options \
   sendrecv \
   sepheaders \
   sftpget \

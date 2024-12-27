@@ -31,15 +31,13 @@
 
 #define TEST_HANG_TIMEOUT 60 * 1000
 
-struct Sockets
-{
+struct Sockets {
   curl_socket_t *sockets;
   int count;      /* number of sockets actually stored in array */
   int max_count;  /* max number of sockets that fit in allocated array */
 };
 
-struct ReadWriteSockets
-{
+struct ReadWriteSockets {
   struct Sockets read, write;
 };
 
@@ -83,16 +81,10 @@ static void addFd(struct Sockets *sockets, curl_socket_t fd, const char *what)
       return;
     sockets->max_count = 20;
   }
-  else if(sockets->count + 1 > sockets->max_count) {
-    curl_socket_t *oldptr = sockets->sockets;
-    sockets->sockets = realloc(oldptr, sizeof(curl_socket_t) *
-                               (sockets->max_count + 20));
-    if(!sockets->sockets) {
-      /* cleanup in test_cleanup */
-      sockets->sockets = oldptr;
-      return;
-    }
-    sockets->max_count += 20;
+  else if(sockets->count >= sockets->max_count) {
+    /* this can't happen in normal cases */
+    fprintf(stderr, "too many file handles error\n");
+    exit(2);
   }
   /*
    * Add file descriptor to array.
@@ -194,7 +186,14 @@ static void updateFdSet(struct Sockets *sockets, fd_set* fdset,
 {
   int i;
   for(i = 0; i < sockets->count; ++i) {
+#if defined(__DJGPP__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warith-conversion"
+#endif
     FD_SET(sockets->sockets[i], fdset);
+#if defined(__DJGPP__)
+#pragma GCC diagnostic pop
+#endif
     if(*maxFd < sockets->sockets[i] + 1) {
       *maxFd = sockets->sockets[i] + 1;
     }
@@ -226,17 +225,18 @@ static void checkFdSet(CURLM *curl, struct Sockets *sockets, fd_set *fdset,
   }
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
   CURL *curl = NULL;
   FILE *hd_src = NULL;
   int hd;
   struct_stat file_info;
   CURLM *m = NULL;
   struct ReadWriteSockets sockets = {{NULL, 0, 0}, {NULL, 0, 0}};
-  struct timeval timeout = {-1, 0};
   int success = 0;
+  struct timeval timeout = {0};
+  timeout.tv_sec = (time_t)-1;
 
   assert(test_argc >= 5);
 
@@ -307,14 +307,15 @@ int test(char *URL)
   while(!checkForCompletion(m, &success)) {
     fd_set readSet, writeSet;
     curl_socket_t maxFd = 0;
-    struct timeval tv = {10, 0};
+    struct timeval tv = {0};
+    tv.tv_sec = 10;
 
     FD_ZERO(&readSet);
     FD_ZERO(&writeSet);
     updateFdSet(&sockets.read, &readSet, &maxFd);
     updateFdSet(&sockets.write, &writeSet, &maxFd);
 
-    if(timeout.tv_sec != -1) {
+    if(timeout.tv_sec != (time_t)-1) {
       int usTimeout = getMicroSecondTimeout(&timeout);
       tv.tv_sec = usTimeout / 1000000;
       tv.tv_usec = usTimeout % 1000000;
@@ -330,7 +331,7 @@ int test(char *URL)
     checkFdSet(m, &sockets.read, &readSet, CURL_CSELECT_IN, "read");
     checkFdSet(m, &sockets.write, &writeSet, CURL_CSELECT_OUT, "write");
 
-    if(timeout.tv_sec != -1 && getMicroSecondTimeout(&timeout) == 0) {
+    if(timeout.tv_sec != (time_t)-1 && getMicroSecondTimeout(&timeout) == 0) {
       /* Curl's timer has elapsed. */
       notifyCurl(m, CURL_SOCKET_TIMEOUT, 0, "timeout");
     }

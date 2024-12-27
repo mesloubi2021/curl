@@ -26,7 +26,7 @@
 
 #include "memdebug.h"
 
-static const char *show[]={
+static const char *testdata[]={
   "daTE",
   "Server",
   "content-type",
@@ -35,6 +35,8 @@ static const char *show[]={
   "set-cookie",
   "silly-thing",
   "fold",
+  "blank",
+  "Blank2",
   NULL
 };
 
@@ -48,9 +50,9 @@ static void showem(CURL *easy, unsigned int type)
 {
   int i;
   struct curl_header *header;
-  for(i = 0; show[i]; i++) {
-    if(CURLHE_OK == curl_easy_header(easy, show[i], 0, type, HEADER_REQUEST,
-                                     &header)) {
+  for(i = 0; testdata[i]; i++) {
+    if(CURLHE_OK == curl_easy_header(easy, testdata[i], 0, type,
+                                     HEADER_REQUEST, &header)) {
       if(header->amount > 1) {
         /* more than one, iterate over them */
         size_t index = 0;
@@ -61,7 +63,7 @@ static void showem(CURL *easy, unsigned int type)
 
           if(++index == amount)
             break;
-          if(CURLHE_OK != curl_easy_header(easy, show[i], index, type,
+          if(CURLHE_OK != curl_easy_header(easy, testdata[i], index, type,
                                            HEADER_REQUEST, &header))
             break;
         } while(1);
@@ -81,7 +83,7 @@ static size_t write_cb(char *data, size_t n, size_t l, void *userp)
   (void)userp;
   return n*l;
 }
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *easy = NULL;
   CURLcode res = CURLE_OK;
@@ -114,5 +116,5 @@ int test(char *URL)
 test_cleanup:
   curl_easy_cleanup(easy);
   curl_global_cleanup();
-  return (int)res;
+  return res;
 }

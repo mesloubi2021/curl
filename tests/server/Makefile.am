@@ -34,9 +34,7 @@ AUTOMAKE_OPTIONS = foreign nostdinc
 
 AM_CPPFLAGS = -I$(top_srcdir)/include        \
               -I$(top_builddir)/lib          \
-              -I$(top_srcdir)/lib
-
-disabled_CPPFLAGS = $(AM_CPPFLAGS) \
+              -I$(top_srcdir)/lib            \
               -I$(top_srcdir)/src
 
 # Prevent LIBS from being used for all link targets
@@ -45,11 +43,12 @@ LIBS = $(BLANK_AT_MAKETIME)
 if DOING_NATIVE_WINDOWS
 AM_CPPFLAGS += -DCURL_STATICLIB
 endif
+AM_CPPFLAGS += -DCURL_NO_GETADDRINFO_OVERRIDE
 
 # Makefile.inc provides neat definitions
 include Makefile.inc
 
-EXTRA_DIST = base64.pl Makefile.inc CMakeLists.txt
+EXTRA_DIST = base64.pl CMakeLists.txt .checksrc
 
 CHECKSRC = $(CS_$(V))
 CS_0 = @echo "  RUN     " $@;
@@ -59,7 +58,7 @@ CS_ = $(CS_0)
 checksrc:
 	$(CHECKSRC)@PERL@ $(top_srcdir)/scripts/checksrc.pl $(srcdir)/*.[ch]
 
-if CURLDEBUG
+if DEBUGBUILD
 # for debug builds, we scan the sources on all regular make invokes
 all-local: checksrc
 endif

@@ -22,10 +22,9 @@
  *
  ***************************************************************************/
 /* <DESC>
- * Websockets pingpong
+ * WebSockets pingpong
  * </DESC>
  */
-
 /* curl stuff */
 #include "curl_setup.h"
 #include <curl/curl.h>
@@ -34,11 +33,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* somewhat unix-specific */
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#else
 #include <sys/time.h>
-#include <unistd.h>
+#endif
 
-#ifdef USE_WEBSOCKETS
+#ifndef CURL_DISABLE_WEBSOCKETS
 
 static CURLcode ping(CURL *curl, const char *send_payload)
 {
@@ -90,6 +94,9 @@ static void websocket_close(CURL *curl)
           "ws: curl_ws_send returned %u, sent %u\n", (int)result, (int)sent);
 }
 
+#if defined(__TANDEM)
+# include <cextdecs.h(PROCESS_DELAY_)>
+#endif
 static CURLcode pingpong(CURL *curl, const char *payload)
 {
   CURLcode res;
@@ -102,7 +109,18 @@ static CURLcode pingpong(CURL *curl, const char *payload)
     fprintf(stderr, "Receive pong\n");
     res = recv_pong(curl, payload);
     if(res == CURLE_AGAIN) {
+#ifdef _WIN32
+      Sleep(100);
+#elif defined(__TANDEM)
+      /* NonStop only defines usleep when building for a threading model */
+# if defined(_PUT_MODEL_) || defined(_KLT_MODEL_)
       usleep(100*1000);
+# else
+      PROCESS_DELAY_(100*1000);
+# endif
+#else
+      usleep(100*1000);
+#endif
       continue;
     }
     websocket_close(curl);
@@ -116,7 +134,7 @@ static CURLcode pingpong(CURL *curl, const char *payload)
 
 int main(int argc, char *argv[])
 {
-#ifdef USE_WEBSOCKETS
+#ifndef CURL_DISABLE_WEBSOCKETS
   CURL *curl;
   CURLcode res = CURLE_OK;
   const char *url, *payload;
@@ -149,10 +167,10 @@ int main(int argc, char *argv[])
   curl_global_cleanup();
   return (int)res;
 
-#else /* USE_WEBSOCKETS */
+#else /* !CURL_DISABLE_WEBSOCKETS */
   (void)argc;
   (void)argv;
-  fprintf(stderr, "websockets not enabled in libcurl\n");
+  fprintf(stderr, "WebSockets not enabled in libcurl\n");
   return 1;
-#endif /* !USE_WEBSOCKETS */
+#endif /* CURL_DISABLE_WEBSOCKETS */
 }

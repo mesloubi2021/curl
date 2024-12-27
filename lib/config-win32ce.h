@@ -25,7 +25,7 @@
  ***************************************************************************/
 
 /* ================================================================ */
-/*  lib/config-win32ce.h - Hand crafted config file for windows ce  */
+/*  lib/config-win32ce.h - Hand crafted config file for Windows CE  */
 /* ================================================================ */
 
 /* ---------------------------------------------------------------- */
@@ -40,9 +40,6 @@
 
 /* Define if you have the <io.h> header file.  */
 #define HAVE_IO_H 1
-
-/* Define if you need the malloc.h header file even with stdlib.h  */
-#define NEED_MALLOC_H 1
 
 /* Define if you have the <netdb.h> header file.  */
 /* #define HAVE_NETDB_H 1 */
@@ -81,18 +78,9 @@
 /* #define HAVE_TERMIOS_H 1 */
 
 /* Define if you have the <unistd.h> header file.  */
-#if defined(__MINGW32__) || defined(__LCC__)
+#if defined(__MINGW32__)
 #define HAVE_UNISTD_H 1
 #endif
-
-/* Define if you have the <windows.h> header file.  */
-#define HAVE_WINDOWS_H 1
-
-/* Define if you have the <winsock2.h> header file.  */
-#define HAVE_WINSOCK2_H 1
-
-/* Define if you have the <ws2tcpip.h> header file.  */
-#define HAVE_WS2TCPIP_H 1
 
 /* ---------------------------------------------------------------- */
 /*                        OTHER HEADER INFO                         */
@@ -126,14 +114,8 @@
 /* Define if you have the socket function.  */
 #define HAVE_SOCKET 1
 
-/* Define if you have the strcasecmp function.  */
-/* #define HAVE_STRCASECMP 1 */
-
 /* Define if you have the strdup function.  */
 /* #define HAVE_STRDUP 1 */
-
-/* Define if you have the stricmp function. */
-/* #define HAVE_STRICMP 1 */
 
 /* Define if you have the strtoll function.  */
 #if defined(__MINGW32__)
@@ -190,8 +172,7 @@
 #define in_addr_t unsigned long
 
 /* Define ssize_t if it is not an available 'typedefed' type */
-#if defined(__POCC__)
-#elif defined(_WIN64)
+#if defined(_WIN64)
 #define ssize_t __int64
 #else
 #define ssize_t int
@@ -281,15 +262,15 @@
 /* ---------------------------------------------------------------- */
 
 /* Define cpu-machine-OS */
-#ifndef OS
-#define OS "i386-pc-win32ce"
+#ifndef CURL_OS
+#define CURL_OS "i386-pc-win32ce"
 #endif
 
 /* Name of package */
 #define PACKAGE "curl"
 
 /* ---------------------------------------------------------------- */
-/*                       WinCE                                      */
+/*                            Windows CE                            */
 /* ---------------------------------------------------------------- */
 
 #ifndef UNICODE

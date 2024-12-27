@@ -23,24 +23,7 @@
  ***************************************************************************/
 #include "test.h"
 
-#ifdef HAVE_INET_PTON
-
-#ifdef WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
-#endif
-
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-
+#include "inet_pton.h"
 #include "memdebug.h"
 
 /* to prevent libcurl from closing our socket */
@@ -74,7 +57,7 @@ static int sockopt_cb(void *clientp,
 }
 
 /* Expected args: URL IP PORT */
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curl = NULL;
   CURLcode res = TEST_ERR_MAJOR_BAD;
@@ -84,7 +67,7 @@ int test(char *URL)
   unsigned short port;
 
   if(!strcmp("check", URL))
-    return 0; /* no output makes it not skipped */
+    return CURLE_OK; /* no output makes it not skipped */
 
   port = (unsigned short)atoi(libtest_arg3);
 
@@ -107,7 +90,7 @@ int test(char *URL)
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_port = htons(port);
 
-  if(inet_pton(AF_INET, libtest_arg2, &serv_addr.sin_addr) <= 0) {
+  if(Curl_inet_pton(AF_INET, libtest_arg2, &serv_addr.sin_addr) <= 0) {
     fprintf(stderr, "inet_pton failed\n");
     goto test_cleanup;
   }
@@ -145,11 +128,3 @@ test_cleanup:
 
   return res;
 }
-#else
-int test(char *URL)
-{
-  (void)URL;
-  printf("lacks inet_pton\n");
-  return 0;
-}
-#endif

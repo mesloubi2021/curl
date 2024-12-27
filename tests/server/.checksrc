@@ -1,0 +1,2 @@
+enable STRNCPY
+disable SSCANF

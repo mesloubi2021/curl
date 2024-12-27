@@ -27,7 +27,6 @@
 /builds/
 /stats/
 __pycache__
-CHANGES.dist
 Debug
 INSTALL
 Makefile
@@ -37,6 +36,9 @@ TAGS
 aclocal.m4
 aclocal.m4.bak
 autom4te.cache
+buildinfo.txt
+ca-bundle.crt
+certdata.txt
 compile
 config.cache
 config.guess
@@ -65,3 +67,4 @@ curl_fuzzer_seed_corpus.zip
 libstandaloneengine.a
 tests/string
 tests/config
+tests/ech-log/

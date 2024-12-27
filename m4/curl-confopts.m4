@@ -43,9 +43,20 @@ AS_HELP_STRING([--disable-threaded-resolver],[Disable threaded resolver]),
       dnl --disable-threaded-resolver option used
       want_thres="no"
       ;;
+    yes)
+      dnl --enable-threaded-resolver option used
+      want_thres="yes"
+      ;;
     *)
       dnl configure option not specified
-      want_thres="yes"
+      case $host_os in
+        msdos* | amiga*)
+          want_thres="no"
+          ;;
+        *)
+          want_thres="yes"
+          ;;
+      esac
       ;;
   esac
   AC_MSG_RESULT([$want_thres])
@@ -484,6 +495,7 @@ AC_DEFUN([CURL_CHECK_LIB_ARES], [
     dnl c-ares library support has been requested
     clean_CPPFLAGS="$CPPFLAGS"
     clean_LDFLAGS="$LDFLAGS"
+    clean_LDFLAGSPC="$LDFLAGSPC"
     clean_LIBS="$LIBS"
     configure_runpath=`pwd`
     if test -n "$want_ares_path"; then
@@ -525,6 +537,7 @@ AC_DEFUN([CURL_CHECK_LIB_ARES], [
     #
     CPPFLAGS="$clean_CPPFLAGS $ares_CPPFLAGS"
     LDFLAGS="$clean_LDFLAGS $ares_LDFLAGS"
+    LDFLAGSPC="$clean_LDFLAGSPC $ares_LDFLAGS"
     LIBS="$ares_LIBS $clean_LIBS"
     #
 
@@ -532,7 +545,7 @@ AC_DEFUN([CURL_CHECK_LIB_ARES], [
     AC_MSG_CHECKING([that c-ares is good and recent enough])
     AC_LINK_IFELSE([
       AC_LANG_PROGRAM([[
-#include <ares.h>
+        #include <ares.h>
         /* set of dummy functions in case c-ares was built with debug */
         void curl_dofree() { }
         void curl_sclose() { }
@@ -553,6 +566,7 @@ AC_DEFUN([CURL_CHECK_LIB_ARES], [
       dnl restore initial settings
       CPPFLAGS="$clean_CPPFLAGS"
       LDFLAGS="$clean_LDFLAGS"
+      LDFLAGSPC="$clean_LDFLAGSPC"
       LIBS="$clean_LIBS"
       # prevent usage
       want_ares="no"
@@ -561,74 +575,47 @@ AC_DEFUN([CURL_CHECK_LIB_ARES], [
     if test "$want_ares" = "yes"; then
       dnl finally c-ares will be used
       AC_DEFINE(USE_ARES, 1, [Define to enable c-ares support])
-      AC_SUBST([USE_ARES], [1])
+      AC_DEFINE(CARES_NO_DEPRECATED, 1, [Ignore c-ares deprecation warnings])
+      USE_ARES=1
+      LIBCURL_PC_REQUIRES_PRIVATE="$LIBCURL_PC_REQUIRES_PRIVATE libcares"
       curl_res_msg="c-ares"
     fi
   fi
 ])
 
+dnl CURL_CHECK_OPTION_HTTPSRR
+dnl -----------------------------------------------------
+dnl Verify whether configure has been invoked with option
+dnl --enable-httpsrr or --disable-httpsrr, and set
+dnl shell variable want_httpsrr as appropriate.
 
-dnl CURL_CHECK_OPTION_NTLM_WB
-dnl -------------------------------------------------
-dnl Verify if configure has been invoked with option
-dnl --enable-ntlm-wb or --disable-ntlm-wb, and set
-dnl shell variable want_ntlm_wb and want_ntlm_wb_file
-dnl as appropriate.
-
-AC_DEFUN([CURL_CHECK_OPTION_NTLM_WB], [
-  AC_BEFORE([$0],[CURL_CHECK_NTLM_WB])dnl
-  OPT_NTLM_WB="default"
-  AC_ARG_ENABLE(ntlm-wb,
-AS_HELP_STRING([--enable-ntlm-wb@<:@=FILE@:>@],[Enable NTLM delegation to winbind's ntlm_auth helper, where FILE is ntlm_auth's absolute filename (default: /usr/bin/ntlm_auth)])
-AS_HELP_STRING([--disable-ntlm-wb],[Disable NTLM delegation to winbind's ntlm_auth helper]),
-  OPT_NTLM_WB=$enableval)
-  want_ntlm_wb_file="/usr/bin/ntlm_auth"
-  case "$OPT_NTLM_WB" in
+AC_DEFUN([CURL_CHECK_OPTION_HTTPSRR], [
+  AC_MSG_CHECKING([whether to enable HTTPSRR support])
+  OPT_HTTPSRR="default"
+  AC_ARG_ENABLE(httpsrr,
+AS_HELP_STRING([--enable-httpsrr],[Enable HTTPSRR support])
+AS_HELP_STRING([--disable-httpsrr],[Disable HTTPSRR support]),
+  OPT_HTTPSRR=$enableval)
+  case "$OPT_HTTPSRR" in
     no)
-      dnl --disable-ntlm-wb option used
-      want_ntlm_wb="no"
+      dnl --disable-httpsrr option used
+      want_httpsrr="no"
+      curl_httpsrr_msg="no      (--enable-httpsrr)"
+      AC_MSG_RESULT([no])
       ;;
     default)
       dnl configure option not specified
-      want_ntlm_wb="yes"
+      want_httpsrr="no"
+      curl_httpsrr_msg="no      (--enable-httpsrr)"
+      AC_MSG_RESULT([no])
       ;;
     *)
-      dnl --enable-ntlm-wb option used
-      want_ntlm_wb="yes"
-      if test -n "$enableval" && test "$enableval" != "yes"; then
-        want_ntlm_wb_file="$enableval"
-      fi
+      dnl --enable-httpsrr option used
+      want_httpsrr="yes"
+      curl_httpsrr_msg="enabled (--disable-httpsrr)"
+      AC_MSG_RESULT([yes])
       ;;
   esac
-])
-
-
-dnl CURL_CHECK_NTLM_WB
-dnl -------------------------------------------------
-dnl Check if support for NTLM delegation to winbind's
-dnl ntlm_auth helper will finally be enabled depending
-dnl on given configure options and target platform.
-
-AC_DEFUN([CURL_CHECK_NTLM_WB], [
-  AC_REQUIRE([CURL_CHECK_OPTION_NTLM_WB])dnl
-  AC_REQUIRE([CURL_CHECK_NATIVE_WINDOWS])dnl
-  AC_MSG_CHECKING([whether to enable NTLM delegation to winbind's helper])
-  if test "$curl_cv_native_windows" = "yes" ||
-    test "x$SSL_ENABLED" = "x"; then
-    want_ntlm_wb_file=""
-    want_ntlm_wb="no"
-  elif test "x$ac_cv_func_fork" != "xyes"; then
-    dnl ntlm_wb requires fork
-    want_ntlm_wb="no"
-  fi
-  AC_MSG_RESULT([$want_ntlm_wb])
-  if test "$want_ntlm_wb" = "yes"; then
-    AC_DEFINE(NTLM_WB_ENABLED, 1,
-      [Define to enable NTLM delegation to winbind's ntlm_auth helper.])
-    AC_DEFINE_UNQUOTED(NTLM_WB_FILE, "$want_ntlm_wb_file",
-      [Define absolute filename for winbind's ntlm_auth helper.])
-    NTLM_WB_ENABLED=1
-  fi
 ])
 
 dnl CURL_CHECK_OPTION_ECH
@@ -661,8 +648,8 @@ AS_HELP_STRING([--disable-ech],[Disable ECH support]),
       dnl --enable-ech option used
       want_ech="yes"
       curl_ech_msg="enabled (--disable-ech)"
-      experimental="ech"
       AC_MSG_RESULT([yes])
       ;;
   esac
+])
 ])

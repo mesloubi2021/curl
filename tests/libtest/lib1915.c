@@ -23,6 +23,7 @@
  ***************************************************************************/
 #include "test.h"
 
+#include "testtrace.h"
 #include "testutil.h"
 #include "warnless.h"
 #include "memdebug.h"
@@ -96,7 +97,7 @@ static CURLSTScode hstswrite(CURL *easy, struct curl_hstsentry *e,
  * Read/write HSTS cache entries via callback.
  */
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURLcode res = CURLE_OK;
   CURL *hnd;
@@ -104,33 +105,46 @@ int test(char *URL)
 
   global_init(CURL_GLOBAL_ALL);
 
+  libtest_debug_config.nohex = 1;
+  libtest_debug_config.tracetime = 1;
+
   easy_init(hnd);
   easy_setopt(hnd, CURLOPT_URL, URL);
+  easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 1L);
   easy_setopt(hnd, CURLOPT_HSTSREADFUNCTION, hstsread);
   easy_setopt(hnd, CURLOPT_HSTSREADDATA, &st);
   easy_setopt(hnd, CURLOPT_HSTSWRITEFUNCTION, hstswrite);
   easy_setopt(hnd, CURLOPT_HSTSWRITEDATA, &st);
   easy_setopt(hnd, CURLOPT_HSTS_CTRL, CURLHSTS_ENABLE);
+  easy_setopt(hnd, CURLOPT_DEBUGDATA, &libtest_debug_config);
+  easy_setopt(hnd, CURLOPT_DEBUGFUNCTION, libtest_debug_cb);
+  easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
   res = curl_easy_perform(hnd);
   curl_easy_cleanup(hnd);
   hnd = NULL;
-  printf("First request returned %d\n", (int)res);
+  if(res == CURLE_OPERATION_TIMEDOUT) /* we expect that on Windows */
+    res = CURLE_COULDNT_CONNECT;
+  printf("First request returned %d\n", res);
   res = CURLE_OK;
 
   easy_init(hnd);
   easy_setopt(hnd, CURLOPT_URL, URL);
+  easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 1L);
   easy_setopt(hnd, CURLOPT_HSTSREADFUNCTION, hstsreadfail);
   easy_setopt(hnd, CURLOPT_HSTSREADDATA, &st);
   easy_setopt(hnd, CURLOPT_HSTSWRITEFUNCTION, hstswrite);
   easy_setopt(hnd, CURLOPT_HSTSWRITEDATA, &st);
   easy_setopt(hnd, CURLOPT_HSTS_CTRL, CURLHSTS_ENABLE);
+  easy_setopt(hnd, CURLOPT_DEBUGDATA, &libtest_debug_config);
+  easy_setopt(hnd, CURLOPT_DEBUGFUNCTION, libtest_debug_cb);
+  easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
   res = curl_easy_perform(hnd);
   curl_easy_cleanup(hnd);
   hnd = NULL;
-  printf("Second request returned %d\n", (int)res);
+  printf("Second request returned %d\n", res);
 
 test_cleanup:
   curl_easy_cleanup(hnd);
   curl_global_cleanup();
-  return (int)res;
+  return res;
 }

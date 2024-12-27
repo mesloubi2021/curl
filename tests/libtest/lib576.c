@@ -32,8 +32,9 @@ struct chunk_data {
 };
 
 static
-long chunk_bgn(const struct curl_fileinfo *finfo, void *ptr, int remains)
+long chunk_bgn(const void *f, void *ptr, int remains)
 {
+  const struct curl_fileinfo *finfo = f;
   struct chunk_data *ch_d = ptr;
   ch_d->remains = remains;
 
@@ -94,7 +95,7 @@ long chunk_end(void *ptr)
   return CURL_CHUNK_END_FUNC_OK;
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *handle = NULL;
   CURLcode res = CURLE_OK;

@@ -32,14 +32,15 @@ man_MANS =                                      \
   CURLINFO_CERTINFO.3                           \
   CURLINFO_CONDITION_UNMET.3                    \
   CURLINFO_CONNECT_TIME.3                       \
-  CURLINFO_CONNECT_TIME_T.3                     \
   CURLINFO_CONN_ID.3                            \
+  CURLINFO_CONNECT_TIME_T.3                     \
   CURLINFO_CONTENT_LENGTH_DOWNLOAD.3            \
   CURLINFO_CONTENT_LENGTH_DOWNLOAD_T.3          \
   CURLINFO_CONTENT_LENGTH_UPLOAD.3              \
   CURLINFO_CONTENT_LENGTH_UPLOAD_T.3            \
   CURLINFO_CONTENT_TYPE.3                       \
   CURLINFO_COOKIELIST.3                         \
+  CURLINFO_EARLYDATA_SENT_T.3                   \
   CURLINFO_EFFECTIVE_METHOD.3                   \
   CURLINFO_EFFECTIVE_URL.3                      \
   CURLINFO_FILETIME.3                           \
@@ -49,6 +50,7 @@ man_MANS =                                      \
   CURLINFO_HTTP_CONNECTCODE.3                   \
   CURLINFO_HTTP_VERSION.3                       \
   CURLINFO_HTTPAUTH_AVAIL.3                     \
+  CURLINFO_HTTPAUTH_USED.3                      \
   CURLINFO_LASTSOCKET.3                         \
   CURLINFO_LOCAL_IP.3                           \
   CURLINFO_LOCAL_PORT.3                         \
@@ -58,6 +60,7 @@ man_MANS =                                      \
   CURLINFO_OS_ERRNO.3                           \
   CURLINFO_PRETRANSFER_TIME.3                   \
   CURLINFO_PRETRANSFER_TIME_T.3                 \
+  CURLINFO_POSTTRANSFER_TIME_T.3                \
   CURLINFO_PRIMARY_IP.3                         \
   CURLINFO_PRIMARY_PORT.3                       \
   CURLINFO_PRIVATE.3                            \
@@ -65,6 +68,8 @@ man_MANS =                                      \
   CURLINFO_PROXY_ERROR.3                        \
   CURLINFO_PROXY_SSL_VERIFYRESULT.3             \
   CURLINFO_PROXYAUTH_AVAIL.3                    \
+  CURLINFO_PROXYAUTH_USED.3                     \
+  CURLINFO_QUEUE_TIME_T.3                       \
   CURLINFO_REDIRECT_COUNT.3                     \
   CURLINFO_REDIRECT_TIME.3                      \
   CURLINFO_REDIRECT_TIME_T.3                    \
@@ -94,6 +99,7 @@ man_MANS =                                      \
   CURLINFO_TLS_SSL_PTR.3                        \
   CURLINFO_TOTAL_TIME.3                         \
   CURLINFO_TOTAL_TIME_T.3                       \
+  CURLINFO_USED_PROXY.3                         \
   CURLINFO_XFER_ID.3                            \
   CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE.3          \
   CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE.3        \
@@ -164,6 +170,7 @@ man_MANS =                                      \
   CURLOPT_DOH_SSL_VERIFYPEER.3                  \
   CURLOPT_DOH_SSL_VERIFYSTATUS.3                \
   CURLOPT_DOH_URL.3                             \
+  CURLOPT_ECH.3                                 \
   CURLOPT_EGDSOCKET.3                           \
   CURLOPT_ERRORBUFFER.3                         \
   CURLOPT_EXPECT_100_TIMEOUT_MS.3               \
@@ -332,6 +339,7 @@ man_MANS =                                      \
   CURLOPT_SEEKDATA.3                            \
   CURLOPT_SEEKFUNCTION.3                        \
   CURLOPT_SERVER_RESPONSE_TIMEOUT.3             \
+  CURLOPT_SERVER_RESPONSE_TIMEOUT_MS.3          \
   CURLOPT_SERVICE_NAME.3                        \
   CURLOPT_SHARE.3                               \
   CURLOPT_SOCKOPTDATA.3                         \
@@ -380,6 +388,7 @@ man_MANS =                                      \
   CURLOPT_TCP_KEEPALIVE.3                       \
   CURLOPT_TCP_KEEPIDLE.3                        \
   CURLOPT_TCP_KEEPINTVL.3                       \
+  CURLOPT_TCP_KEEPCNT.3                         \
   CURLOPT_TCP_NODELAY.3                         \
   CURLOPT_TELNETOPTIONS.3                       \
   CURLOPT_TFTP_BLKSIZE.3                        \

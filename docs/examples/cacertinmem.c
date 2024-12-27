@@ -41,6 +41,11 @@ static CURLcode sslctx_function(CURL *curl, void *sslctx, void *parm)
 {
   CURLcode rv = CURLE_ABORTED_BY_CALLBACK;
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverlength-strings"
+#endif
+
   /** This example uses two (fake) certificates **/
   static const char mypem[] =
     "-----BEGIN CERTIFICATE-----\n"
@@ -84,6 +89,10 @@ static CURLcode sslctx_function(CURL *curl, void *sslctx, void *parm)
     "r0CodaxWkHS4oJyleW/c6RrIaQXpuvoDs3zk4E7Czp3otkYNbn5XOmeUwssfnHdK\n"
     "Z05phkOTOPu220+DkdRgfks+KzgHVZhepA==\n"
     "-----END CERTIFICATE-----\n";
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
   BIO *cbio = BIO_new_mem_buf(mypem, sizeof(mypem));
   X509_STORE  *cts = SSL_CTX_get_cert_store((SSL_CTX *)sslctx);
@@ -139,7 +148,7 @@ int main(void)
   curl_easy_setopt(ch, CURLOPT_SSL_VERIFYPEER, 1L);
   curl_easy_setopt(ch, CURLOPT_URL, "https://www.example.com/");
 
-  /* Turn off the default CA locations, otherwise libcurl will load CA
+  /* Turn off the default CA locations, otherwise libcurl loads CA
    * certificates from the locations that were detected/specified at
    * build-time
    */
@@ -155,19 +164,18 @@ int main(void)
   else
     printf("*** transfer failed ***\n");
 
-  /* use a fresh connection (optional)
-   * this option seriously impacts performance of multiple transfers but
-   * it is necessary order to demonstrate this example. recall that the
-   * ssl ctx callback is only called _before_ an SSL connection is
-   * established, therefore it will not affect existing verified SSL
-   * connections already in the connection cache associated with this
-   * handle. normally you would set the ssl ctx function before making
-   * any transfers, and not use this option.
+  /* use a fresh connection (optional) this option seriously impacts
+   * performance of multiple transfers but it is necessary order to
+   * demonstrate this example. recall that the ssl ctx callback is only called
+   * _before_ an SSL connection is established, therefore it does not affect
+   * existing verified SSL connections already in the connection cache
+   * associated with this handle. normally you would set the ssl ctx function
+   * before making any transfers, and not use this option.
    */
   curl_easy_setopt(ch, CURLOPT_FRESH_CONNECT, 1L);
 
-  /* second try: retrieve page using cacerts' certificate -> will succeed
-   * load the certificate by installing a function doing the necessary
+  /* second try: retrieve page using cacerts' certificate -> succeeds to load
+   * the certificate by installing a function doing the necessary
    * "modifications" to the SSL CONTEXT just before link init
    */
   curl_easy_setopt(ch, CURLOPT_SSL_CTX_FUNCTION, sslctx_function);
@@ -179,5 +187,5 @@ int main(void)
 
   curl_easy_cleanup(ch);
   curl_global_cleanup();
-  return rv;
+  return (int)rv;
 }

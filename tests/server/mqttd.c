@@ -54,14 +54,13 @@
 #include <netdb.h>
 #endif
 
-#define ENABLE_CURLX_PRINTF
-/* make the curlx header define all printf() functions to use the curlx_*
-   versions instead */
 #include "curlx.h" /* from the private lib dir */
 #include "getpart.h"
 #include "inet_pton.h"
 #include "server_sockaddr.h"
 #include "warnless.h"
+
+#include "tool_binmode.h"
 
 /* include memdebug.h last */
 #include "memdebug.h"
@@ -98,7 +97,6 @@
 #define MQTT_CONNACK_LEN 4
 #define MQTT_SUBACK_LEN 5
 #define MQTT_CLIENTID_LEN 12 /* "curl0123abcd" */
-#define MQTT_HEADER_LEN 5    /* max 5 bytes */
 
 struct configurable {
   unsigned char version; /* initial version byte in the request must match
@@ -120,7 +118,7 @@ static const char *configfile = DEFAULT_CONFIG;
 static const char *logdir = "log";
 static char loglockfile[256];
 
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
 static bool use_ipv6 = FALSE;
 #endif
 static const char *ipv_inuse = "IPv4";
@@ -196,7 +194,7 @@ static void loghex(unsigned char *buffer, ssize_t len)
   ssize_t width = 0;
   int left = sizeof(data);
 
-  for(i = 0; i<len && (left >= 0); i++) {
+  for(i = 0; i < len && (left >= 0); i++) {
     msnprintf(optr, left, "%02x", ptr[i]);
     width += 2;
     optr += 2;
@@ -222,15 +220,14 @@ static void logprotocol(mqttdir dir,
   char *optr = data;
   int left = sizeof(data);
 
-  for(i = 0; i<len && (left >= 0); i++) {
+  for(i = 0; i < len && (left >= 0); i++) {
     msnprintf(optr, left, "%02x", ptr[i]);
     optr += 2;
     left -= 2;
   }
   fprintf(output, "%s %s %zx %s\n",
-          dir == FROM_CLIENT? "client": "server",
-          prefix, remlen,
-          data);
+          dir == FROM_CLIENT ? "client" : "server",
+          prefix, remlen, data);
 }
 
 
@@ -247,7 +244,7 @@ static int connack(FILE *dump, curl_socket_t fd)
 
   rc = swrite(fd, (char *)packet, sizeof(packet));
   if(rc > 0) {
-    logmsg("WROTE %d bytes [CONNACK]", rc);
+    logmsg("WROTE %zd bytes [CONNACK]", rc);
     loghex(packet, rc);
     logprotocol(FROM_SERVER, "CONNACK", 2, dump, packet, sizeof(packet));
   }
@@ -271,7 +268,7 @@ static int suback(FILE *dump, curl_socket_t fd, unsigned short packetid)
 
   rc = swrite(fd, (char *)packet, sizeof(packet));
   if(rc == sizeof(packet)) {
-    logmsg("WROTE %d bytes [SUBACK]", rc);
+    logmsg("WROTE %zd bytes [SUBACK]", rc);
     loghex(packet, rc);
     logprotocol(FROM_SERVER, "SUBACK", 3, dump, packet, rc);
     return 0;
@@ -293,7 +290,7 @@ static int puback(FILE *dump, curl_socket_t fd, unsigned short packetid)
 
   rc = swrite(fd, (char *)packet, sizeof(packet));
   if(rc == sizeof(packet)) {
-    logmsg("WROTE %d bytes [PUBACK]", rc);
+    logmsg("WROTE %zd bytes [PUBACK]", rc);
     loghex(packet, rc);
     logprotocol(FROM_SERVER, dump, packet, rc);
     return 0;
@@ -311,7 +308,7 @@ static int disconnect(FILE *dump, curl_socket_t fd)
   };
   ssize_t rc = swrite(fd, (char *)packet, sizeof(packet));
   if(rc == sizeof(packet)) {
-    logmsg("WROTE %d bytes [DISCONNECT]", rc);
+    logmsg("WROTE %zd bytes [DISCONNECT]", rc);
     loghex(packet, rc);
     logprotocol(FROM_SERVER, "DISCONNECT", 0, dump, packet, rc);
     return 0;
@@ -344,10 +341,10 @@ static int disconnect(FILE *dump, curl_socket_t fd)
 */
 
 /* return number of bytes used */
-static int encode_length(size_t packetlen,
-                         unsigned char *remlength) /* 4 bytes */
+static size_t encode_length(size_t packetlen,
+                            unsigned char *remlength) /* 4 bytes */
 {
-  int bytes = 0;
+  size_t bytes = 0;
   unsigned char encode;
 
   do {
@@ -397,12 +394,12 @@ static int publish(FILE *dump,
   size_t topiclen = strlen(topic);
   unsigned char *packet;
   size_t payloadindex;
-  ssize_t remaininglength = topiclen + 2 + payloadlen;
-  ssize_t packetlen;
-  ssize_t sendamount;
+  size_t remaininglength = topiclen + 2 + payloadlen;
+  size_t packetlen;
+  size_t sendamount;
   ssize_t rc;
   unsigned char rembuffer[4];
-  int encodedlen;
+  size_t encodedlen;
 
   if(config.excessive_remaining) {
     /* manually set illegal remaining length */
@@ -440,11 +437,12 @@ static int publish(FILE *dump,
 
   rc = swrite(fd, (char *)packet, sendamount);
   if(rc > 0) {
-    logmsg("WROTE %d bytes [PUBLISH]", rc);
+    logmsg("WROTE %zd bytes [PUBLISH]", rc);
     loghex(packet, rc);
     logprotocol(FROM_SERVER, "PUBLISH", remaininglength, dump, packet, rc);
   }
-  if(rc == packetlen)
+  free(packet);
+  if((size_t)rc == packetlen)
     return 0;
   return 1;
 }
@@ -464,12 +462,12 @@ static int fixedheader(curl_socket_t fd,
 
   /* get the first two bytes */
   ssize_t rc = sread(fd, (char *)buffer, 2);
-  int i;
+  size_t i;
   if(rc < 2) {
-    logmsg("READ %d bytes [SHORT!]", rc);
+    logmsg("READ %zd bytes [SHORT!]", rc);
     return 1; /* fail */
   }
-  logmsg("READ %d bytes", rc);
+  logmsg("READ %zd bytes", rc);
   loghex(buffer, rc);
   *bytep = buffer[0];
 
@@ -484,7 +482,7 @@ static int fixedheader(curl_socket_t fd,
     }
   }
   *remaining_lengthp = decode_length(&buffer[1], i, remaining_length_bytesp);
-  logmsg("Remaining Length: %ld [%d bytes]", (long) *remaining_lengthp,
+  logmsg("Remaining Length: %zu [%zu bytes]", *remaining_lengthp,
          *remaining_length_bytesp);
   return 0;
 }
@@ -498,7 +496,7 @@ static curl_socket_t mqttit(curl_socket_t fd)
   unsigned short packet_id;
   size_t payload_len;
   size_t client_id_length;
-  unsigned int topic_len;
+  size_t topic_len;
   size_t remaining_length = 0;
   size_t bytes = 0; /* remaining length field size in bytes */
   char client_id[MAX_CLIENT_ID_LENGTH];
@@ -547,7 +545,7 @@ static curl_socket_t mqttit(curl_socket_t fd)
       buff_size = remaining_length;
       buffer = realloc(buffer, buff_size);
       if(!buffer) {
-        logmsg("Failed realloc of size %lu", buff_size);
+        logmsg("Failed realloc of size %zu", buff_size);
         goto end;
       }
     }
@@ -556,7 +554,7 @@ static curl_socket_t mqttit(curl_socket_t fd)
       /* reading variable header and payload into buffer */
       rc = sread(fd, (char *)buffer, remaining_length);
       if(rc > 0) {
-        logmsg("READ %d bytes", rc);
+        logmsg("READ %zd bytes", rc);
         loghex(buffer, rc);
       }
     }
@@ -570,7 +568,7 @@ static curl_socket_t mqttit(curl_socket_t fd)
         goto end;
       }
       /* ignore the connect flag byte and two keepalive bytes */
-      payload_len = (buffer[10] << 8) | buffer[11];
+      payload_len = (size_t)(buffer[10] << 8) | buffer[11];
       /* first part of the payload is the client ID */
       client_id_length = payload_len;
 
@@ -580,20 +578,22 @@ static curl_socket_t mqttit(curl_socket_t fd)
       start_usr = client_id_offset + payload_len;
       if(usr_flag == (unsigned char)(conn_flags & usr_flag)) {
         logmsg("User flag is present in CONN flag");
-        payload_len += (buffer[start_usr] << 8) | buffer[start_usr + 1];
+        payload_len += (size_t)(buffer[start_usr] << 8) |
+                       buffer[start_usr + 1];
         payload_len += 2; /* MSB and LSB for user length */
       }
 
       start_passwd = client_id_offset + payload_len;
       if(passwd_flag == (char)(conn_flags & passwd_flag)) {
         logmsg("Password flag is present in CONN flags");
-        payload_len += (buffer[start_passwd] << 8) | buffer[start_passwd + 1];
+        payload_len += (size_t)(buffer[start_passwd] << 8) |
+                       buffer[start_passwd + 1];
         payload_len += 2; /* MSB and LSB for password length */
       }
 
       /* check the length of the payload */
       if((ssize_t)payload_len != (rc - 12)) {
-        logmsg("Payload length mismatch, expected %x got %x",
+        logmsg("Payload length mismatch, expected %zx got %zx",
                rc - 12, payload_len);
         goto end;
       }
@@ -632,9 +632,9 @@ static curl_socket_t mqttit(curl_socket_t fd)
       packet_id = (unsigned short)((buffer[0] << 8) | buffer[1]);
 
       /* two bytes topic length */
-      topic_len = (buffer[2] << 8) | buffer[3];
+      topic_len = (size_t)(buffer[2] << 8) | buffer[3];
       if(topic_len != (remaining_length - 5)) {
-        logmsg("Wrong topic length, got %d expected %d",
+        logmsg("Wrong topic length, got %zu expected %zu",
                topic_len, remaining_length - 5);
         goto end;
       }
@@ -650,13 +650,16 @@ static curl_socket_t mqttit(curl_socket_t fd)
         if(!config.publish_before_suback) {
           if(suback(dump, fd, packet_id)) {
             logmsg("failed sending SUBACK");
+            free(data);
             goto end;
           }
         }
         if(publish(dump, fd, packet_id, topic, data, datalen)) {
           logmsg("PUBLISH failed");
+          free(data);
           goto end;
         }
+        free(data);
         if(config.publish_before_suback) {
           if(suback(dump, fd, packet_id)) {
             logmsg("failed sending SUBACK");
@@ -677,8 +680,8 @@ static curl_socket_t mqttit(curl_socket_t fd)
       logprotocol(FROM_CLIENT, "PUBLISH", remaining_length,
                   dump, buffer, rc);
 
-      topiclen = (buffer[1 + bytes] << 8) | buffer[2 + bytes];
-      logmsg("Got %d bytes topic", topiclen);
+      topiclen = (size_t)(buffer[1 + bytes] << 8) | buffer[2 + bytes];
+      logmsg("Got %zu bytes topic", topiclen);
       /* TODO: verify topiclen */
 
 #ifdef QOS
@@ -689,7 +692,7 @@ static curl_socket_t mqttit(curl_socket_t fd)
       /* get the request */
       rc = sread(fd, (char *)&buffer[0], 2);
 
-      logmsg("READ %d bytes [DISCONNECT]", rc);
+      logmsg("READ %zd bytes [DISCONNECT]", rc);
       loghex(buffer, rc);
       logprotocol(FROM_CLIENT, "DISCONNECT", 0, dump, buffer, rc);
       goto end;
@@ -747,7 +750,14 @@ static bool incoming(curl_socket_t listenfd)
     FD_ZERO(&fds_err);
 
     /* there's always a socket to wait for */
+#if defined(__DJGPP__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warith-conversion"
+#endif
     FD_SET(sockfd, &fds_read);
+#if defined(__DJGPP__)
+#pragma GCC diagnostic pop
+#endif
 
     do {
       /* select() blocking behavior call on blocking descriptors please */
@@ -768,12 +778,12 @@ static bool incoming(curl_socket_t listenfd)
       curl_socket_t newfd = accept(sockfd, NULL, NULL);
       if(CURL_SOCKET_BAD == newfd) {
         error = SOCKERRNO;
-        logmsg("accept(%d, NULL, NULL) failed with error: (%d) %s",
-               sockfd, error, sstrerror(error));
+        logmsg("accept(%" FMT_SOCKET_T ", NULL, NULL) "
+               "failed with error: (%d) %s", sockfd, error, sstrerror(error));
       }
       else {
-        logmsg("====> Client connect, fd %d. Read config from %s",
-               newfd, configfile);
+        logmsg("====> Client connect, fd %" FMT_SOCKET_T ". "
+               "Read config from %s", newfd, configfile);
         set_advisor_read_lock(loglockfile);
         (void)mqttit(newfd); /* until done */
         clear_advisor_read_lock(loglockfile);
@@ -837,7 +847,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
   /* When the specified listener port is zero, it is actually a
      request to let the system choose a non-zero available port. */
 
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
   if(!use_ipv6) {
 #endif
     memset(&listener.sa4, 0, sizeof(listener.sa4));
@@ -845,7 +855,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
     listener.sa4.sin_addr.s_addr = INADDR_ANY;
     listener.sa4.sin_port = htons(*listenport);
     rc = bind(sock, &listener.sa, sizeof(listener.sa4));
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
   }
   else {
     memset(&listener.sa6, 0, sizeof(listener.sa6));
@@ -854,7 +864,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
     listener.sa6.sin6_port = htons(*listenport);
     rc = bind(sock, &listener.sa, sizeof(listener.sa6));
   }
-#endif /* ENABLE_IPV6 */
+#endif /* USE_IPV6 */
   if(rc) {
     error = SOCKERRNO;
     logmsg("Error binding socket on port %hu: (%d) %s",
@@ -868,11 +878,11 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
        port we actually got and update the listener port value with it. */
     curl_socklen_t la_size;
     srvr_sockaddr_union_t localaddr;
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
     if(!use_ipv6)
 #endif
       la_size = sizeof(localaddr.sa4);
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
     else
       la_size = sizeof(localaddr.sa6);
 #endif
@@ -888,7 +898,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
     case AF_INET:
       *listenport = ntohs(localaddr.sa4.sin_port);
       break;
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
     case AF_INET6:
       *listenport = ntohs(localaddr.sa6.sin6_port);
       break;
@@ -911,7 +921,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
   rc = listen(sock, 5);
   if(0 != rc) {
     error = SOCKERRNO;
-    logmsg("listen(%d, 5) failed with error: (%d) %s",
+    logmsg("listen(%" FMT_SOCKET_T ", 5) failed with error: (%d) %s",
            sock, error, sstrerror(error));
     sclose(sock);
     return CURL_SOCKET_BAD;
@@ -933,10 +943,10 @@ int main(int argc, char *argv[])
   int error;
   int arg = 1;
 
-  while(argc>arg) {
+  while(argc > arg) {
     if(!strcmp("--version", argv[arg])) {
       printf("mqttd IPv4%s\n",
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
              "/IPv6"
 #else
              ""
@@ -946,31 +956,31 @@ int main(int argc, char *argv[])
     }
     else if(!strcmp("--pidfile", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         pidname = argv[arg++];
     }
     else if(!strcmp("--portfile", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         portname = argv[arg++];
     }
     else if(!strcmp("--config", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         configfile = argv[arg++];
     }
     else if(!strcmp("--logfile", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         serverlogfile = argv[arg++];
     }
     else if(!strcmp("--logdir", argv[arg])) {
       arg++;
-      if(argc>arg)
+      if(argc > arg)
         logdir = argv[arg++];
     }
     else if(!strcmp("--ipv6", argv[arg])) {
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
       ipv_inuse = "IPv6";
       use_ipv6 = TRUE;
 #endif
@@ -978,7 +988,7 @@ int main(int argc, char *argv[])
     }
     else if(!strcmp("--ipv4", argv[arg])) {
       /* for completeness, we support this option as well */
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
       ipv_inuse = "IPv4";
       use_ipv6 = FALSE;
 #endif
@@ -986,7 +996,7 @@ int main(int argc, char *argv[])
     }
     else if(!strcmp("--port", argv[arg])) {
       arg++;
-      if(argc>arg) {
+      if(argc > arg) {
         char *endptr;
         unsigned long ulnum = strtoul(argv[arg], &endptr, 10);
         if((endptr != argv[arg] + strlen(argv[arg])) ||
@@ -1017,22 +1027,22 @@ int main(int argc, char *argv[])
   msnprintf(loglockfile, sizeof(loglockfile), "%s/%s/mqtt-%s.lock",
             logdir, SERVERLOGS_LOCKDIR, ipv_inuse);
 
-#ifdef WIN32
+#ifdef _WIN32
   win32_init();
   atexit(win32_cleanup);
-
-  setmode(fileno(stdin), O_BINARY);
-  setmode(fileno(stdout), O_BINARY);
-  setmode(fileno(stderr), O_BINARY);
 #endif
+
+  CURL_SET_BINMODE(stdin);
+  CURL_SET_BINMODE(stdout);
+  CURL_SET_BINMODE(stderr);
 
   install_signal_handlers(FALSE);
 
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
   if(!use_ipv6)
 #endif
     sock = socket(AF_INET, SOCK_STREAM, 0);
-#ifdef ENABLE_IPV6
+#ifdef USE_IPV6
   else
     sock = socket(AF_INET6, SOCK_STREAM, 0);
 #endif

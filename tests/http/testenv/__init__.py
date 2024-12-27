@@ -23,7 +23,7 @@
 # SPDX-License-Identifier: curl
 #
 ###########################################################################
-#
+# ruff: noqa: F401, E402
 import pytest
 pytest.register_assert_rewrite("testenv.env", "testenv.curl", "testenv.caddy",
                                "testenv.httpd", "testenv.nghttpx")
@@ -32,7 +32,7 @@ from .env import Env
 from .certs import TestCA, Credentials
 from .caddy import Caddy
 from .httpd import Httpd
-from .curl import CurlClient, ExecResult
+from .curl import CurlClient, ExecResult, RunProfile
 from .client import LocalClient
-from .nghttpx import Nghttpx
 from .nghttpx import Nghttpx, NghttpxQuic, NghttpxFwd
+from .vsftpd import VsFTPD

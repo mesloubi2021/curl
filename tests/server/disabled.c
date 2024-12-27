@@ -34,6 +34,7 @@
 #include "curl_setup.h"
 #include "multihandle.h" /* for ENABLE_WAKEUP */
 #include "tool_xattr.h" /* for USE_XATTR */
+#include "curl_sha512_256.h" /* for CURL_HAVE_SHA512_256 */
 #include <stdio.h>
 
 static const char *disabled[]={
@@ -99,6 +100,21 @@ static const char *disabled[]={
 #endif
 #if (SIZEOF_TIME_T < 5)
   "large-time",
+#endif
+#if (SIZEOF_SIZE_T < 5)
+  "large-size",
+#endif
+#ifndef CURL_HAVE_SHA512_256
+  "sha512-256",
+#endif
+#ifdef _WIN32
+#if defined(CURL_WINDOWS_UWP) || \
+  defined(CURL_DISABLE_CA_SEARCH) || defined(CURL_CA_SEARCH_SAFE)
+  "win32-ca-searchpath",
+#endif
+#ifndef CURL_CA_SEARCH_SAFE
+  "win32-ca-search-safe",
+#endif
 #endif
   NULL
 };

@@ -24,7 +24,7 @@
 
 #include "test.h"
 
-#ifdef USE_WEBSOCKETS
+#ifndef CURL_DISABLE_WEBSOCKETS
 
 struct ws_data {
   CURL *easy;
@@ -63,7 +63,7 @@ static size_t add_data(struct ws_data *wd, const char *buf, size_t blen,
     if(wd->nwrites > 0)
       flush_data(wd);
     wd->has_meta = (meta != NULL);
-    wd->meta_flags = meta? meta->flags : 0;
+    wd->meta_flags = meta ? meta->flags : 0;
   }
 
   if(wd->blen + blen > sizeof(wd->buf)) {
@@ -91,7 +91,7 @@ static size_t writecb(char *buffer, size_t size, size_t nitems, void *p)
   return nitems;
 }
 
-int test(char *URL)
+CURLcode test(char *URL)
 {
   CURL *curl;
   CURLcode res = CURLE_OK;
@@ -112,13 +112,13 @@ int test(char *URL)
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writecb);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ws_data);
     res = curl_easy_perform(curl);
-    fprintf(stderr, "curl_easy_perform() returned %u\n", (int)res);
+    fprintf(stderr, "curl_easy_perform() returned %d\n", res);
     /* always cleanup */
     curl_easy_cleanup(curl);
     flush_data(&ws_data);
   }
   curl_global_cleanup();
-  return (int)res;
+  return res;
 }
 
 #else

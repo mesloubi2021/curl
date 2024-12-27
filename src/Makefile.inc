@@ -34,7 +34,7 @@ CURLTOOL_LIBCURL_CFILES = \
   ../lib/base64.c \
   ../lib/dynbuf.c
 
-# libcurl has sources that provide functions named curlx_* that aren't part of
+# libcurl has sources that provide functions named curlx_* that are not part of
 # the official API, but we reuse the code here to avoid duplication.
 CURLX_CFILES = \
   ../lib/base64.c \
@@ -59,13 +59,14 @@ CURLX_HFILES = \
 
 CURL_CFILES = \
   slist_wc.c \
-  tool_binmode.c \
+  terminal.c \
   tool_bname.c \
   tool_cb_dbg.c \
   tool_cb_hdr.c \
   tool_cb_prg.c \
   tool_cb_rea.c \
   tool_cb_see.c \
+  tool_cb_soc.c \
   tool_cb_wrt.c \
   tool_cfgable.c \
   tool_dirhie.c \
@@ -79,6 +80,7 @@ CURL_CFILES = \
   tool_help.c \
   tool_helpers.c \
   tool_hugehelp.c \
+  tool_ipfs.c \
   tool_libinfo.c \
   tool_listhelp.c \
   tool_main.c \
@@ -102,6 +104,7 @@ CURL_CFILES = \
 
 CURL_HFILES = \
   slist_wc.h \
+  terminal.h \
   tool_binmode.h \
   tool_bname.h \
   tool_cb_dbg.h \
@@ -109,6 +112,7 @@ CURL_HFILES = \
   tool_cb_prg.h \
   tool_cb_rea.h \
   tool_cb_see.h \
+  tool_cb_soc.h \
   tool_cb_wrt.h \
   tool_cfgable.h \
   tool_dirhie.h \
@@ -122,6 +126,7 @@ CURL_HFILES = \
   tool_help.h \
   tool_helpers.h \
   tool_hugehelp.h \
+  tool_ipfs.h \
   tool_libinfo.h \
   tool_main.h \
   tool_msgs.h \

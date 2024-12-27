@@ -8,7 +8,7 @@ print <<HEAD
  *                            | (__| |_| |  _ <| |___
  *                             \\___|\\___/|_| \\_\\_____|
  *
- * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel\@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -105,7 +105,7 @@ while(<STDIN>) {
     if(/^#define (CURLOPT_[^ ]*) *(CURLOPT_\S*)/) {
         my ($o, $n)=($1, $2);
         # skip obsolete ones
-        if($n !~ /OBSOLETE/) {
+        if(($n !~ /OBSOLETE/) && ($o !~ /OBSOLETE/)) {
             $o =~ s/^CURLOPT_//;
             $n =~ s/^CURLOPT_//;
             $alias{$o} = $n;
