@@ -110,7 +110,7 @@ test727 test728 test729 test730 test731 test732 test733 test734 test735 \
 test736 test737 test738 test739 test740 test741 test742 \
 \
 test780 test781 test782 test783 test784 test785 test786 test787 test788 \
-test789 \
+test789 test790 test791 \
 \
 test799 test800 test801 test802 test803 test804 test805 test806 test807 \
 test808 test809 test810 test811 test812 test813 test814 test815 test816 \
@@ -269,7 +269,7 @@ test3008 test3009 test3010 test3011 test3012 test3013 test3014 test3015 \
 test3016 test3017 test3018 test3019 test3020 test3021 test3022 test3023 \
 test3024 test3025 test3026 test3027 test3028 test3029 test3030 test3031 \
 \
-test3100 test3101 test3102 test3103 \
+test3100 test3101 test3102 test3103 test3104 test3105 \
 test3200 \
 test3201 test3202 test3203 test3204 test3205 test3207
 

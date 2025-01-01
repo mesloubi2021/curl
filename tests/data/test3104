@@ -1,8 +1,7 @@
 <testcase>
 <info>
 <keywords>
-HTTP
---variable
+cookies
 </keywords>
 </info>
 
@@ -28,32 +27,34 @@ Funny-head: yesyes
 #
 # Client-side
 <client>
+<features>
+cookies
+proxy
+</features>
 <server>
 http
 </server>
+<tool>
+lib%TESTNUMBER
+</tool>
 <name>
---variable with a file and single-byte byte range
+CURLOPT_COOKIELIST with netscape format
 </name>
 <command>
-http://%HOSTIP:%HTTPPORT/%TESTNUMBER --variable "name[15-15]@%LOGDIR/in%TESTNUMBER" --expand-data '{{name}}'
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 </command>
-<file name="%LOGDIR/in%TESTNUMBER">
-On the first Monday of the month of April, 1625, the market town of Meung
-</file>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol crlf="yes" nonewline="yes">
-POST /%TESTNUMBER HTTP/1.1
-Host: %HOSTIP:%HTTPPORT
-User-Agent: curl/%VERSION
+<protocol crlf="yes">
+GET http://example.com/ HTTP/1.1
+Host: example.com
 Accept: */*
-Content-Length: 1
-Content-Type: application/x-www-form-urlencoded
+Proxy-Connection: Keep-Alive
+Cookie: name=value
 
-n
 </protocol>
 </verify>
 </testcase>

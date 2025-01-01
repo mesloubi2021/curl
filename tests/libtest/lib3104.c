@@ -21,41 +21,45 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-
-/* Testing Retry-After header parser */
-
 #include "test.h"
 
 #include "memdebug.h"
 
 CURLcode test(char *URL)
 {
-  struct curl_slist *header = NULL;
-  curl_off_t retry;
-  CURL *curl = NULL;
   CURLcode res = CURLE_OK;
+  CURLSH *share;
+  CURL *curl;
 
-  global_init(CURL_GLOBAL_ALL);
+  curl_global_init(CURL_GLOBAL_ALL);
 
-  easy_init(curl);
+  share = curl_share_init();
+  curl_share_setopt(share, CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
 
-  easy_setopt(curl, CURLOPT_URL, URL);
+  curl = curl_easy_init();
+  test_setopt(curl, CURLOPT_SHARE, share);
+
+  test_setopt(curl, CURLOPT_VERBOSE, 1L);
+  test_setopt(curl, CURLOPT_HEADER, 1L);
+  test_setopt(curl, CURLOPT_PROXY, URL);
+  test_setopt(curl, CURLOPT_URL, "http://example.com/");
+
+  test_setopt(curl, CURLOPT_COOKIEFILE, "");
+
+  test_setopt(curl, CURLOPT_COOKIELIST,
+              "example.com\tFALSE\t/\tFALSE\t0\tname\tvalue");
 
   res = curl_easy_perform(curl);
-  if(res)
-    goto test_cleanup;
-
-  res = curl_easy_getinfo(curl, CURLINFO_RETRY_AFTER, &retry);
-  if(res)
-    goto test_cleanup;
-
-  printf("Retry-After %" CURL_FORMAT_CURL_OFF_T "\n", retry);
+  if(res) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n",
+            curl_easy_strerror(res));
+  }
 
 test_cleanup:
 
   /* always cleanup */
   curl_easy_cleanup(curl);
-  curl_slist_free_all(header);
+  curl_share_cleanup(share);
   curl_global_cleanup();
 
   return res;
