@@ -469,12 +469,11 @@ if(ENABLE_IPV6 AND NOT WIN32)
   if(APPLE AND NOT ENABLE_ARES)
     set(_use_core_foundation_and_core_services ON)
 
-    find_library(SYSTEMCONFIGURATION_FRAMEWORK "SystemConfiguration")
+    find_library(SYSTEMCONFIGURATION_FRAMEWORK NAMES "SystemConfiguration")
     mark_as_advanced(SYSTEMCONFIGURATION_FRAMEWORK)
     if(NOT SYSTEMCONFIGURATION_FRAMEWORK)
       message(FATAL_ERROR "SystemConfiguration framework not found")
     endif()
-
     list(APPEND CURL_LIBS "-framework SystemConfiguration")
   endif()
 endif()
@@ -656,15 +655,15 @@ endif()
 if(CURL_USE_SECTRANSP)
   set(_use_core_foundation_and_core_services ON)
 
-  find_library(SECURITY_FRAMEWORK "Security")
+  find_library(SECURITY_FRAMEWORK NAMES "Security")
   mark_as_advanced(SECURITY_FRAMEWORK)
   if(NOT SECURITY_FRAMEWORK)
     message(FATAL_ERROR "Security framework not found")
   endif()
+  list(APPEND CURL_LIBS "-framework Security")
 
   set(_ssl_enabled ON)
   set(USE_SECTRANSP ON)
-  list(APPEND CURL_LIBS "-framework Security")
 
   if(CURL_DEFAULT_SSL_BACKEND AND CURL_DEFAULT_SSL_BACKEND STREQUAL "secure-transport")
     set(_valid_default_ssl_backend TRUE)
@@ -674,19 +673,19 @@ if(CURL_USE_SECTRANSP)
 endif()
 
 if(_use_core_foundation_and_core_services)
-  find_library(COREFOUNDATION_FRAMEWORK "CoreFoundation")
+  find_library(COREFOUNDATION_FRAMEWORK NAMES "CoreFoundation")
   mark_as_advanced(COREFOUNDATION_FRAMEWORK)
-  find_library(CORESERVICES_FRAMEWORK "CoreServices")
-  mark_as_advanced(CORESERVICES_FRAMEWORK)
-
   if(NOT COREFOUNDATION_FRAMEWORK)
     message(FATAL_ERROR "CoreFoundation framework not found")
   endif()
+  list(APPEND CURL_LIBS "-framework CoreFoundation")
+
+  find_library(CORESERVICES_FRAMEWORK NAMES "CoreServices")
+  mark_as_advanced(CORESERVICES_FRAMEWORK)
   if(NOT CORESERVICES_FRAMEWORK)
     message(FATAL_ERROR "CoreServices framework not found")
   endif()
-
-  list(APPEND CURL_LIBS "-framework CoreFoundation" "-framework CoreServices")
+  list(APPEND CURL_LIBS "-framework CoreServices")
 endif()
 
 if(CURL_USE_OPENSSL)
@@ -2043,6 +2042,7 @@ curl_add_if("WSS"           NOT CURL_DISABLE_WEBSOCKETS AND _ssl_enabled)
 if(_items)
   list(SORT _items)
 endif()
+set(CURL_SUPPORTED_PROTOCOLS_LIST "${_items}")
 string(REPLACE ";" " " SUPPORT_PROTOCOLS "${_items}")
 string(TOLOWER "${SUPPORT_PROTOCOLS}" _support_protocols_lower)
 message(STATUS "Protocols: ${_support_protocols_lower}")
@@ -2096,6 +2096,7 @@ if(_items)
     list(SORT _items)
   endif()
 endif()
+set(CURL_SUPPORTED_FEATURES_LIST "${_items}")
 string(REPLACE ";" " " SUPPORT_FEATURES "${_items}")
 message(STATUS "Features: ${SUPPORT_FEATURES}")
 
@@ -2350,10 +2351,13 @@ if(NOT CURL_DISABLE_INSTALL)
     ${_generated_version_config}")
 
   # Consumed custom variables:
+  #   CURLVERSION
   #   LIB_SELECTED
   #   TARGETS_EXPORT_NAME
   #   USE_OPENSSL
   #   HAVE_LIBZ
+  #   CURL_SUPPORTED_FEATURES_LIST
+  #   CURL_SUPPORTED_PROTOCOLS_LIST
   configure_package_config_file("CMake/curl-config.cmake.in"
     "${_project_config}"
     INSTALL_DESTINATION ${_install_cmake_dir}
