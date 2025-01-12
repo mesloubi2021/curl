@@ -667,7 +667,7 @@ CURLcode Curl_ssl_push_certinfo_len(struct Curl_easy *data,
   return result;
 }
 
-/* get 32 bits of random */
+/* get length bytes of randomness */
 CURLcode Curl_ssl_random(struct Curl_easy *data,
                          unsigned char *entropy,
                          size_t length)
@@ -1386,7 +1386,8 @@ static CURLcode ssl_cf_connect(struct Curl_cfilter *cf,
 
   if(!result && *done) {
     cf->connected = TRUE;
-    connssl->handshake_done = Curl_now();
+    if(connssl->state == ssl_connection_complete)
+      connssl->handshake_done = Curl_now();
     /* Connection can be deferred when sending early data */
     DEBUGASSERT(connssl->state == ssl_connection_complete ||
                 connssl->state == ssl_connection_deferred);

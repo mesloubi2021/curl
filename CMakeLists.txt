@@ -887,7 +887,7 @@ if(ZSTD_FOUND)
   endif()
 endif()
 
-# Check symbol in an OpenSSL-like TLS backend, or in _extra_libs depending on it.
+# Check symbol in an OpenSSL-like TLS backend.
 macro(curl_openssl_check_symbol_exists _symbol _files _variable)
   cmake_push_check_state()
   if(USE_OPENSSL)
@@ -961,11 +961,10 @@ if(USE_ECH)
     if(HAVE_BORINGSSL OR HAVE_AWSLC)
       curl_openssl_check_symbol_exists("SSL_set1_ech_config_list" "openssl/ssl.h" HAVE_SSL_SET1_ECH_CONFIG_LIST)
     elseif(HAVE_OPENSSL)
-      curl_openssl_check_symbol_exists("SSL_ech_set1_echconfig" "openssl/ech.h" HAVE_SSL_ECH_SET1_ECHCONFIG)
+      curl_openssl_check_symbol_exists("SSL_set1_ech_config_list" "openssl/ech.h" HAVE_SSL_SET1_ECH_CONFIG_LIST)
     endif()
     if(HAVE_WOLFSSL_CTX_GENERATEECHCONFIG OR
-       HAVE_SSL_SET1_ECH_CONFIG_LIST OR
-       HAVE_SSL_ECH_SET1_ECHCONFIG)
+       HAVE_SSL_SET1_ECH_CONFIG_LIST)
       set(HAVE_ECH 1)
     endif()
     if(NOT HAVE_ECH)
@@ -975,6 +974,15 @@ if(USE_ECH)
     endif()
   else()
     message(FATAL_ERROR "ECH requires ECH-enablded OpenSSL, BoringSSL, AWS-LC or wolfSSL")
+  endif()
+endif()
+
+option(USE_SSLS_EXPORT "Enable SSL session export support" OFF)
+if(USE_SSLS_EXPORT)
+  if(_ssl_enabled)
+    message(STATUS "SSL export enabled.")
+  else()
+    message(FATAL_ERROR "SSL session export requires SSL enabled")
   endif()
 endif()
 
@@ -1410,8 +1418,8 @@ endif()
 if(_curl_ca_bundle_supported)
   set(CURL_CA_BUNDLE "auto" CACHE
     STRING "Path to the CA bundle. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
-  set(CURL_CA_FALLBACK OFF CACHE BOOL
-    "Use built-in CA store of TLS backend. Defaults to OFF")
+  set(CURL_CA_FALLBACK OFF CACHE
+    BOOL "Use built-in CA store of TLS backend. Defaults to OFF")
   set(CURL_CA_PATH "auto" CACHE
     STRING "Location of default CA path. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
   set(CURL_CA_EMBED "" CACHE
@@ -1703,9 +1711,6 @@ if(APPLE)
   check_function_exists("mach_absolute_time" HAVE_MACH_ABSOLUTE_TIME)
 endif()
 check_symbol_exists("inet_ntop" "${CURL_INCLUDES};stdlib.h;string.h" HAVE_INET_NTOP)  # arpa/inet.h
-if(MSVC AND (MSVC_VERSION LESS_EQUAL 1600))
-  set(HAVE_INET_NTOP OFF)
-endif()
 check_symbol_exists("inet_pton" "${CURL_INCLUDES};stdlib.h;string.h" HAVE_INET_PTON)  # arpa/inet.h
 
 check_symbol_exists("fsetxattr" "sys/xattr.h" HAVE_FSETXATTR)
@@ -1865,9 +1870,11 @@ include(CMake/OtherTests.cmake)
 
 add_definitions("-DHAVE_CONFIG_H")
 
-# For Windows, all compilers used by CMake should support large files
 if(WIN32)
-  set(USE_WIN32_LARGE_FILES ON)
+  # _fseeki64() requires VS2005
+  if(NOT MSVC OR (MSVC_VERSION GREATER_EQUAL 1400))
+    set(USE_WIN32_LARGE_FILES ON)
+  endif()
 
   # Use the manifest embedded in the Windows Resource
   set(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -DCURL_EMBED_MANIFEST")
@@ -1887,14 +1894,13 @@ if(MSVC)
   # Disable default manifest added by CMake
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 
-  add_definitions("-D_CRT_SECURE_NO_DEPRECATE" "-D_CRT_NONSTDC_NO_DEPRECATE")
   if(CMAKE_C_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
   else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
   endif()
 
-  # Use multithreaded compilation on VS 2008+
+  # Use multithreaded compilation on VS2008+
   if(CMAKE_C_COMPILER_ID STREQUAL "MSVC" AND MSVC_VERSION GREATER_EQUAL 1500)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
   endif()
@@ -2089,6 +2095,7 @@ curl_add_if("TrackMemory"   ENABLE_CURLDEBUG)
 curl_add_if("ECH"           _ssl_enabled AND HAVE_ECH)
 curl_add_if("PSL"           USE_LIBPSL)
 curl_add_if("CAcert"        CURL_CA_EMBED_SET)
+curl_add_if("SSLS-EXPORT"   _ssl_enabled AND USE_SSLS_EXPORT)
 if(_items)
   if(NOT CMAKE_VERSION VERSION_LESS 3.13)
     list(SORT _items CASE INSENSITIVE)

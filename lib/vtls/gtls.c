@@ -751,10 +751,11 @@ CURLcode Curl_gtls_cache_session(struct Curl_cfilter *cf,
 
   /* extract session ID to the allocated buffer */
   gnutls_session_get_data(session, sdata, &sdata_len);
-
-  CURL_TRC_CF(data, cf, "get session id (len=%zu, alpn=%s) and store in cache",
-              sdata_len, alpn ? alpn : "-");
   earlydata_max = gnutls_record_get_max_early_data_size(session);
+
+  CURL_TRC_CF(data, cf, "get session id (len=%zu, alpn=%s, earlymax=%zu) "
+              "and store in cache", sdata_len, alpn ? alpn : "-",
+              earlydata_max);
   if(quic_tp && quic_tp_len) {
     qtp_clone = Curl_memdup0((char *)quic_tp, quic_tp_len);
     if(!qtp_clone) {
@@ -1968,6 +1969,9 @@ gtls_connect_common(struct Curl_cfilter *cf,
       goto out;
 
     if(connssl->earlydata_state == ssl_earlydata_sent) {
+      /* report the true time the handshake was done */
+      connssl->handshake_done = Curl_now();
+      Curl_pgrsTimeWas(data, TIMER_APPCONNECT, connssl->handshake_done);
       if(gnutls_session_get_flags(backend->gtls.session) &
          GNUTLS_SFLAGS_EARLY_DATA) {
         connssl->earlydata_state = ssl_earlydata_accepted;

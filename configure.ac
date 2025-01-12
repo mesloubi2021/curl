@@ -54,6 +54,7 @@ CURL_CHECK_OPTION_ARES
 CURL_CHECK_OPTION_RT
 CURL_CHECK_OPTION_HTTPSRR
 CURL_CHECK_OPTION_ECH
+CURL_CHECK_OPTION_SSLS_EXPORT
 
 XC_CHECK_PATH_SEPARATOR
 
@@ -4877,13 +4878,7 @@ if test "x$want_ech" != "xno"; then
   ECH_ENABLED=0
   ECH_SUPPORT=''
 
-  dnl check for OpenSSL
-  if test "x$OPENSSL_ENABLED" = "x1"; then
-    AC_CHECK_FUNCS(SSL_ech_set1_echconfig,
-      ECH_SUPPORT="ECH support available via OpenSSL with SSL_ech_set1_echconfig"
-      ECH_ENABLED=1)
-  fi
-  dnl check for BoringSSL equivalent
+  dnl check for OpenSSL equivalent
   if test "x$OPENSSL_ENABLED" = "x1"; then
     AC_CHECK_FUNCS(SSL_set1_ech_config_list,
       ECH_SUPPORT="ECH support available via BoringSSL with SSL_set1_ech_config_list"
@@ -4944,6 +4939,26 @@ else
   AC_MSG_WARN([WebSockets disabled because HTTP is disabled])
   AC_DEFINE(CURL_DISABLE_WEBSOCKETS, [1], [disable WebSockets])
   CURL_DISABLE_WEBSOCKETS=1
+fi
+
+dnl *************************************************************
+dnl check whether experimental SSL Session Im-/Export is enabled
+dnl
+if test "x$want_ssls_export" != "xno"; then
+  AC_MSG_CHECKING([whether SSL session export support is available])
+
+  dnl assume NOT and look for sufficient condition
+  SSLS_EXPORT_ENABLED=0
+  SSLS_EXPORT_SUPPORT=''
+
+  if test "x$SSL_ENABLED" != "x1"; then
+    AC_MSG_ERROR([--enable-ssls-export ignored: No SSL support])
+  else
+    SSLS_EXPORT_ENABLED=1
+    AC_DEFINE(USE_SSLS_EXPORT, 1, [if SSL session export support is available])
+    AC_MSG_RESULT("SSL session im-/export enabled")
+    experimental="$experimental SSLS-EXPORT"
+  fi
 fi
 
 dnl ************************************************************
@@ -5146,6 +5161,10 @@ if test "x$OPENSSL_ENABLED" = "x1" -o -n "$SSL_ENABLED"; then
   if test "x$ECH_ENABLED" = "x1"; then
     SUPPORT_FEATURES="$SUPPORT_FEATURES ECH"
   fi
+fi
+
+if test "x$SSLS_EXPORT_ENABLED" = "x1"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES SSLS-EXPORT"
 fi
 
 if test ${ac_cv_sizeof_curl_off_t} -gt 4; then
@@ -5413,6 +5432,7 @@ AC_MSG_NOTICE([Configured to build curl/libcurl:
   HTTP2:            ${curl_h2_msg}
   HTTP3:            ${curl_h3_msg}
   ECH:              ${curl_ech_msg}
+  SSLS-EXPORT:      ${curl_ssls_export_msg}
   Protocols:        ${SUPPORT_PROTOCOLS_LOWER}
   Features:         ${SUPPORT_FEATURES}
 ])
